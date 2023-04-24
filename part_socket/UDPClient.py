@@ -2,7 +2,7 @@
 Author: Thoma4
 Date: 2022-01-03 00:55:14
 LastEditTime: 2023-04-25 00:26:52
-Description: 
+Description: hotspot 192.168.137.1
 '''
 from socket import *
 import time as tm
@@ -29,7 +29,3 @@ while True:
         print(f'[c]({c_t})Server has been shut down.')
         break
 clientSocket.close()
-# z 172.27.5.45
-# s 172.27.77.203
-# c 172.27.3.204
-# hotpoint 192.168.137.1
