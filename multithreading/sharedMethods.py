@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-04-28 16:34:29
-LastEditTime: 2023-04-28 16:40:56
+LastEditTime: 2023-04-29 00:17:07
 Description: 
 '''
 import time as tm
@@ -11,6 +11,14 @@ def gt(t):
     t = tm.strftime("%H:%M:%S", tm.localtime())
     return t
 
+
+'''UDP_Parameter'''
+U_sIP = '192.168.137.1'
+U_cIP = '192.168.137.1'
+U_sPort = 12100
+U_cPort = 12200
+U_MAX_SIZE = 2048
+U_OPT_CLS = 'shutdown'
 
 if __name__ == '__main__':
     ''''''

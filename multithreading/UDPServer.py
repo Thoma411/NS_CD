@@ -1,53 +1,46 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 01:01:46
-LastEditTime: 2023-04-28 23:35:20
-Description: sSend()/sRecv()未启用
+LastEditTime: 2023-04-29 00:43:14
+Description: UDP全双工C/S通信 S
 '''
-# UDPserver
 from socket import *
 import threading as th
 import sharedMethods as sm  # 自定义c/s共用方法
 
 
-def sSend(sk, dstIP, dstPort):
+def sSend(sk, dstIP: str, dstPort: int, st: str):
     while True:
-        sMsgSend = input('[s]send msg: ')
+        sMsgSend = input(f'{sm.gt(st)} [s]: ')
         sk.sendto(sMsgSend.encode(), (dstIP, dstPort))
 
 
-def sRecv(sk, MAX_SIZE):
+def sRecv(sk, MAX_SIZE: int, st: str):
     while True:
         sMsgRecv = sk.recvfrom(MAX_SIZE)
-        print(f'\n[s]recv msg: {str(sMsgRecv[1])}{sMsgRecv[0].decode()}')
+        print(f'{sm.gt(st)} [c]: {str(sMsgRecv[1])}{sMsgRecv[0].decode()}')
 
 
 def sMain():
-    serverPort = 12000
     serverSocket = socket(AF_INET, SOCK_DGRAM)  # 创建套接字
-    MAX_SIZE = 2048
-    opt_closeServer = 'shutdown'
-    s_t = ''  # 服务端时间
+    serverPort = sm.U_sPort
     serverSocket.bind(('', serverPort))  # 绑定IP/端口
-    print(f'[s]({sm.gt(s_t)})The server is ready to receive...')
+    dest_cIP, dest_cPort = sm.U_cIP, sm.U_cPort  # 声明目的IP/端口
+    MAX_SIZE = sm.U_MAX_SIZE
+    # opt_closeServer = sm.U_OPT_CLS
+    s_t = ''  # 服务端时间
+    print(f'[s]({sm.gt(s_t)})Server started.')
 
-    while True:
-        SmsgRecv, CAddr = serverSocket.recvfrom(MAX_SIZE)
-        SmsgModified = SmsgRecv.decode().upper()
-        print(f'[s]({sm.gt(s_t)})msg:', SmsgModified, 'recvfrom:', CAddr)
-        serverSocket.sendto(SmsgModified.encode(), CAddr)
-        if SmsgModified == opt_closeServer.upper():
-            print(
-                f'[s]({sm.gt(s_t)})Server has been shut down remotely, operator:', CAddr)
-            serverSocket.close()
-            break
-
-    # dest_IP, dest_Port = '192.168.137.1', 12000
-    # tsSend = th.Thread(target=sSend, args=(serverSocket, dest_IP, dest_Port))
-    # tsRecv = th.Thread(target=sRecv, args=(serverSocket, MAX_SIZE))
-    # tsSend.start()
-    # tsRecv.start()
+    tsSend = th.Thread(target=sSend,
+                       args=(serverSocket, dest_cIP, dest_cPort, s_t))
+    tsRecv = th.Thread(target=sRecv, args=(serverSocket, MAX_SIZE, s_t))
+    tsSend.start()
+    tsRecv.start()
 
 
 if __name__ == '__main__':
     sMain()
+
+'''
+收发消息存在显示(换行)问题, 不过并不重要
+'''
