@@ -1,7 +1,7 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 01:32:33
-LastEditTime: 2023-04-28 17:34:08
+LastEditTime: 2023-04-28 17:42:02
 Description: multithreading S
 '''
 from socket import *
