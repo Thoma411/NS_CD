@@ -2,7 +2,7 @@
 Author: Thoma4
 Date: 2022-01-03 01:32:33
 LastEditTime: 2023-04-28 17:06:11
-Description: single-thread S
+Description: sRecv() 未启用
 '''
 from socket import *
 import threading as th
