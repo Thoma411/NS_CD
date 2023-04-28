@@ -1,7 +1,7 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 01:32:33
-LastEditTime: 2023-04-28 17:42:02
+LastEditTime: 2023-04-28 17:44:20
 Description: multithreading S
 '''
 from socket import *
@@ -45,4 +45,6 @@ if __name__ == '__main__':
     '''
     客户端双击运行.py文件时直接叉掉窗口会导致服务端报错([WinError 10054])
     引入多线程后叉掉窗口服务端会报错, 但主线程仍然运行
+
+    TODO:可能会用到 端口复用/线程守护
     '''
