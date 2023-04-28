@@ -1,8 +1,8 @@
 '''
 Author: Thoma411
 Date: 2023-04-28 16:34:29
-LastEditTime: 2023-04-29 00:17:07
-Description: 
+LastEditTime: 2023-04-29 00:48:08
+Description: 共用变量/方法/函数
 '''
 import time as tm
 
