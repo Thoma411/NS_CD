@@ -1,8 +1,8 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 01:01:46
-LastEditTime: 2023-04-28 20:58:28
-Description: 
+LastEditTime: 2023-04-28 21:04:50
+Description: sSend()/sRecv()未启用
 '''
 # UDPserver
 from socket import *
@@ -44,6 +44,12 @@ def sMain():
                 f'[s]({s_t})Server has been shut down remotely, operator:', CAddr)
             serverSocket.close()
             break
+
+    # dest_IP, dest_Port = '192.168.137.1', 12000
+    # tSend = th.Thread(target=sSend, args=(serverSocket, dest_IP, dest_Port))
+    # tRecv = th.Thread(target=sRecv, args=(serverSocket, MAX_SIZE))
+    # tSend.start()
+    # tRecv.start()
 
 
 if __name__ == '__main__':
