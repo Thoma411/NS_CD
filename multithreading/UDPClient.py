@@ -1,7 +1,7 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 00:55:14
-LastEditTime: 2023-04-29 00:47:30
+LastEditTime: 2023-04-29 13:56:06
 Description: UDP全双工C/S通信 C
 '''
 from socket import *
@@ -9,13 +9,17 @@ import threading as th
 import sharedMethods as sm  # 自定义c/s共用方法
 
 
-def cSend(sk, dstIP: str, dstPort: int, ct: str):
+def cSend(sk: socket, dstIP: str, dstPort: int, ct: str):
     while True:
         cMsgSend = input(f'{sm.gt(ct)} [c]: ')
+        if not cMsgSend:
+            print(f'{sm.gt(ct)} [c]invalid input, client closed.')
+            break
         sk.sendto(cMsgSend.encode(), (dstIP, dstPort))
+    sk.close()#疑似仅关闭socket不结束线程导致报错([WinError 10038])
 
 
-def cRecv(sk, MAX_SIZE: int, ct: str):
+def cRecv(sk: socket, MAX_SIZE: int, ct: str):
     while True:
         cMsgRecv = sk.recvfrom(MAX_SIZE)
         print(f'{sm.gt(ct)} [s]: {str(cMsgRecv[1])}{cMsgRecv[0].decode()}')
