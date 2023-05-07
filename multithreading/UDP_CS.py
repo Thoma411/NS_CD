@@ -1,11 +1,12 @@
 '''
 Author: Thoma411
 Date: 2023-05-03 00:47:08
-LastEditTime: 2023-05-03 01:26:41
+LastEditTime: 2023-05-07 09:44:54
 Description: 
 '''
 import socket as sk
 import threading as th
+import sharedMethods as sm
 
 # 定义全局变量
 # lock = threading.Lock()  # 创建互斥锁
@@ -16,19 +17,13 @@ import threading as th
 def send_message():
     while True:
         try:
-            # target_ip = input("请输入目标 IP 地址: ")
+            # target_ip = input("dst IP: ")
             target_ip = '192.168.137.1'
             target_port = int(input("dst Port: "))
-            message = input("msg: ").encode('utf-8')
-
-            # 创建 UDP socket
-            sock = sk.socket(sk.AF_INET, sk.SOCK_DGRAM)
-
-            # 发送消息
-            sock.sendto(message, (target_ip, target_port))
-            # print("已向目标地址发送消息:", message)
-
-            # 关闭 socket
+            message = input("msg: ").encode(sm.U_EDCODE)
+            sock = sk.socket(sk.AF_INET, sk.SOCK_DGRAM)  # 创建 UDP socket
+            sock.sendto(message, (target_ip, target_port))  # 发送消息
+            # print("send msg:", message)
             sock.close()
         except Exception as e:
             print("[sendError]:", e)
@@ -39,13 +34,20 @@ def send_message():
 def receive_message(src_port):
     # 创建 UDP socket
     sock = sk.socket(sk.AF_INET, sk.SOCK_DGRAM)
-    #src_port = int(input("请输入本地端口号: "))
+    #src_port = int(input("src Port: "))
     sock.bind(('', src_port))  # 绑定本地 IP 和端口号
 
     while True:
         try:
-            data, addr = sock.recvfrom(1024)
-            print("recvfrom %s : %s" % (addr, data.decode('utf-8')))
+            data, addr = sock.recvfrom(sm.U_MAX_SIZE)
+            dData = data.decode(sm.U_EDCODE)
+            MATCH_FLAG = False
+            for dkey, dvalue in sm.U_MATCH_LIST.items():
+                if dData == dkey:
+                    print(dvalue)
+                    MATCH_FLAG = True
+            if not MATCH_FLAG:
+                print("recvfrom %s : %s" % (addr, dData))
         except Exception as e:
             print("[recvError]:", e)
         # finally:
