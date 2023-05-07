@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-03 00:47:08
-LastEditTime: 2023-05-07 09:44:54
+LastEditTime: 2023-05-07 23:34:41
 Description: 
 '''
 import socket as sk
@@ -64,4 +64,20 @@ th.Thread(target=send_message).start()
 每次发送消息前手动指定目标IP&端口，比较麻烦
 但是至少能跑
 TODO:如何正常结束进程
+
+TODO:db连接：手动实现
+
+AS模块
+->
+TGS模块
+->
+把数据发到V由V处理（add加解密）
+->
+V发回处理后的数据
+
+认证报文
+ID字段:IP(+Port)
+TS/LT:time时间戳/时间范围
+
+控制报文
 '''
