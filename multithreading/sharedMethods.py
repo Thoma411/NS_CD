@@ -1,15 +1,20 @@
 '''
 Author: Thoma411
 Date: 2023-04-28 16:34:29
-LastEditTime: 2023-05-07 23:43:02
+LastEditTime: 2023-05-10 22:20:18
 Description: 共用变量/方法/函数
 '''
 import time as tm
 
 
-def gt(t):
+def gt(t):  # 获取当前时间
     t = tm.strftime("%H:%M:%S", tm.localtime())
     return t
+
+
+def mixSTR(str: str, rm: str):  # 剔除字符串内的指定字符
+    str = str.replace(rm, '')
+    return str
 
 
 '''UDP_Parameter'''
