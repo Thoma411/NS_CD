@@ -1,27 +1,18 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 00:55:14
-LastEditTime: 2023-05-11 16:53:11
+LastEditTime: 2023-05-11 17:27:55
 Description: hotspot 192.168.137.1
 '''
-from cryptMethod import messageFormat as mf
 import socket as sk
 import time as tm
-import sys
-sys.path.append("..")
-
-
-def mixSTR(str: str, rm: str = '.'):
-    str = str.replace(rm, '')
-    return str
-
+import cryptMethod.messageFormat as mf
 
 AS_IP = '192.168.137.1'
 TGS_IP = '192.168.137.1'
 AS_PORT = 12000
 clientSocket = sk.socket(sk.AF_INET, sk.SOCK_DGRAM)
 MAX_SIZE = 2048
-opt_closeServer = 'shutdown'
 c_t = ''  # 客户端时间
 
 while True:
@@ -35,6 +26,5 @@ while True:
     recvmsg1, SAddr = clientSocket.recvfrom(MAX_SIZE)
     msg2 = mf.AS2C.getMsg(recvmsg1.decode())
     msg2.show()
-    # c_t = tm.strftime("%H:%M:%S", tm.localtime())
-    # print(f'[c]({c_t})msg:', recvmsg1, 'recvfrom:', SAddr)
+    del msg1, sendmsg1, msg2
 clientSocket.close()

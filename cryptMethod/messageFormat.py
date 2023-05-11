@@ -1,12 +1,13 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-11 16:58:39
+LastEditTime: 2023-05-11 23:59:32
 Description: 
 '''
 import datetime as dt
 import random as rd
 import string as st
+import time as tm
 
 LEN_ID = 2  # 编号长度
 LEN_AD = 6  # 地址长度
@@ -48,13 +49,16 @@ def msg_rndKey(dgt: int = 8):  # 生成定长随机字符串,默认8位
 class C2AS:  # C->AS 报文字段定义
     ID_C = 00
     ID_TGS = 00
-    TS_1 = ''
-    MSG_C2AS = ''
+    TS_1 = None
+    # MSG_C2AS = ''
 
-    def __init__(self, id_c, id_tgs, ts_1=msg_getTime()):
+    def __init__(self, id_c, id_tgs, ts_1=None):
         self.ID_C = id_c
         self.ID_TGS = id_tgs
-        self.TS_1 = ts_1
+        if ts_1 is not None:  # 判断类型并初始化 防止潜在类型报错
+            self.TS_1 = ts_1
+        else:
+            self.TS_1 = msg_getTime()
 
     @classmethod
     def getMsg(cls, msg: str):  # 接收报文 -> class<C2AS>
@@ -64,7 +68,21 @@ class C2AS:  # C->AS 报文字段定义
         MSG_C2AS = C2AS(id_c, id_tgs, ts_1)
         return MSG_C2AS
 
+    @property
+    def updateT(self):  # 更新时间戳
+        return self.TS_1
+
+    @updateT.setter
+    def updateT(self, ts_1):
+        self.TS_1 = ts_1
+
+    @updateT.getter
+    def updateT(self):
+        self.TS_1 = msg_getTime()
+        return self.TS_1
+
     def show(self):
+        self.updateT
         print(f'ID_C: {self.ID_C}, ID_TGS: {self.ID_TGS}, TS_1: {self.TS_1}')
 
     def concatmsg(self):
@@ -77,17 +95,23 @@ class C2AS:  # C->AS 报文字段定义
 class AS2C:  # AS->C 报文字段定义
     ID_C = 00
     ID_TGS = 00
-    K_C_TGS = ''
-    TS_2 = ''
+    K_C_TGS = None
+    TS_2 = None
     LT_2 = ''
     TICKET_TGS = ''
-    MSG_AS2C = ''
+    #MSG_AS2C = ''
 
-    def __init__(self,  id_tgs, lt_2, k_c_tgs: str = msg_rndKey(), ts_2=msg_getTime()):
-        self.K_C_TGS = k_c_tgs
+    def __init__(self,  id_tgs, lt_2, k_c_tgs: str = None, ts_2=None):
         self.ID_TGS = id_tgs
-        self.TS_2 = ts_2
         self.LT_2 = lt_2
+        if k_c_tgs is not None:
+            self.K_C_TGS = k_c_tgs
+        else:
+            self.K_C_TGS = msg_rndKey()
+        if ts_2 is not None:
+            self.TS_2 = ts_2
+        else:
+            self.TS_2 = msg_getTime()
 
     @classmethod
     def getMsg(cls, msg: str):  # 接收报文 -> class<AS2C>
@@ -99,7 +123,23 @@ class AS2C:  # AS->C 报文字段定义
         MSG_AS2C = AS2C(id_tgs, lt_2, k_c_tgs, ts_2)
         return MSG_AS2C
 
+    @property
+    def updateT(self):  # 更新时间戳和密钥
+        return self.K_C_TGS, self.TS_2
+
+    @updateT.setter
+    def updateT(self, k_c_tgs, ts_2):
+        self.K_C_TGS = k_c_tgs
+        self.TS_2 = ts_2
+
+    @updateT.getter
+    def updateT(self):
+        self.K_C_TGS = msg_rndKey()
+        self.TS_2 = msg_getTime()
+        return self.TS_2
+
     def show(self):
+        self.updateT
         print(
             f'K_C_TGS: {self.K_C_TGS}, ID_TGS: {self.ID_TGS}, TS_2: {self.TS_2}, LT_2: {self.LT_2}')
 
@@ -113,6 +153,7 @@ class AS2C:  # AS->C 报文字段定义
 
 if __name__ == '__main__':
     # !由于精度较高,临时生成的时间戳可能导致时间比较不同(ticket里的和ticket外的)
+    # *别忘了还有首部没写,记得加上偏移量
     msg1 = C2AS(1, 1)
     msg1.show()
     m1 = msg1.concatmsg()
@@ -128,3 +169,9 @@ if __name__ == '__main__':
 
     msg22 = AS2C.getMsg(m2)
     msg22.show()
+    # testmsg1 = C2AS(1, 1)
+    # print(testmsg1.updateT)
+    # tm.sleep(1)
+    # print(testmsg1.updateT)
+    # tm.sleep(1)
+    # print(testmsg1.TS_1)
