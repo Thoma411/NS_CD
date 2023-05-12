@@ -1,13 +1,14 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-12 12:17:22
+LastEditTime: 2023-05-13 00:26:52
 Description: message definition
 '''
 import datetime as dt
 import random as rd
 import string as st
 import time as tm
+import cyptoDES as cd
 
 LEN_ID = 2  # 编号长度
 LEN_AD = 6  # 地址长度
@@ -67,6 +68,7 @@ class TICKET:  # ticket内部字段定义
             self.TS_2 = ts_2
         else:
             self.TS_2 = msg_getTime()
+        self.MSG_TICKET = ''  # 拼接后的ticket
 
     @classmethod
     def getTicket(cls, tkt: str):  # 接收票据
@@ -88,13 +90,20 @@ class TICKET:  # ticket内部字段定义
         print(f'TS_2: {self.TS_2}, LT_2: {self.LT_2}')
 
     def concatmsg(self):  # 拼接各字段
-        MSG_TICKET = self.KEY_SHARE + \
+        msg_ticket = self.KEY_SHARE + \
             msg_i2s(self.ID_SRC, LEN_ID) + \
             msg_i2s(self.AD_SRC, LEN_AD) + \
-            msg_i2s(self.ID_DST, LEN_ID) +\
-            msg_i2s(self.TS_2, LEN_TS) +\
+            msg_i2s(self.ID_DST, LEN_ID) + \
+            msg_i2s(self.TS_2, LEN_TS) + \
             msg_i2s(self.LT_2, LEN_LT)
-        return MSG_TICKET
+        self.MSG_TICKET = msg_ticket  # 将拼成的ticket存为MSG_TICKET属性
+        return msg_ticket
+
+    def encryptTkt(self, key_share: 'str|bytes'):  # 对整个ticket加密
+        plainTkt = self.MSG_TICKET
+        cipherTkt = cd.DES_encry(plainTkt, key_share)
+        cipherTktH = cd.binascii.hexlify(cipherTkt)
+        return cipherTktH
 
 
 class C2AS:  # C->AS 报文字段定义
@@ -229,5 +238,8 @@ if __name__ == '__main__':
 
     tkt1 = TICKET(1, '127001', 2, 6000)
     tkt1.show()
-    tkt11 = tkt1.concatmsg()
-    print(tkt11, len(tkt11))
+    tkt1.concatmsg()
+    # tkt11 = tkt1.concatmsg()
+    # print(tkt11, len(tkt11))
+    ctkt1 = tkt1.encryptTkt(msg2.K_C_TGS)
+    print(msg2.K_C_TGS, ctkt1, len(ctkt1))

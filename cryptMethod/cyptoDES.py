@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-09 11:23:42
-LastEditTime: 2023-05-10 11:44:07
+LastEditTime: 2023-05-13 00:29:09
 Description: 
 '''
 from Crypto.Cipher import DES
@@ -15,14 +15,21 @@ def padding(strb: bytes):  # 补全8倍长度
     return resb
 
 
-def encry(strs: 'str|bytes', retType='b'):  # 加密
+def DES_encry(strs: 'str|bytes', key: 'str|bytes', retType='b'):  # 加密
     if type(strs) == str:
         strb = bytes(strs.encode())
     elif type(strs) == bytes:
         strb = bytes(strs)
     else:
-        print('[typeError]')
+        print('[typeError] strs')
+    if type(key) == str:
+        keyb = bytes(key.encode())
+    elif type(key) == bytes:
+        keyb = bytes(key)
+    else:
+        print('[typeError] key')
     strb = padding(strb)
+    cipher = DES.new(keyb, DES.MODE_ECB)  # 初始化加密器
     ciphertext = cipher.encrypt(strb)
     resb = ciphertext  # bytes->16进制
     if retType == 'b':
@@ -32,7 +39,14 @@ def encry(strs: 'str|bytes', retType='b'):  # 加密
         return ress
 
 
-def decry(strb: bytes, retType='b'):  # 解密
+def DES_decry(strb: bytes, key: 'str|bytes', retType='b'):  # 解密
+    if type(key) == str:
+        keyb = bytes(key.encode())
+    elif type(key) == bytes:
+        keyb = bytes(key)
+    else:
+        print('[typeError] key')
+    cipher = DES.new(keyb, DES.MODE_ECB)  # 初始化加密器
     resb = cipher.decrypt(strb)
     if retType == 'b':
         return resb
@@ -42,20 +56,21 @@ def decry(strb: bytes, retType='b'):  # 解密
 
 
 if __name__ == '__main__':
-    key = b'secret_k'  # 初始密钥
-    pltext = b'111100001111v001abcdufwk12341234'  # 明文数据
+    key = b'secret_1'  # 初始密钥
+    pltext = b'111100001111v001abcdufwk12341284'  # 明文数据
     print("明文: ", pltext, 'len:', len(pltext))
 
-    cipher = DES.new(key, DES.MODE_ECB)  # 初始化加密器
-    cptext = encry(pltext)  # 加密
+    # cipher = DES.new(key, DES.MODE_ECB)  # 初始化加密器
+    cptext = DES_encry(pltext, key)  # 加密
     cptexth = binascii.hexlify(cptext)
     print("密文: ", cptexth, 'len:', len(cptexth))
+    print('密文(未转16进制): ', cptext, 'len:', len(cptext))
 
     # decrypted = cipher.decrypt(cptext)  # 解密
     # dpltext = decrypted[:-decrypted[-1]]
     # print("解密后的明文: ", dpltext.decode())
 
     # 去除padding，并打印明文数据
-    dcptext = decry(cptext)
+    dcptext = DES_decry(cptext, key)
     dpltext = dcptext[:-dcptext[-1]]
     print("解密后的明文: ", dpltext.decode())
