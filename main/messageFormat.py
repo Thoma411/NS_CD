@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-13 00:26:52
+LastEditTime: 2023-05-13 10:31:36
 Description: message definition
 '''
 import datetime as dt
@@ -18,9 +18,14 @@ LEN_KEY = 8  # 密钥长度
 
 DLEN_ID = 1  # 常规ID扩充前的长度
 DLEN_TS = 9  # 常规TS扩充前的长度
+DLEN_CTKT = 80  # 常规加密ticket长度
 
-DEFAULT_KEY = '00000000'  # 默认初始化密钥
+DEFAULT_KEY = '00000000'  # 默认初始化密钥(全局)
 DEFAULT_TS = '0000000000'  # 默认初始化时间
+DEFAULT_LT = '6000'  # 默认有效期
+
+DKEY_TGS = '00000000'  # 预置TGS密钥
+DKEY_V = '00000000'  # 预置V密钥
 
 
 def msg_i2s(nu: 'int|str', lo: int):  # 类型转换并扩充报文至目标长度
@@ -33,6 +38,16 @@ def msg_i2s(nu: 'int|str', lo: int):  # 类型转换并扩充报文至目标长�
         return si
     else:
         print(f'[inputError] len(input) must be 1, but now is {len(str(nu))}')
+
+
+def IP2AD(IP: str):  # IP -> 6位AD字段
+    IPsplit = IP.split('.')
+    IPstr = []
+    for i in IPsplit:
+        i = i.zfill(3)
+        IPstr.append(i)
+        msg_ad = ''.join(IPstr)
+    return msg_ad[6:]
 
 
 def msg_getTime(dgt: int = 4):  # 获取当前时间,默认精确到.后4位
@@ -105,6 +120,10 @@ class TICKET:  # ticket内部字段定义
         cipherTktH = cd.binascii.hexlify(cipherTkt)
         return cipherTktH
 
+    def decryptTkt(self, key_share: 'str|bytes'):  # 对整个ticket解密
+        
+        return
+
 
 class C2AS:  # C->AS 报文字段定义
     ID_C = 00
@@ -158,10 +177,10 @@ class AS2C:  # AS->C 报文字段定义
     K_C_TGS = None
     TS_2 = None
     LT_2 = ''
-    TICKET_TGS = ''
+    TICKET_TGS = None
     #MSG_AS2C = ''
 
-    def __init__(self,  id_tgs, lt_2, k_c_tgs: str = None, ts_2=None):
+    def __init__(self,  id_tgs, lt_2, k_c_tgs: str = None, ts_2=None, ticket_tgs=None):
         self.ID_TGS = id_tgs
         self.LT_2 = lt_2
         if k_c_tgs is not None:
@@ -172,6 +191,8 @@ class AS2C:  # AS->C 报文字段定义
             self.TS_2 = ts_2
         else:
             self.TS_2 = msg_getTime()
+        if ticket_tgs is not None:  # *第一次调用初始化函数,生成除ticket字段外的部分
+            self.TICKET_TGS = ticket_tgs  # *接收msg时若tkt不为空将填充该字段
 
     @classmethod
     def getMsg(cls, msg: str):  # 接收报文 -> class<AS2C>
@@ -180,7 +201,8 @@ class AS2C:  # AS->C 报文字段定义
         ts_2 = msg[LEN_KEY + LEN_ID:LEN_KEY + LEN_ID + LEN_TS]  # 10-20
         lt_2 = msg[LEN_KEY + LEN_ID + LEN_TS:LEN_KEY +
                    LEN_ID + LEN_TS + LEN_LT]  # 20-24
-        MSG_AS2C = AS2C(id_tgs, lt_2, k_c_tgs, ts_2)
+        ticket_tgs = msg[LEN_KEY + LEN_ID + LEN_TS + LEN_LT:]  # 24-104
+        MSG_AS2C = AS2C(id_tgs, lt_2, k_c_tgs, ts_2, ticket_tgs)
         return MSG_AS2C
 
     @property
@@ -198,34 +220,46 @@ class AS2C:  # AS->C 报文字段定义
         self.TS_2 = msg_getTime()
         return self.TS_2
 
+    def creatTkt(self, ad_c, k_tgs=DKEY_TGS):  # *再调用此方法生成加密tkt
+        tkt = TICKET(self.ID_C, ad_c, self.ID_TGS,
+                     self.LT_2, self.K_C_TGS, self.TS_2)
+        tkt.concatmsg()  # 完成tkt的拼接
+        ctktb = tkt.encryptTkt(k_tgs)
+        ctkt = str(ctktb.decode())  # 将tkt的类型由bytes转成str
+        self.TICKET_TGS = ctkt  # 赋值给AS2C的ticket_tgs字段
+        return ctkt  # 返回加密的tkt
+
     def show(self):
         self.updateT
         print(f'K_C_TGS: {self.K_C_TGS}, ID_TGS: {self.ID_TGS},', end=' ')
-        print(f'TS_2: {self.TS_2}, LT_2: {self.LT_2}')
+        print(f'TS_2: {self.TS_2}, LT_2: {self.LT_2}', end=' ')
+        print(f'TICKET_TGS: {self.TICKET_TGS}')
 
-    def concatmsg(self):
-        MSG_AS2C = self.K_C_TGS + \
-            msg_i2s(self.ID_TGS, LEN_ID) + \
-            msg_i2s(self.TS_2, LEN_TS) + \
-            msg_i2s(self.LT_2, LEN_LT)
+    def concatmsg(self):  # 返回明文AS2C报文
+        if not self.TICKET_TGS:  # ticket为空
+            MSG_AS2C = self.K_C_TGS + \
+                msg_i2s(self.ID_TGS, LEN_ID) + \
+                msg_i2s(self.TS_2, LEN_TS) + \
+                msg_i2s(self.LT_2, LEN_LT)
+        elif len(self.TICKET_TGS) == DLEN_CTKT:  # 加密后tkt长度为80
+            MSG_AS2C = self.K_C_TGS + \
+                msg_i2s(self.ID_TGS, LEN_ID) + \
+                msg_i2s(self.TS_2, LEN_TS) + \
+                msg_i2s(self.LT_2, LEN_LT) + \
+                str(self.TICKET_TGS)
         return MSG_AS2C
 
 
 if __name__ == '__main__':
     # !由于精度较高,临时生成的时间戳可能导致时间比较不同(ticket里的和ticket外的)
-    # *别忘了还有首部没写,记得加上偏移量 / 或者剥去首部再调用类方法
-    msg1 = C2AS(1, 1)
-    msg1.show()
-    m1 = msg1.concatmsg()
-    print(m1, len(m1))
+    # !别忘了还有首部没写,记得加上偏移量 / 或者剥去首部再调用类方法
+    # msg1 = C2AS(1, 1)
+    # msg1.show()
+    # m1 = msg1.concatmsg()
+    # print(m1, len(m1))
 
-    msg11 = C2AS.getMsg(m1)
-    msg11.show()
-
-    msg2 = AS2C(1, 6000)
-    msg2.show()
-    m2 = msg2.concatmsg()
-    print(m2, len(m2))
+    # msg11 = C2AS.getMsg(m1)
+    # msg11.show()
 
     # msg22 = AS2C.getMsg(m2)
     # msg22.show()
@@ -236,10 +270,18 @@ if __name__ == '__main__':
     # tm.sleep(1)
     # print(testmsg1.TS_1)
 
-    tkt1 = TICKET(1, '127001', 2, 6000)
-    tkt1.show()
-    tkt1.concatmsg()
-    # tkt11 = tkt1.concatmsg()
-    # print(tkt11, len(tkt11))
-    ctkt1 = tkt1.encryptTkt(msg2.K_C_TGS)
-    print(msg2.K_C_TGS, ctkt1, len(ctkt1))
+    msg2 = AS2C(1, DEFAULT_LT)
+    # tkt1 = TICKET(1, '127001', 2, 6000)
+    # tkt1.show()
+    # tkt1.concatmsg()
+    # # tkt11 = tkt1.concatmsg()
+    # # print(tkt11, len(tkt11))
+    # ctkt1 = tkt1.encryptTkt(msg2.K_C_TGS)
+    # print(msg2.K_C_TGS, ctkt1, len(ctkt1))
+    # msg2.TICKET_TGS = ctkt1
+    # msg2.show()
+    # m2 = msg2.concatmsg()
+    # print(m2, len(m2))
+    msg2.creatTkt('127001')
+    msg22 = msg2.concatmsg()
+    print(msg22, len(msg22))

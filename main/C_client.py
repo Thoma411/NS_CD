@@ -1,12 +1,12 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 00:55:14
-LastEditTime: 2023-05-11 17:27:55
+LastEditTime: 2023-05-13 09:12:05
 Description: hotspot 192.168.137.1
 '''
 import socket as sk
 import time as tm
-import cryptMethod.messageFormat as mf
+import messageFormat as mf
 
 AS_IP = '192.168.137.1'
 TGS_IP = '192.168.137.1'
