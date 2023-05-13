@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-13 10:31:36
+LastEditTime: 2023-05-13 11:07:14
 Description: message definition
 '''
 import datetime as dt
@@ -23,6 +23,7 @@ DLEN_CTKT = 80  # 常规加密ticket长度
 DEFAULT_KEY = '00000000'  # 默认初始化密钥(全局)
 DEFAULT_TS = '0000000000'  # 默认初始化时间
 DEFAULT_LT = '6000'  # 默认有效期
+DEFAULT_REDD = '0000'  # 默认冗余字段
 
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
@@ -60,6 +61,23 @@ def msg_rndKey(dgt: int = 8):  # 生成定长随机字符串,默认8位
     '''dgt: 生成字符串位数'''
     rnd_str = ''.join(rd.sample(st.ascii_letters + st.digits, dgt))
     return rnd_str
+
+
+class MSG_HEAD:  # 首部字段定义
+    H_LIGAL = 00  # 报头 判断合法性
+    TYPE_EX = 00  # 外部类型(大类)
+    TYPE_IN = 00  # 内部类型(小类)
+    TS_HEAD = None  # 时间戳
+    LEN_MTEXT = 00  # 正文长度
+    H_REDUND = DEFAULT_REDD  # 冗余
+
+    def __init__(self, h_ligal, type_ex, type_in, ts_head, len_mtext):
+        self.H_LIGAL = h_ligal
+        self.TYPE_EX = type_ex
+        self.TYPE_IN = type_in
+        self.TS_HEAD = ts_head
+        self.LEN_MTEXT = len_mtext
+        pass
 
 
 class TICKET:  # ticket内部字段定义
@@ -121,7 +139,7 @@ class TICKET:  # ticket内部字段定义
         return cipherTktH
 
     def decryptTkt(self, key_share: 'str|bytes'):  # 对整个ticket解密
-        
+        # TODO:预留方法,TGS调用
         return
 
 
@@ -220,7 +238,7 @@ class AS2C:  # AS->C 报文字段定义
         self.TS_2 = msg_getTime()
         return self.TS_2
 
-    def creatTkt(self, ad_c, k_tgs=DKEY_TGS):  # *再调用此方法生成加密tkt
+    def createTkt(self, ad_c, k_tgs=DKEY_TGS):  # *再调用此方法生成加密tkt
         tkt = TICKET(self.ID_C, ad_c, self.ID_TGS,
                      self.LT_2, self.K_C_TGS, self.TS_2)
         tkt.concatmsg()  # 完成tkt的拼接
@@ -228,6 +246,10 @@ class AS2C:  # AS->C 报文字段定义
         ctkt = str(ctktb.decode())  # 将tkt的类型由bytes转成str
         self.TICKET_TGS = ctkt  # 赋值给AS2C的ticket_tgs字段
         return ctkt  # 返回加密的tkt
+
+    def unpackTkt(self, k_tgs=DKEY_TGS):  # *TGS收到tkt后调用此方法解密
+        # TODO:预留方法,TGS调用
+        return
 
     def show(self):
         self.updateT
@@ -282,6 +304,6 @@ if __name__ == '__main__':
     # msg2.show()
     # m2 = msg2.concatmsg()
     # print(m2, len(m2))
-    msg2.creatTkt('127001')
+    msg2.createTkt('127001')
     msg22 = msg2.concatmsg()
     print(msg22, len(msg22))
