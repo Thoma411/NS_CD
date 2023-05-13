@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-13 11:07:14
+LastEditTime: 2023-05-13 16:09:07
 Description: message definition
 '''
 import datetime as dt
@@ -10,6 +10,18 @@ import string as st
 import time as tm
 import cyptoDES as cd
 
+'''
+首部字段长度定义
+'''
+LEN_LEGAL = 2  # 合法性判断长度
+LEN_EXTYPE = 2  # 外部类型长度
+LEN_INTYPE = 2  # 内部类型长度
+LEN_MTEXT = 4  # 定义正文字段长度
+LEN_REDUND = 4  # 冗余字段长度
+
+'''
+控制报文字段长度定义
+'''
 LEN_ID = 2  # 编号长度
 LEN_AD = 6  # 地址长度
 LEN_TS = 10  # 时间戳长度
@@ -20,6 +32,9 @@ DLEN_ID = 1  # 常规ID扩充前的长度
 DLEN_TS = 9  # 常规TS扩充前的长度
 DLEN_CTKT = 80  # 常规加密ticket长度
 
+'''
+部分字段默认定义
+'''
 DEFAULT_KEY = '00000000'  # 默认初始化密钥(全局)
 DEFAULT_TS = '0000000000'  # 默认初始化时间
 DEFAULT_LT = '6000'  # 默认有效期
@@ -27,6 +42,9 @@ DEFAULT_REDD = '0000'  # 默认冗余字段
 
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
+
+
+'''-----调用函数及方法-----'''
 
 
 def msg_i2s(nu: 'int|str', lo: int):  # 类型转换并扩充报文至目标长度
@@ -63,21 +81,67 @@ def msg_rndKey(dgt: int = 8):  # 生成定长随机字符串,默认8位
     return rnd_str
 
 
-class MSG_HEAD:  # 首部字段定义
+'''-----控制报文类-----'''
+
+
+class HEAD:  # 首部字段定义
     H_LIGAL = 00  # 报头 判断合法性
     TYPE_EX = 00  # 外部类型(大类)
     TYPE_IN = 00  # 内部类型(小类)
     TS_HEAD = None  # 时间戳
-    LEN_MTEXT = 00  # 正文长度
-    H_REDUND = DEFAULT_REDD  # 冗余
+    LEN_MTEXT = 0000  # 正文长度
+    H_REDUND = DEFAULT_REDD  # 冗余 默认4位
 
-    def __init__(self, h_ligal, type_ex, type_in, ts_head, len_mtext):
+    def __init__(self, h_ligal, type_ex, type_in,  len_mtext, ts_head=None):
         self.H_LIGAL = h_ligal
         self.TYPE_EX = type_ex
         self.TYPE_IN = type_in
-        self.TS_HEAD = ts_head
         self.LEN_MTEXT = len_mtext
-        pass
+        if ts_head is not None:
+            self.TS_HEAD = ts_head
+        else:
+            self.TS_HEAD = msg_getTime()
+
+    @classmethod
+    def getHead(cls, msg_head: str):  # 获取首部字段
+        h_ligal = msg_head[:LEN_LEGAL]
+        type_ex = msg_head[LEN_LEGAL:LEN_LEGAL + LEN_EXTYPE]
+        type_in = msg_head[LEN_LEGAL + LEN_EXTYPE:
+                           LEN_LEGAL + LEN_EXTYPE + LEN_INTYPE]
+        ts_head = msg_head[LEN_LEGAL + LEN_EXTYPE + LEN_INTYPE:
+                           LEN_LEGAL + LEN_EXTYPE + LEN_INTYPE + LEN_TS]
+        len_mtext = msg_head[LEN_LEGAL + LEN_EXTYPE + LEN_INTYPE + LEN_TS:
+                             LEN_LEGAL + LEN_EXTYPE + LEN_INTYPE + LEN_TS + LEN_MTEXT]
+        MSG_HEAD = HEAD(h_ligal, type_ex, type_in, ts_head, len_mtext)
+        return MSG_HEAD
+
+    @property
+    def updateT(self):  # 更新时间戳
+        return self.TS_HEAD
+
+    @updateT.setter
+    def updateT(self, ts_head):
+        self.TS_HEAD = ts_head
+
+    @updateT.getter
+    def updateT(self):
+        self.TS_HEAD = msg_getTime()  # 即时更新时间戳
+        return self.TS_HEAD
+
+    def show(self):
+        self.updateT
+        print(f'LIGAL: {self.H_LIGAL},', end=' ')
+        print(f'EX_TYPE: {self.TYPE_EX}, IN_TYPE: {self.TYPE_IN},', end=' ')
+        print(f'HEAD_TS: {self.TS_HEAD}, LEN_MTEXT: {self.LEN_MTEXT}')
+
+    def concatmsg(self):  # 拼接各字段
+        msg_head = msg_i2s(self.H_LIGAL, LEN_LEGAL) + \
+            msg_i2s(self.TYPE_EX, LEN_EXTYPE) + \
+            msg_i2s(self.TYPE_IN, LEN_INTYPE) + \
+            msg_i2s(self.TS_HEAD, LEN_TS) + \
+            msg_i2s(self.LEN_MTEXT, LEN_MTEXT) + \
+            self.H_REDUND
+        return msg_head
 
 
 class TICKET:  # ticket内部字段定义
@@ -307,3 +371,8 @@ if __name__ == '__main__':
     msg2.createTkt('127001')
     msg22 = msg2.concatmsg()
     print(msg22, len(msg22))
+
+    h1 = HEAD(0, 1, 1, len(msg22))
+    h1.show()
+    mh1 = h1.concatmsg()
+    print(mh1, len(mh1))
