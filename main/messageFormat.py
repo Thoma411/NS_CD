@@ -1,14 +1,14 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-13 16:09:07
+LastEditTime: 2023-05-13 16:38:02
 Description: message definition
 '''
 import datetime as dt
 import random as rd
 import string as st
 import time as tm
-import cyptoDES as cd
+import cyDES as cd
 
 '''
 首部字段长度定义
