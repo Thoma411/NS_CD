@@ -1,7 +1,7 @@
 '''
 Author: Thoma4
 Date: 2022-01-03 00:55:14
-LastEditTime: 2023-05-13 09:12:05
+LastEditTime: 2023-05-13 20:22:11
 Description: hotspot 192.168.137.1
 '''
 import socket as sk

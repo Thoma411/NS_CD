@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-14 23:32:18
+LastEditTime: 2023-05-15 01:05:45
 Description:
 '''
 import socket as sk
@@ -12,7 +12,7 @@ TGS_IP, TGS_PORT = '192.168.137.1', 8020
 V_IP, V_PORT = '192.168.137.1', 8030
 MAX_SIZE = 2048
 
-# !是否需要建立一个收包线程
+# *是否需要建立一个收包线程(疑似不需要)
 
 
 def handleC_AS2C(mt):  # 处理AS2C控制报文
@@ -63,7 +63,7 @@ def C_Recv(Dst_socket: sk):
         handler = msg_handles.get((msg_extp, msg_intp))
         if handler:
             k_share, tkt_next = handler(Rsm_msg)  # 相应函数处理
-            print(k_share, tkt_next)
+            print(k_share, tkt_next)  # TODO:写到这儿了
         else:  # 找不到处理函数
             print('no match func for msg.')
     else:  # 收包非法
@@ -71,11 +71,7 @@ def C_Recv(Dst_socket: sk):
     pass
 
 
-def C_Main():
-    # *:C-AS建立连接
-    ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    ASsock.connect((AS_IP, AS_PORT))
-
+def C_Send(Dst_socket: sk):
     # *生成C2AS报文
     '''
     变量说明:
@@ -91,7 +87,16 @@ def C_Main():
     Sba_c2as = Ssa_c2as.encode()  # str->bytes
 
     # *发送
-    ASsock.send(Sba_c2as)
+    Dst_socket.send(Sba_c2as)
+
+
+def C_Main():
+    # *:C-AS建立连接
+    ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    ASsock.connect((AS_IP, AS_PORT))
+
+    # *发送
+    C_Send(ASsock)
 
     # *接收
     C_Recv(ASsock)
