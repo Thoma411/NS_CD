@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-14 23:15:09
+LastEditTime: 2023-05-14 23:37:37
 Description: 
 '''
 import socket as sk
@@ -11,6 +11,7 @@ from MsgFieldDef import *
 SERVER_HOST = '192.168.137.1'
 AS_PORT = 8010
 MAX_SIZE = 2048
+MAX_LISTEN = 16
 
 
 def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
@@ -75,7 +76,7 @@ def AS_Recv(C_Socket: sk, cAddr):
 def AS_Main():
     sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     sock.bind(('', AS_PORT))
-    sock.listen(5)
+    sock.listen(MAX_LISTEN)
     print('AS_Tserver started...')
     while True:
         cSocket, cAddr = sock.accept()
