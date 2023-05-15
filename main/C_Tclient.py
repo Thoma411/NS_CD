@@ -1,53 +1,61 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-15 01:05:45
+LastEditTime: 2023-05-15 19:23:44
 Description:
 '''
 import socket as sk
 from MsgFieldDef import *
+
+ID_C = 10  # !每个C的ID需不同
+C_IP = '192.168.137.1'  # !IP需提前声明
 
 AS_IP, AS_PORT = '192.168.137.1', 8010
 TGS_IP, TGS_PORT = '192.168.137.1', 8020
 V_IP, V_PORT = '192.168.137.1', 8030
 MAX_SIZE = 2048
 
+C_KEY_CTGS = b''
+C_KEY_CV = b''
+
 # *是否需要建立一个收包线程(疑似不需要)
 
 
-def handleC_AS2C(mt):  # 处理AS2C控制报文
+def Chandle_AS2C(mt):  # 处理AS2C控制报文
     mt = mt.lstrip('b').strip("'")
-    # print(mt, len(mt))
     Rhm_as2c = cyDES.binascii.unhexlify(mt.encode())  # 得到加密正文
     Rsm_as2c = cyDES.DES_decry(Rhm_as2c, DKEY_C, 's')  # bytes直接解密为str
-    Rsm_as2c = Rsm_as2c.lstrip('b').strip('"').rstrip('\\x01')
-    # print(Rsm_as2c)
-    Rdm_as2c = str2dict(Rsm_as2c)
-    k_ctgs = Rdm_as2c['K_C_TGS']  # 获取共享密钥
+    Rsm_as2c = rmLRctlstr(Rsm_as2c)  # 字符串掐头去尾
+    Rdm_as2c = str2dict(Rsm_as2c)  # str->dict
+    k_ctgs = Rdm_as2c['K_C_TGS']  # 获取共享密钥k_ctgs
     Ticket_TGS = Rdm_as2c['mTKT_T']  # 获取Ticket_TGS
-    # print(mTKT_t)
-    # Rhm_tkt = cyDES.binascii.unhexlify(mTKT_t)
-    # Tkt = cyDES.DES_decry(Rhm_tkt, DKEY_TGS)
-    # print(Tkt)
     return k_ctgs, Ticket_TGS
 
 
-def handleC_TGS2C(mt):  # 处理TGS2C控制报文
+def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
+    mt = mt.lstrip('b').strip("'")
+    Rhm_tgs2c = cyDES.binascii.unhexlify(mt.encode())  # 得到加密正文
+    Rsm_tgs2c = cyDES.DES_decry(Rhm_tgs2c, k_ctgs, 's')  # bytes直接解密为str
+    Rsm_tgs2c = rmLRctlstr(Rsm_tgs2c)  # 字符串掐头去尾
+    Rdm_tgs2c = str2dict(Rsm_tgs2c)  # str->dict
+    # print(Rdm_tgs2c)
+    k_cv = Rdm_tgs2c['K_C_V']  # 获取共享密钥k_cv
+    Ticket_V = Rdm_tgs2c['mTKT_V']  # 获取Ticket_V
+    return k_cv, Ticket_V
+
+
+def Chandle_V2C(mt):  # 处理V2C控制报文
+    # TODO:
     pass
 
 
-def handleC_V2C(mt):  # 处理V2C控制报文
-    pass
+Dmsg_handles = {  # 数据报文处理函数字典
 
-
-msg_handles = {  # 消息处理函数字典
-    (EX_CTL, INC_AS2C): handleC_AS2C,
-    (EX_CTL, INC_TGS2C): handleC_TGS2C,
-    (EX_CTL, INC_V2C): handleC_V2C
 }
 
 
-def C_Recv(Dst_socket: sk):
+def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
+    '''报文在此分割为首部+正文, 正文在函数字典对应的方法处理'''
     Rba_msg = Dst_socket.recv(MAX_SIZE)  # 收
 
     # *初步分割
@@ -56,56 +64,137 @@ def C_Recv(Dst_socket: sk):
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
     # *匹配报文类型
-    if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
+    TMP_KEY, TMP_TKT = None, None  # 临时变量, 用于传出if-else中的key, tkt
+    retFlag: int = 0  # 根据该值决定返回值
+
+    if Rdh_msg['LIGAL'] == H_LIGAL:  # *收包合法
         msg_extp = Rdh_msg['EXTYPE']
         msg_intp = Rdh_msg['INTYPE']
-        # 在消息处理函数字典中匹配
-        handler = msg_handles.get((msg_extp, msg_intp))
-        if handler:
-            k_share, tkt_next = handler(Rsm_msg)  # 相应函数处理
-            print(k_share, tkt_next)  # TODO:写到这儿了
-        else:  # 找不到处理函数
-            print('no match func for msg.')
+
+        if msg_extp == EX_CTL:  # *控制报文
+            if msg_intp == INC_AS2C:
+                k_ctgs, tkt_tgs = Chandle_AS2C(Rsm_msg)  # 处理AS2C正文
+                TMP_KEY = k_ctgs  # 将返回值传出if-else
+                TMP_TKT = tkt_tgs
+                retFlag = 2
+            elif msg_intp == INC_TGS2C:
+                k_cv, tkt_v = Chandle_TGS2C(Rsm_msg, k_share)  # 处理TGS2C正文
+                TMP_KEY = k_cv  # 将返回值传出if-else
+                TMP_TKT = tkt_v
+                retFlag = 4
+            elif msg_intp == INC_V2C:
+                Chandle_V2C(Rsm_msg)  # 处理V2C正文
+                retFlag = 6
+            else:
+                print('no match func for control msg.')
+
+        elif msg_extp == EX_DAT:  # *数据报文
+            Dhandler = Dmsg_handles.get((msg_extp, msg_intp))
+            if Dhandler:
+                pass  # TODO:合并后数据报文处理方法
+            else:
+                print('no match func for data msg.')
+                pass
     else:  # 收包非法
         print('illegal package!')
-    pass
+
+    # *根据retFlag决定返回值
+    if retFlag == 2:  # 返回step2的共享密钥/票据
+        return TMP_KEY, TMP_TKT
+    elif retFlag == 4:  # 返回step4的共享密钥/票据
+        return TMP_KEY, TMP_TKT
+    elif retFlag == 6:  # 返回step6 V生成的时间戳
+        pass  # TODO:V2C
+    else:
+        pass
 
 
-def C_Send(Dst_socket: sk):
-    # *生成C2AS报文
+def create_C2AS():  # 生成C2AS报文
     '''
     变量说明:
     S/R - 发送/接收
     d/s/b/h - 字典/字符串/比特/16进制比特
     h/m/a - 首部/正文/拼接整体
     '''
-    Sdm_c2as = initM_C2AS_REQ(1, 1)
+    Sdm_c2as = initM_C2AS_REQ(ID_C, DID_TGS)
     Sdh_c2as = initHEAD(EX_CTL, INC_C2AS, len(Sdm_c2as))
     Ssm_c2as = dict2str(Sdm_c2as)  # dict->str
     Ssh_c2as = dict2str(Sdh_c2as)
     Ssa_c2as = Ssh_c2as + '|' + Ssm_c2as  # 拼接
     Sba_c2as = Ssa_c2as.encode()  # str->bytes
+    return Sba_c2as
 
+
+def create_C2TGS(c_ip, tkt_tgs, k_ctgs):  # 生成C2TGS报文
+    Sdm_ATCC = initATC(ID_C, c_ip)
+    Sdm_c2tgs = initM_C2TGS_REQ(
+        DID_V, tkt_tgs, Sdm_ATCC, k_ctgs)  # 生成正文并加密ATC_C
+    Sdh_c2tgs = initHEAD(EX_CTL, INC_C2TGS, len(Sdm_c2tgs))  # 生成首部
+    Ssm_c2tgs = dict2str(Sdm_c2tgs)  # dict->str
+    Ssh_c2tgs = dict2str(Sdh_c2tgs)
+    Ssa_c2tgs = Ssh_c2tgs + '|' + Ssm_c2tgs  # 拼接
+    Sba_c2tgs = Ssa_c2tgs.encode()  # str->bytes
+    return Sba_c2tgs
+
+
+def create_C2V():  # 生成C2V报文
+    pass
+
+
+def C_Send(Dst_socket: sk, dst_flag: int,
+           caddr_ip, tkt=None, k=None):
+    # *生成报文
+    Sba_msg = None
+    if dst_flag == 1:
+        Sba_msg = create_C2AS()  # *生成C2AS报文
+    elif dst_flag == 2:
+        Sba_msg = create_C2TGS(caddr_ip, tkt, k)  # *生成C2TGS报文
+    elif dst_flag == 3:
+        Sba_msg = create_C2V()  # TODO:生成C2V报文
     # *发送
-    Dst_socket.send(Sba_c2as)
+    Dst_socket.send(Sba_msg)
+    pass
 
 
 def C_Main():
-    # *:C-AS建立连接
+    client_ip = mf.IP2AD(C_IP)  # 已是str
+
+    # *C-AS建立连接
     ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     ASsock.connect((AS_IP, AS_PORT))
 
-    # *发送
-    C_Send(ASsock)
+    # *发送给AS
+    C_Send(ASsock, 1, client_ip)
 
-    # *接收
-    C_Recv(ASsock)
-    # print(response)
+    # *接收k_ctgs, tkt_tgs
+    k_ctgs, ticket_tgs = C_Recv(ASsock)
     ASsock.close()
+
+    # *C-TGS建立连接
+    TGSsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    TGSsock.connect((TGS_IP, TGS_PORT))
+
+    # *发送给TGS
+    C_Send(TGSsock, 2, client_ip, tkt=ticket_tgs, k=k_ctgs)
+
+    # *接收k_cv, tkt_v
+    k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
+    print(k_cv, '\n', tkt_v)
+    TGSsock.close()
+
+    # *C-V建立连接
+    exit()
+    Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    Vsock.connect((V_IP, V_PORT))
+
+    # *发送给V
 
 
 if __name__ == '__main__':
     C_Main()
+    # hostname = sk.gethostname()
+    # C_IP = sk.gethostbyname(hostname)
+    # print(C_IP)
     # print(C2AS_REQ)
     # packed_data = st.pack(
     #     '!HH10s', C2AS_REQ['ID_C'], C2AS_REQ['ID_TGS'], C2AS_REQ['TS_1'].encode('ascii'))
