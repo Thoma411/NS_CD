@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-15 17:04:11
+LastEditTime: 2023-05-15 18:08:53
 Description: 
 '''
 import re
@@ -210,12 +210,12 @@ def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # step3正文
 def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # step4正文
     mmsg_eg = M_TGS2C_REP
     mmsg_eg['K_C_V'] = k_cv  # 与TKT_V保持一致
-    mmsg_eg['ID_TGS'] = id_v
+    mmsg_eg['ID_V'] = id_v
     mmsg_eg['TS_4'] = mf.msg_getTime()
     mmsg_eg['LT_4'] = DEF_LT
     mTKT_V = cyDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
     hmTKT_V = cyDES.binascii.hexlify(mTKT_V)  # 转16进制
-    mmsg_eg['mTKT_T'] = hmTKT_V
+    mmsg_eg['mTKT_V'] = hmTKT_V
     return mmsg_eg
 
 
