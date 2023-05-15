@@ -1,5 +1,6 @@
 import json
 import socket
+import pymysql
 
 # 定义首部格式
 header = {
@@ -34,11 +35,10 @@ message2 = {
 }
 
 # 创建TCP/IP套接字并开始监听端口
-server_address = ('localhost', 10001)
+server_address = ('localhost', 10006)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind(server_address)
 sock.listen(1)
-
 
 while True:
     print("Waiting for a connection...")
@@ -61,10 +61,75 @@ while True:
         # 解析数据
         message = json.loads(data.decode('utf-8'))
         if "username" in message and "password" in message:
-            username = message["username"]
-            password = message["password"]
-            print("Received message 1: username=%s, password=%s" % (username, password))
-            # 处理第一个数据报文
+            if message["subtype"] == "01":  # 管理员
+                username = message["username"]
+                password = message["password"]
+                print("Received message 1: username=%s, password=%s" % (username, password))
+                admin_pass = None
+
+                # 数据库操作 查询管理员表
+                db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+                cursor = db.cursor()  # 使用cursor()方法获取操作游标
+                sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 0" % (
+                    message["username"])  # SQL 查询语句
+                try:
+                    # 执行SQL语句
+                    cursor.execute(sql)
+                    # 获取所有记录列表
+                    results = cursor.fetchall()
+                    for row in results:
+                        admin_id = row[0]
+                        admin_pass = row[1]
+                        # 打印结果
+                        print("admin_id=%s,admin_pass=%s" % (admin_id, admin_pass))
+                except:
+                    print("Error: unable to fecth data")
+                    # messagebox.showinfo('警告！', '用户名或密码不正确！')
+                db.close()  # 关闭数据库连接
+
+                print("正在登陆管理员管理界面")
+
+                if message["password"] == admin_pass:
+                    print(admin_pass)
+                    connection.sendall("01".encode())
+                    # AdminManage(self.window)  # 进入管理员操作界面
+                    # InfoManage(self.window)
+                else:
+                    pass
+            elif message["subtype"] == "02":  # 学生
+                username = message["username"]
+                password = message["password"]
+                print("Received message 1: username=%s, password=%s" % (username, password))
+                stu_pass = None
+
+                db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+                cursor = db.cursor()  # 使用cursor()方法获取操作游标
+                sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 1" % (
+                    message["username"])  # SQL 查询语句
+                try:
+                    # 执行SQL语句
+                    cursor.execute(sql)
+                    # 获取所有记录列表
+                    results = cursor.fetchall()
+                    for row in results:
+                        stu_id = row[0]
+                        stu_pass = row[1]
+                        stu_type = row[2]
+                        # 打印结果
+                        print("stu_id=%s,stu_pass=%s,stu_type=%s" % (stu_id, stu_pass, stu_type))
+                except:
+                    print("Error: unable to fecth data")
+                    # messagebox.showinfo('警告！', '用户名或密码不正确！')
+                db.close()  # 关闭数据库连接
+
+                print("正在登陆学生信息查看界面")
+
+                if message["password"] == stu_pass:
+                    print(stu_pass)
+                    connection.sendall("01".encode())  # 进入学生信息查看界面
+                else:
+                    pass
+
         elif "header" in message and "name" in message and "student_id" in message and "chinese_score" in message:
             name = message["name"]
             student_id = message["student_id"]
