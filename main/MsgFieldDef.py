@@ -1,10 +1,9 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-15 18:08:53
+LastEditTime: 2023-05-15 20:12:17
 Description: 
 '''
-import re
 import messageFormat as mf
 import cyDES
 
@@ -69,14 +68,14 @@ M_AS2C_REP = {
     'ID_TGS': int,
     'TS_2': int,
     'LT_2': int,
-    'mTKT_T': bytes  # 加密字符串
+    'mTKT_T': bytes  # 加密bytes
 }
 
 # step3 C->TGS
 M_C2TGS_REQ = {
     'ID_V': int,
-    'mTKT_T': bytes,  # 加密字符串
-    'mATC_C': bytes  # 加密字符串
+    'mTKT_T': bytes,  # 加密bytes
+    'mATC_C': bytes  # 加密bytes
 }
 
 # step4 TGS->C
@@ -85,18 +84,18 @@ M_TGS2C_REP = {
     'ID_V': int,
     'TS_4': int,
     'LT_4': int,
-    'mTKT_V': bytes  # 加密字符串
+    'mTKT_V': bytes  # 加密bytes
 }
 
 # step5 C->V
 M_C2V_REQ = {
-    'mTKT_V': bytes,  # 加密字符串
-    'mATC_C': bytes  # 加密字符串
+    'mTKT_V': bytes,  # 加密bytes
+    'mATC_C': bytes,  # 加密bytess
 }
 
 # step6 V->C
 M_V2C_REP = {
-    'TS_4': int
+    'TS_5': int
 }
 
 C2AS_REQ = {
@@ -216,6 +215,21 @@ def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # step4正文
     mTKT_V = cyDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
     hmTKT_V = cyDES.binascii.hexlify(mTKT_V)  # 转16进制
     mmsg_eg['mTKT_V'] = hmTKT_V
+    return mmsg_eg
+
+
+def initM_C2V_REQ(tkt_v, atc_c, k_cv):  # step5正文
+    mmsg_eg = M_C2V_REQ
+    mmsg_eg['mTKT_V'] = tkt_v  # 这里tkt_v沿用上一步,无需生成
+    mATC_C = cyDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
+    hmATC_C = cyDES.binascii.hexlify(mATC_C)  # 转16进制
+    mmsg_eg['mATC_C'] = hmATC_C
+    return mmsg_eg
+
+
+def initM_V2C_REP(ts_5):  # step6正文
+    mmsg_eg = M_V2C_REP
+    mmsg_eg['TS_5'] = ts_5
     return mmsg_eg
 
 
