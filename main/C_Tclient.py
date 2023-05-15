@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-15 20:24:42
+LastEditTime: 2023-05-15 21:46:07
 Description:
 '''
 import socket as sk
@@ -44,13 +44,18 @@ def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
     return k_cv, Ticket_V
 
 
-def Chandle_V2C(mt):  # 处理V2C控制报文
-    # TODO:
-    pass
+def Chandle_V2C(mt, k_cv):  # 处理V2C控制报文
+    mt = mt.lstrip('b').strip("'")
+    Rhm_v2c = cyDES.binascii.unhexlify(mt.encode())  # 得到加密正文
+    Rsm_v2c = cyDES.DES_decry(Rhm_v2c, k_cv, 's')  # bytes直接解密为str
+    Rsm_v2c = rmLRctlstr(Rsm_v2c)  # 字符串掐头去尾
+    Rdm_v2c = str2dict(Rsm_v2c)  # str->dict
+    ts_5 = Rdm_v2c['TS_5']  # 获取ts_5
+    return ts_5
 
 
 Dmsg_handles = {  # 数据报文处理函数字典
-
+    # TODO:预留存放数据报文处理函数
 }
 
 
@@ -64,31 +69,33 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
     # *匹配报文类型
-    TMP_KEY, TMP_TKT = None, None  # 临时变量, 用于传出if-else中的key, tkt
+    TMP_KEY, TMP_TKT, TMP_TS = None, None, None  # 临时变量, 将返回值传出if-else
     retFlag: int = 0  # 根据该值决定返回值
 
     if Rdh_msg['LIGAL'] == H_LIGAL:  # *收包合法
         msg_extp = Rdh_msg['EXTYPE']
         msg_intp = Rdh_msg['INTYPE']
 
-        if msg_extp == EX_CTL:  # *控制报文
+        # *控制报文
+        if msg_extp == EX_CTL:
             if msg_intp == INC_AS2C:
                 k_ctgs, tkt_tgs = Chandle_AS2C(Rsm_msg)  # 处理AS2C正文
-                TMP_KEY = k_ctgs  # 将返回值传出if-else
+                TMP_KEY = k_ctgs  # 将k_ctgs,tkt_tgs传出if-else
                 TMP_TKT = tkt_tgs
                 retFlag = 2
             elif msg_intp == INC_TGS2C:
                 k_cv, tkt_v = Chandle_TGS2C(Rsm_msg, k_share)  # 处理TGS2C正文
-                TMP_KEY = k_cv  # 将返回值传出if-else
+                TMP_KEY = k_cv  # 将k_cv,tkt_v传出if-else
                 TMP_TKT = tkt_v
                 retFlag = 4
             elif msg_intp == INC_V2C:
-                Chandle_V2C(Rsm_msg)  # 处理V2C正文
+                ts_5 = Chandle_V2C(Rsm_msg, k_share)  # 处理V2C正文
+                TMP_TS = ts_5  # 将ts_5传出if-else
                 retFlag = 6
             else:
                 print('no match func for control msg.')
-
-        elif msg_extp == EX_DAT:  # *数据报文
+        # *数据报文
+        elif msg_extp == EX_DAT:
             Dhandler = Dmsg_handles.get((msg_extp, msg_intp))
             if Dhandler:
                 pass  # TODO:合并后数据报文处理方法
@@ -104,7 +111,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     elif retFlag == 4:  # 返回step4的共享密钥/票据
         return TMP_KEY, TMP_TKT
     elif retFlag == 6:  # 返回step6 V生成的时间戳
-        pass  # TODO:V2C
+        return TMP_TS
     else:
         pass
 
@@ -186,7 +193,7 @@ def C_Main():
 
     # *接收k_cv, tkt_v
     k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
-    print(k_cv, '\n', tkt_v)
+    # print(k_cv, '\n', tkt_v)
     TGSsock.close()
 
     # *C-V建立连接
@@ -197,6 +204,8 @@ def C_Main():
     C_Send(Vsock, 3, client_ip, tkt_v, k_cv)
 
     # *接收mdTS_5
+    ts_5 = C_Recv(Vsock, k_cv)
+    print(ts_5)
 
 
 if __name__ == '__main__':
