@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-14 23:37:37
+LastEditTime: 2023-05-15 16:58:40
 Description: 
 '''
 import socket as sk
@@ -17,8 +17,8 @@ MAX_LISTEN = 16
 def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     Rdm_c2as = str2dict(mt)  # 正文str->dict
     id_c, id_tgs = Rdm_c2as['ID_C'], Rdm_c2as['ID_TGS']
-    c_ip = mf.IP2AD(caddr[0])
-    k_ctgs = mf.msg_rndKey()  # 生成共享密钥
+    c_ip = mf.IP2AD(caddr[0])  # IP字符串->6位str
+    k_ctgs = mf.msg_rndKey().encode()  # *生成共享密钥(bytes类型)
     Sdm_tktT = initTKT(k_ctgs, id_c, id_tgs, c_ip)  # 初始化tkt_tgs
     Sdm_as2c = initM_AS2C_REP(k_ctgs, id_tgs, Sdm_tktT)  # 生成正文as2c同时加密tkt
     # print(Sdm_as2c['mTKT_T'], len(Sdm_as2c['mTKT_T']))
@@ -29,7 +29,7 @@ def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     Shm_as2c = cyDES.binascii.hexlify(Sbm_as2c)  # 转16进制
     # print(Shm_as2c, len(Shm_as2c))
     Ssa_as2c = Ssh_as2c + '|' + str(Shm_as2c)  # 拼接str
-    return Ssa_as2c  # str+bytes
+    return Ssa_as2c  # str+str(bytes)
 
 
 msg_handles = {  # 消息处理函数字典
