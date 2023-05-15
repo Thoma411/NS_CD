@@ -1,9 +1,10 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-14 22:06:44
+LastEditTime: 2023-05-15 17:04:11
 Description: 
 '''
+import re
 import messageFormat as mf
 import cyDES
 
@@ -21,6 +22,9 @@ INC_V2C = 60
 
 DEF_LT = 6000  # 默认有效期
 
+DID_TGS = 20  # 默认TGS的ID
+DID_V = 30
+
 DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
@@ -35,31 +39,21 @@ MSG_HEAD = {
     'REDD': str
 }
 
-# Ticket_TGS
-TKT_T = {
-    'K_C_TGS': bytes,
+# Ticket_TGS/V
+TKT_A = {
+    'K_SHARE': bytes,  # K_C_TGS/K_C_V
     'ID_C': int,
     'AD_C': str,
-    'ID_TGS': int,
-    'TS_2': int,
-    'LT_2': int
-}
-
-# Ticket_V
-TKT_V = {
-    'K_C_V': bytes,
-    'ID_C': int,
-    'AD_C': str,
-    'ID_V': int,
-    'TS_4': int,
-    'LT_4': int
+    'ID_DST': int,  # 目标ID
+    'TS_A': int,  # 时间戳(共同)
+    'LT_A': int  # 有效期(共同)
 }
 
 # Authenticator_C
 ATC_C = {
     'ID_C': int,
     'AD_C': str,
-    'TS_3': int
+    'TS_A': int
 }
 
 # step1 C->AS
@@ -146,7 +140,14 @@ def str2dict(dstr: str):
     return dt
 
 
-def initHEAD(extp, intp, lmt):
+def rmLRctlstr(sstr: str) -> str:  # 清除首尾控制字符
+    sstr = sstr.lstrip('b').strip('"')
+    tmpLs = sstr.split('}')
+    sstr = tmpLs[0] + '}'
+    return sstr
+
+
+def initHEAD(extp, intp, lmt):  # 装载首部
     hmsg_eg = MSG_HEAD
     hmsg_eg['LIGAL'] = H_LIGAL
     hmsg_eg['EXTYPE'] = extp
@@ -157,15 +158,23 @@ def initHEAD(extp, intp, lmt):
     return hmsg_eg
 
 
-def initTKT(k_share, id_c, id_tgs, ad_c):
-    tmsg_eg = TKT_T
+def initTKT(k_share, id_c, id_dst, ad_c):  # 装载票据
+    tmsg_eg = TKT_A
     tmsg_eg['K_SHARE'] = k_share
     tmsg_eg['ID_C'] = id_c
-    tmsg_eg['ID_TGS'] = id_tgs
+    tmsg_eg['ID_DST'] = id_dst
     tmsg_eg['AD_C'] = ad_c
-    tmsg_eg['TS_2'] = mf.msg_getTime()
-    tmsg_eg['LT_2'] = DEF_LT
+    tmsg_eg['TS_A'] = mf.msg_getTime()
+    tmsg_eg['LT_A'] = DEF_LT
     return tmsg_eg
+
+
+def initATC(id_c, ad_c):  # 装载Authenticator_C
+    amsg_eg = ATC_C
+    amsg_eg['ID_C'] = id_c
+    amsg_eg['AD_C'] = ad_c
+    amsg_eg['TS_A'] = mf.msg_getTime()
+    return amsg_eg
 
 
 def initM_C2AS_REQ(id_c, id_tgs):  # step1正文
@@ -185,6 +194,28 @@ def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # step2正文
     mTKT_T = cyDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
     hmTKT_T = cyDES.binascii.hexlify(mTKT_T)  # 转16进制
     mmsg_eg['mTKT_T'] = hmTKT_T
+    return mmsg_eg
+
+
+def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # step3正文
+    mmsg_eg = M_C2TGS_REQ
+    mmsg_eg['ID_V'] = id_v
+    mmsg_eg['mTKT_T'] = tkt_tgs  # 这里tkt_tgs沿用上一步,无需生成
+    mATC_C = cyDES.DES_encry(str(atc_c), k_ctgs)  # 使用k_ctgs加密ATC_C
+    hmATC_C = cyDES.binascii.hexlify(mATC_C)  # 转16进制
+    mmsg_eg['mATC_C'] = hmATC_C
+    return mmsg_eg
+
+
+def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # step4正文
+    mmsg_eg = M_TGS2C_REP
+    mmsg_eg['K_C_V'] = k_cv  # 与TKT_V保持一致
+    mmsg_eg['ID_TGS'] = id_v
+    mmsg_eg['TS_4'] = mf.msg_getTime()
+    mmsg_eg['LT_4'] = DEF_LT
+    mTKT_V = cyDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
+    hmTKT_V = cyDES.binascii.hexlify(mTKT_V)  # 转16进制
+    mmsg_eg['mTKT_T'] = hmTKT_V
     return mmsg_eg
 
 
