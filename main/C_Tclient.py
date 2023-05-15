@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-15 19:23:44
+LastEditTime: 2023-05-15 20:24:42
 Description:
 '''
 import socket as sk
@@ -116,41 +116,48 @@ def create_C2AS():  # 生成C2AS报文
     d/s/b/h - 字典/字符串/比特/16进制比特
     h/m/a - 首部/正文/拼接整体
     '''
-    Sdm_c2as = initM_C2AS_REQ(ID_C, DID_TGS)
-    Sdh_c2as = initHEAD(EX_CTL, INC_C2AS, len(Sdm_c2as))
-    Ssm_c2as = dict2str(Sdm_c2as)  # dict->str
-    Ssh_c2as = dict2str(Sdh_c2as)
+    Sdm_c2as = initM_C2AS_REQ(ID_C, DID_TGS)  # 生成正文
+    Sdh_c2as = initHEAD(EX_CTL, INC_C2AS, len(Sdm_c2as))  # 生成首部
+    Ssm_c2as = dict2str(Sdm_c2as)  # 正文dict->str
+    Ssh_c2as = dict2str(Sdh_c2as)  # 首部dict->str
     Ssa_c2as = Ssh_c2as + '|' + Ssm_c2as  # 拼接
     Sba_c2as = Ssa_c2as.encode()  # str->bytes
     return Sba_c2as
 
 
 def create_C2TGS(c_ip, tkt_tgs, k_ctgs):  # 生成C2TGS报文
-    Sdm_ATCC = initATC(ID_C, c_ip)
+    Sdm_ATCC = initATC(ID_C, c_ip)  # 生成Authenticator_C
     Sdm_c2tgs = initM_C2TGS_REQ(
-        DID_V, tkt_tgs, Sdm_ATCC, k_ctgs)  # 生成正文并加密ATC_C
+        DID_V, tkt_tgs, Sdm_ATCC, k_ctgs)  # 生成正文并用k_ctgs加密ATC_C
     Sdh_c2tgs = initHEAD(EX_CTL, INC_C2TGS, len(Sdm_c2tgs))  # 生成首部
-    Ssm_c2tgs = dict2str(Sdm_c2tgs)  # dict->str
-    Ssh_c2tgs = dict2str(Sdh_c2tgs)
+    Ssm_c2tgs = dict2str(Sdm_c2tgs)  # 正文dict->str
+    Ssh_c2tgs = dict2str(Sdh_c2tgs)  # 首部dict->str
     Ssa_c2tgs = Ssh_c2tgs + '|' + Ssm_c2tgs  # 拼接
     Sba_c2tgs = Ssa_c2tgs.encode()  # str->bytes
     return Sba_c2tgs
 
 
-def create_C2V():  # 生成C2V报文
-    pass
+def create_C2V(c_ip, tkt_v, k_cv):  # 生成C2V报文
+    Sdm_ATCC = initATC(ID_C, c_ip)  # 生成Authenticator_C
+    Sdm_c2v = initM_C2V_REQ(tkt_v, Sdm_ATCC, k_cv)  # 生成正文并用k_cv加密ATC_C
+    Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
+    Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
+    Ssh_c2v = dict2str(Sdh_c2v)  # 首部dict->str
+    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v  # 拼接
+    Sba_c2v = Ssa_c2v.encode()  # str->bytes
+    return Sba_c2v
 
 
 def C_Send(Dst_socket: sk, dst_flag: int,
-           caddr_ip, tkt=None, k=None):
+           caddr_ip, tkt=None, k_share=None):
     # *生成报文
     Sba_msg = None
     if dst_flag == 1:
         Sba_msg = create_C2AS()  # *生成C2AS报文
     elif dst_flag == 2:
-        Sba_msg = create_C2TGS(caddr_ip, tkt, k)  # *生成C2TGS报文
+        Sba_msg = create_C2TGS(caddr_ip, tkt, k_share)  # *生成C2TGS报文
     elif dst_flag == 3:
-        Sba_msg = create_C2V()  # TODO:生成C2V报文
+        Sba_msg = create_C2V(caddr_ip, tkt, k_share)  # *生成C2V报文
     # *发送
     Dst_socket.send(Sba_msg)
     pass
@@ -175,7 +182,7 @@ def C_Main():
     TGSsock.connect((TGS_IP, TGS_PORT))
 
     # *发送给TGS
-    C_Send(TGSsock, 2, client_ip, tkt=ticket_tgs, k=k_ctgs)
+    C_Send(TGSsock, 2, client_ip, tkt=ticket_tgs, k_share=k_ctgs)
 
     # *接收k_cv, tkt_v
     k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
@@ -183,11 +190,13 @@ def C_Main():
     TGSsock.close()
 
     # *C-V建立连接
-    exit()
     Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     Vsock.connect((V_IP, V_PORT))
 
     # *发送给V
+    C_Send(Vsock, 3, client_ip, tkt_v, k_cv)
+
+    # *接收mdTS_5
 
 
 if __name__ == '__main__':
