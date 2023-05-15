@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-15 16:58:40
+LastEditTime: 2023-05-15 18:23:40
 Description: 
 '''
 import socket as sk
@@ -74,16 +74,16 @@ def AS_Recv(C_Socket: sk, cAddr):
 
 
 def AS_Main():
-    sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sock.bind(('', AS_PORT))
-    sock.listen(MAX_LISTEN)
+    ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    ASsock.bind(('', AS_PORT))
+    ASsock.listen(MAX_LISTEN)
     print('AS_Tserver started...')
     while True:
-        cSocket, cAddr = sock.accept()
+        cSocket, cAddr = ASsock.accept()
         print('conn:', cAddr)
         thr = th.Thread(target=AS_Recv, args=(cSocket, cAddr))
         thr.start()
-    sock.close()
+    ASsock.close()
 
 
 if __name__ == '__main__':
