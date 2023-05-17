@@ -1,11 +1,12 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-17 10:45:29
+LastEditTime: 2023-05-18 00:22:43
 Description: 
 '''
 import messageFormat as mf
 import cyDES
+import cyRSA
 
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
@@ -199,7 +200,7 @@ def initATC(id_c, ad_c):  # 装载Authenticator_C
     return amsg_eg
 
 
-def initSIGN(digest, sk_src):  # 生成数字签名
+def initSIGN(sk_src, mtext):  # 生成数字签名
     return
 
 

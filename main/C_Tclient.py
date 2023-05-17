@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-17 11:41:45
+LastEditTime: 2023-05-17 23:03:09
 Description:
 '''
 import socket as sk
@@ -114,6 +114,10 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         return TMP_TS
     else:
         pass
+
+
+def create_C2AS_CTF():  # 生成C2AS_CTF报文
+    return
 
 
 def create_C2AS():  # 生成C2AS报文
