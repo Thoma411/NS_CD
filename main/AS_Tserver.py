@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-15 18:23:40
+LastEditTime: 2023-05-17 11:38:55
 Description: 
 '''
 import socket as sk
@@ -12,6 +12,10 @@ SERVER_HOST = '192.168.137.1'
 AS_PORT = 8010
 MAX_SIZE = 2048
 MAX_LISTEN = 16
+
+
+def handle_C2AS_CTF():  # 处理C2AS_CTF报文
+    pass
 
 
 def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
@@ -32,9 +36,12 @@ def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     return Ssa_as2c  # str+str(bytes)
 
 
-msg_handles = {  # 消息处理函数字典
+Cmsg_handles = {  # 控制报文处理函数字典
+    (EX_CTL, INC_C2AS_CTF): handle_C2AS_CTF,
     (EX_CTL, INC_C2AS): handle_C2AS
 }
+
+Dmsg_handles = {}  # 数据报文处理函数字典
 
 
 def AS_Recv(C_Socket: sk, cAddr):
@@ -53,13 +60,18 @@ def AS_Recv(C_Socket: sk, cAddr):
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
             msg_extp = Rdh_msg['EXTYPE']
             msg_intp = Rdh_msg['INTYPE']
+
+            # *数据报文
             if msg_extp == EX_DAT:
                 print('This is a dataMsg.')
+
+            # *控制报文
             elif msg_extp == EX_CTL:
-                # 在消息处理函数字典中匹配
-                handler = msg_handles.get((msg_extp, msg_intp))
-                if handler:
-                    Ssa_msg = handler(Rsm_msg, cAddr)  # 相应函数处理
+                if msg_intp == INC_C2AS_CTF:
+                    # TODO:处理CTF报文
+                    pass
+                elif msg_intp == INC_C2AS:
+                    Ssa_msg = handle_C2AS(Rsm_msg, cAddr)  # 处理C2AS正文
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
