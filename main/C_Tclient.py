@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-15 21:46:07
+LastEditTime: 2023-05-17 11:41:45
 Description:
 '''
 import socket as sk
@@ -14,9 +14,6 @@ AS_IP, AS_PORT = '192.168.137.1', 8010
 TGS_IP, TGS_PORT = '192.168.137.1', 8020
 V_IP, V_PORT = '192.168.137.1', 8030
 MAX_SIZE = 2048
-
-C_KEY_CTGS = b''
-C_KEY_CV = b''
 
 # *是否需要建立一个收包线程(疑似不需要)
 
@@ -78,7 +75,10 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
 
         # *控制报文
         if msg_extp == EX_CTL:
-            if msg_intp == INC_AS2C:
+            if msg_intp == INC_AS2C_CTF:
+                # TODO:处理CTF报文
+                pass
+            elif msg_intp == INC_AS2C:
                 k_ctgs, tkt_tgs = Chandle_AS2C(Rsm_msg)  # 处理AS2C正文
                 TMP_KEY = k_ctgs  # 将k_ctgs,tkt_tgs传出if-else
                 TMP_TKT = tkt_tgs

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-15 20:12:17
+LastEditTime: 2023-05-17 10:45:29
 Description: 
 '''
 import messageFormat as mf
@@ -12,6 +12,8 @@ EX_CTL = 10  # 控制报文
 EX_DAT = 20  # 数据报文
 
 # INC_:控制报文类型
+INC_C2AS_CTF = 95  # C->AS 申请证书报文
+INC_AS2C_CTF = 96  # AS->C 回复证书报文
 INC_C2AS = 10
 INC_AS2C = 20
 INC_C2TGS = 30
@@ -22,13 +24,18 @@ INC_V2C = 60
 DEF_LT = 6000  # 默认有效期
 
 DID_TGS = 20  # 默认TGS的ID
-DID_V = 30
+DID_V = 30  # 默认V的ID
+
+PKEY_C = '00000000'  # C的公钥
+SKEY_C = '00000000'  # C的私钥
+PKEY_AS = '00000000'  # AS的公钥
+SKEY_AS = '00000000'  # AS的私钥
 
 DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
 
-# 首部
+# 通用首部
 MSG_HEAD = {
     'LIGAL': int,
     'EXTYPE': int,
@@ -55,14 +62,30 @@ ATC_C = {
     'TS_A': int
 }
 
-# step1 C->AS
+# certification step1 C->AS
+M_C2AS_CTF = {
+    'ID_C': int,
+    'PK_C': bytes,  # C的公钥
+    'SIG_S': bytes,  # C的数字签名
+    'TS_0': int
+}
+
+# certification step2 AS->C
+M_AS2C_CTF = {
+    'ID_AS': int,
+    'PK_AS': bytes,  # AS的公钥
+    'K_C': bytes,  # 下一步会话的对称钥
+    'SIG_AS': bytes  # AS的数字签名
+}
+
+# kerberos step1 C->AS
 M_C2AS_REQ = {
     'ID_C': int,
     'ID_TGS': int,
     'TS_1': int
 }
 
-# step2 AS->C
+# kerberos step2 AS->C
 M_AS2C_REP = {
     'K_C_TGS': bytes,
     'ID_TGS': int,
@@ -71,14 +94,14 @@ M_AS2C_REP = {
     'mTKT_T': bytes  # 加密bytes
 }
 
-# step3 C->TGS
+# kerberos step3 C->TGS
 M_C2TGS_REQ = {
     'ID_V': int,
     'mTKT_T': bytes,  # 加密bytes
     'mATC_C': bytes  # 加密bytes
 }
 
-# step4 TGS->C
+# kerberos step4 TGS->C
 M_TGS2C_REP = {
     'K_C_V': bytes,
     'ID_V': int,
@@ -87,13 +110,13 @@ M_TGS2C_REP = {
     'mTKT_V': bytes  # 加密bytes
 }
 
-# step5 C->V
+# kerberos step5 C->V
 M_C2V_REQ = {
     'mTKT_V': bytes,  # 加密bytes
     'mATC_C': bytes,  # 加密bytess
 }
 
-# step6 V->C
+# kerberos step6 V->C
 M_V2C_REP = {
     'TS_5': int
 }
@@ -176,7 +199,25 @@ def initATC(id_c, ad_c):  # 装载Authenticator_C
     return amsg_eg
 
 
-def initM_C2AS_REQ(id_c, id_tgs):  # step1正文
+def initSIGN(digest, sk_src):  # 生成数字签名
+    return
+
+
+def initM_C2AS_CTF(id_c, pk_c, sig_c):  # certification step1正文
+    mmsg_eg = M_C2AS_CTF
+    mmsg_eg['ID_C'] = id_c
+    mmsg_eg['PK_C'] = pk_c
+    mmsg_eg['SIG_C'] = sig_c
+    mmsg_eg['TS_0'] = mf.msg_getTime()
+    return mmsg_eg
+
+
+def initM_AS2C_CTF():
+    mmsg_eg = M_AS2C_CTF
+    return
+
+
+def initM_C2AS_REQ(id_c, id_tgs):  # kerberos step1正文
     mmsg_eg = M_C2AS_REQ
     mmsg_eg['ID_C'] = id_c
     mmsg_eg['ID_TGS'] = id_tgs
@@ -184,7 +225,7 @@ def initM_C2AS_REQ(id_c, id_tgs):  # step1正文
     return mmsg_eg
 
 
-def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # step2正文
+def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # kerberos step2正文
     mmsg_eg = M_AS2C_REP
     mmsg_eg['K_C_TGS'] = k_ctgs  # 与TKT_T保持一致
     mmsg_eg['ID_TGS'] = id_tgs
@@ -196,7 +237,7 @@ def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # step2正文
     return mmsg_eg
 
 
-def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # step3正文
+def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # kerberos step3正文
     mmsg_eg = M_C2TGS_REQ
     mmsg_eg['ID_V'] = id_v
     mmsg_eg['mTKT_T'] = tkt_tgs  # 这里tkt_tgs沿用上一步,无需生成
@@ -206,7 +247,7 @@ def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # step3正文
     return mmsg_eg
 
 
-def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # step4正文
+def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # kerberos step4正文
     mmsg_eg = M_TGS2C_REP
     mmsg_eg['K_C_V'] = k_cv  # 与TKT_V保持一致
     mmsg_eg['ID_V'] = id_v
@@ -218,7 +259,7 @@ def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # step4正文
     return mmsg_eg
 
 
-def initM_C2V_REQ(tkt_v, atc_c, k_cv):  # step5正文
+def initM_C2V_REQ(tkt_v, atc_c, k_cv):  # kerberos step5正文
     mmsg_eg = M_C2V_REQ
     mmsg_eg['mTKT_V'] = tkt_v  # 这里tkt_v沿用上一步,无需生成
     mATC_C = cyDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
@@ -227,7 +268,7 @@ def initM_C2V_REQ(tkt_v, atc_c, k_cv):  # step5正文
     return mmsg_eg
 
 
-def initM_V2C_REP(ts_5):  # step6正文
+def initM_V2C_REP(ts_5):  # kerberos step6正文
     mmsg_eg = M_V2C_REP
     mmsg_eg['TS_5'] = ts_5
     return mmsg_eg
