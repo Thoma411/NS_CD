@@ -1,5 +1,6 @@
 import json
 import socket
+import threading
 import pymysql
 
 # 定义首部格式
@@ -34,29 +35,14 @@ message2 = {
     "english_score": "int",
 }
 
-# 创建TCP/IP套接字并开始监听端口
-server_address = ('localhost', 10006)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.bind(server_address)
-sock.listen(1)
 
-while True:
-    print("Waiting for a connection...")
-    # 等待连接
-    connection, client_address = sock.accept()
+def handle_client(connection, client_address):
     try:
         print("Connection from", client_address)
+
         # 接收数据
         data = connection.recv(1024)
         print("Received:", repr(data))
-        # data = b""  # 初始化空的byte字符串
-        #
-        # # 持续接收数据，直到读取完整个请求
-        # while True:
-        #     received_data = connection.recv(1024)
-        #     if not received_data:
-        #         break  # 客户端关闭连接
-        #     data += received_data
 
         # 解析数据
         message = json.loads(data.decode('utf-8'))
@@ -83,7 +69,7 @@ while True:
                         # 打印结果
                         print("admin_id=%s,admin_pass=%s" % (admin_id, admin_pass))
                 except:
-                    print("Error: unable to fecth data")
+                    print("Error: unable to fetch data")
                     # messagebox.showinfo('警告！', '用户名或密码不正确！')
                 db.close()  # 关闭数据库连接
 
@@ -92,8 +78,6 @@ while True:
                 if message["password"] == admin_pass:
                     print(admin_pass)
                     connection.sendall("01".encode())
-                    # AdminManage(self.window)  # 进入管理员操作界面
-                    # InfoManage(self.window)
                 else:
                     pass
             elif message["subtype"] == "02":  # 学生
@@ -142,6 +126,26 @@ while True:
         else:
             print("Unknown message type")
 
-    finally:
-        # 关闭连接
+        # 当前请求处理完毕后可以关闭连接
         connection.close()
+        print(f"Closed connection: {client_address}")
+    except Exception as e:
+        print(f"Error occured on thread for {client_address}: {e}")
+        connection.close()
+
+
+if __name__ == '__main__':
+    SERVER_HOST = '0.0.0.0'
+    SERVER_PORT = 10006
+    BUFFER_SIZE = 1024
+
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((SERVER_HOST, SERVER_PORT))
+    server_socket.listen(1)
+
+    print(f"Server listening on {SERVER_HOST}:{SERVER_PORT}...")
+
+    while True:
+        connection, client_address = server_socket.accept()
+        t = threading.Thread(target=handle_client, args=(connection, client_address))
+        t.start()
