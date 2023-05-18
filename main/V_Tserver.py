@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-15 21:46:32
+LastEditTime: 2023-05-17 23:01:50
 Description: 
 '''
 import socket as sk
@@ -76,7 +76,7 @@ def V_Recv(C_Socket: sk, cAddr):
                 # 在消息处理函数字典中匹配
                 handler = Cmsg_handles.get((msg_extp, msg_intp))
                 if handler:
-                    Ssa_msg = handler(Rsm_msg, cAddr)  # 相应函数处理=
+                    Ssa_msg = handler(Rsm_msg, cAddr)  # 相应函数处理
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
