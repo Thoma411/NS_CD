@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-18 20:32:16
+LastEditTime: 2023-05-18 22:35:23
 Description: 
 '''
 import socket as sk
@@ -19,7 +19,7 @@ def handle_C2TGS(mt, caddr):  # 处理C2TGS报文 mt:str
     # print(Rdm_c2tgs)
     id_v, tkt_tgs, atc_c = Rdm_c2tgs['ID_V'], Rdm_c2tgs['mTKT_T'], Rdm_c2tgs['mATC_C']
 
-    c_ip = mf.IP2AD(caddr[0])  # IP字符串->6位str
+    c_ip = IP2AD(caddr[0])  # IP字符串->6位str
 
     # *解密Ticket_TGS, 获得K_C_TGS
     Rsm_tktT = cbDES.DES_decry(tkt_tgs, DKEY_TGS)  # *解密为str
@@ -34,7 +34,7 @@ def handle_C2TGS(mt, caddr):  # 处理C2TGS报文 mt:str
     id_c = Rdm_ATCC['ID_C']
 
     # *生成Ticket_V 正文 首部
-    k_cv = mf.msg_rndKey()  # *生成共享密钥(str类型)
+    k_cv = msg_rndKey()  # *生成共享密钥(str类型)
     Sdm_tktV = initTKT(k_cv, id_c, id_v, c_ip)  # 初始化tkt_v
     Sdm_tgs2c = initM_TGS2C_REP(k_cv, id_v, Sdm_tktV)  # 生成正文tgs2c同时加密tkt
     Sdh_tgs2c = initHEAD(EX_CTL, INC_TGS2C, len(Sdm_tgs2c))  # 生成首部

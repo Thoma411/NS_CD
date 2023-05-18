@@ -1,10 +1,13 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-18 20:34:41
+LastEditTime: 2023-05-18 22:34:37
 Description: 
 '''
-import messageFormat as mf
+
+import datetime as dt
+import random as rd
+import string as st
 import cbDES
 import cyRSA
 
@@ -187,12 +190,37 @@ def rmLRctlstr(sstr: str) -> str:  # 清除首尾控制字符
     return sstr
 
 
+def IP2AD(IP: str):  # IP -> 6位AD字段
+    IPsplit = IP.split('.')
+    IPstr = []
+    for i in IPsplit:
+        i = i.zfill(3)
+        IPstr.append(i)
+        msg_ad = ''.join(IPstr)
+    return msg_ad[6:]
+
+
+def msg_getTime(dgt: int = 4):  # 获取当前时间,默认精确到.后4位
+    '''dgt: 时间精确到小数点后 dgt 位'''
+    now_time = dt.datetime.now().strftime('%H%M%S%f')[:-(6 - dgt)]
+    return now_time
+
+
+def msg_rndKey(dgt: int = 8, retType: str = 's'):  # 生成定长随机字符串,默认8位
+    '''dgt: 生成字符串位数'''
+    rnd_str = ''.join(rd.sample(st.ascii_letters + st.digits, dgt))
+    if retType == 's':
+        return rnd_str
+    else:
+        return rnd_str.encode()
+
+
 def initHEAD(extp, intp, lmt):  # 装载首部
     hmsg_eg = MSG_HEAD
     hmsg_eg['LIGAL'] = H_LIGAL
     hmsg_eg['EXTYPE'] = extp
     hmsg_eg['INTYPE'] = intp
-    hmsg_eg['TS_H'] = mf.msg_getTime()
+    hmsg_eg['TS_H'] = msg_getTime()
     hmsg_eg['LEN_MT'] = lmt
     hmsg_eg['REDD'] = '0000'
     return hmsg_eg
@@ -204,7 +232,7 @@ def initTKT(k_share, id_c, id_dst, ad_c):  # 装载票据
     tmsg_eg['ID_C'] = id_c
     tmsg_eg['ID_DST'] = id_dst
     tmsg_eg['AD_C'] = ad_c
-    tmsg_eg['TS_A'] = mf.msg_getTime()
+    tmsg_eg['TS_A'] = msg_getTime()
     tmsg_eg['LT_A'] = DEF_LT
     return tmsg_eg
 
@@ -213,7 +241,7 @@ def initATC(id_c, ad_c):  # 装载Authenticator_C
     amsg_eg = ATC_C
     amsg_eg['ID_C'] = id_c
     amsg_eg['AD_C'] = ad_c
-    amsg_eg['TS_A'] = mf.msg_getTime()
+    amsg_eg['TS_A'] = msg_getTime()
     return amsg_eg
 
 
@@ -221,7 +249,7 @@ def initSIGN(sk_src, id_src, pk_src):  # 生成数字签名
     dmsg_eg = M_SIG_SRC
     dmsg_eg['ID_SRC'] = id_src
     dmsg_eg['PK_SRC'] = pk_src
-    dmsg_eg['TS_0'] = mf.msg_getTime()
+    dmsg_eg['TS_0'] = msg_getTime()
     smsg_eg = dict2str(dmsg_eg)  # dict->str
     mt_sig = cyRSA.RSA_sign(sk_src, smsg_eg)
     # SIG_SRC填充
@@ -248,7 +276,7 @@ def initM_C2AS_REQ(id_c, id_tgs):  # kerberos step1正文
     mmsg_eg = M_C2AS_REQ
     mmsg_eg['ID_C'] = id_c
     mmsg_eg['ID_TGS'] = id_tgs
-    mmsg_eg['TS_1'] = mf.msg_getTime()
+    mmsg_eg['TS_1'] = msg_getTime()
     return mmsg_eg
 
 
@@ -256,7 +284,7 @@ def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # kerberos step2正文
     mmsg_eg = M_AS2C_REP
     mmsg_eg['K_C_TGS'] = k_ctgs  # 与TKT_T保持一致
     mmsg_eg['ID_TGS'] = id_tgs
-    mmsg_eg['TS_2'] = mf.msg_getTime()
+    mmsg_eg['TS_2'] = msg_getTime()
     mmsg_eg['LT_2'] = DEF_LT
     # mTKT_T = cyDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
     # hmTKT_T = cyDES.binascii.hexlify(mTKT_T)  # 转16进制
@@ -281,7 +309,7 @@ def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # kerberos step4正文
     mmsg_eg = M_TGS2C_REP
     mmsg_eg['K_C_V'] = k_cv  # 与TKT_V保持一致
     mmsg_eg['ID_V'] = id_v
-    mmsg_eg['TS_4'] = mf.msg_getTime()
+    mmsg_eg['TS_4'] = msg_getTime()
     mmsg_eg['LT_4'] = DEF_LT
     # mTKT_V = cyDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
     # hmTKT_V = cyDES.binascii.hexlify(mTKT_V)  # 转16进制
