@@ -195,5 +195,5 @@ if __name__ == '__main__':
     while True:
         connection, client_address = server_socket.accept()
         t = th.Thread(target=handle_client,
-                             args=(connection, client_address))
+                      args=(connection, client_address))
         t.start()

@@ -15,20 +15,21 @@ class StartPage:  # 主菜单
         self.window.geometry('900x800')  # 这里的乘是小x
 
         label = tk.Label(self.window, text="学生信息管理系统", width=24,
-                      height=2, fg='blue', font=("Verdana", 40))
+                         height=2, fg='blue', font=("Verdana", 40))
         label.grid(row=0, column=2, columnspan=3, pady=50)  # pady=50 界面的长度
 
         btn1 = tk.Button(self.window, text="管理员登陆", font=tkFont.Font(size=24),
-                      command=lambda: AdminPage(self.window),
-                      width=30,
-                      height=2,
-                      fg='blue', bg='green', activebackground='black',
-                      activeforeground='white')  # .pack(padx=35,pady=2,side=LEFT,anchor=N)
+                         command=lambda: AdminPage(self.window),
+                         width=30,
+                         height=2,
+                         fg='blue', bg='green', activebackground='black',
+                         activeforeground='white')  # .pack(padx=35,pady=2,side=LEFT,anchor=N)
         btn1.grid(row=1, column=2, columnspan=3, pady=20)
-        btn2 = tk.Button(self.window, text="学生登陆", font=tkFont.Font(size=24), command=lambda: StudentPage(self.window),
-                      width=30,
-                      height=2, fg='blue', bg='green', activebackground='black',
-                      activeforeground='white')  # .grid(row = 1,column = 2) #.pack(padx=10,pady=2,side=TOP)
+        btn2 = tk.Button(self.window, text="学生登陆", font=tkFont.Font(size=24),
+                         command=lambda: StudentPage(self.window),
+                         width=30,
+                         height=2, fg='blue', bg='green', activebackground='black',
+                         activeforeground='white')  # .grid(row = 1,column = 2) #.pack(padx=10,pady=2,side=TOP)
         btn2.grid(row=2, column=2, columnspan=3, pady=20)
         # btn3 = Button(self.window, text="关于", font=tkFont.Font(size=10), command=lambda: AboutPage(self.window),
         #               width=15,
@@ -36,15 +37,13 @@ class StartPage:  # 主菜单
         #               fg='white', bg='green', activebackground='black', activeforeground='white')
         # btn3.grid(row=3, column=1, columnspan=3, pady=20)
         btn4 = tk.Button(self.window, text='退出系统', height=2, font=tkFont.Font(size=10), width=15,
-                      command=self.window.destroy,
-                      fg='black', bg='red', activebackground='black', activeforeground='white')
+                         command=self.window.destroy,
+                         fg='black', bg='red', activebackground='black', activeforeground='white')
         btn4.grid(row=3, column=3, columnspan=3, pady=20)
         self.window.mainloop()  # 主消息循环
 
 
 # 管理员登录界面
-
-
 class AdminPage:
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
@@ -54,10 +53,10 @@ class AdminPage:
         self.window.geometry('900x800')  # 这里的乘是小x
 
         label = tk.Label(self.window, text="管理员登陆", width=24,
-                      height=1, fg='blue', font=("Verdana", 20))
+                         height=1, fg='blue', font=("Verdana", 20))
         label.grid(row=0, column=5, columnspan=3, pady=70)  # pady=50 界面的长度
         label2 = tk.Label(self.window, text='管理员账号：',
-                       fg='blue', font=tkFont.Font(size=18))
+                          fg='blue', font=tkFont.Font(size=18))
         label2.grid(row=1, column=3, columnspan=3, padx=15, pady=20)
         self.admin_username = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory')
@@ -65,18 +64,18 @@ class AdminPage:
             row=1, column=5, columnspan=3, padx=15, pady=20)
 
         label3 = tk.Label(self.window, text='管理员密码：',
-                       fg='blue', font=tkFont.Font(size=18))
+                          fg='blue', font=tkFont.Font(size=18))
         label3.grid(row=2, column=3, columnspan=3, padx=15, pady=20)
         self.admin_pass = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory', show='*')
         self.admin_pass.grid(row=2, column=5, columnspan=3, padx=15, pady=20)
 
         btn1 = tk.Button(self.window, text="登陆", width=20,
-                      font=tkFont.Font(size=15), command=self.login)
+                         font=tkFont.Font(size=15), command=self.login)
         btn1.grid(row=3, column=5, columnspan=3, padx=25, pady=20)
 
         btn2 = tk.Button(self.window, text="返回首页", width=20,
-                      font=tkFont.Font(size=15), command=self.back)
+                         font=tkFont.Font(size=15), command=self.back)
         btn2.grid(row=4, column=2, columnspan=3, padx=25, pady=20)
 
         self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
@@ -100,8 +99,6 @@ class AdminPage:
 
 
 # 信息管理界面
-
-
 class InfoManage:
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
@@ -138,8 +135,6 @@ class InfoManage:
 
 
 # 学生登陆界面
-
-
 class StudentPage:
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
@@ -153,24 +148,24 @@ class StudentPage:
         label.grid(row=0, column=5, columnspan=3, pady=50)  # pady=50 界面的长度
 
         label2 = tk.Label(self.window, text='学生账号：',
-                       fg='blue', font=tkFont.Font(size=18))
+                          fg='blue', font=tkFont.Font(size=18))
         label2.grid(row=1, column=3, columnspan=3, padx=35, pady=20)
         self.student_id = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory')
         self.student_id.grid(row=1, column=5, columnspan=3, padx=15, pady=20)
 
         label3 = tk.Label(self.window, text='学生密码：',
-                       fg='blue', font=tkFont.Font(size=18))
+                          fg='blue', font=tkFont.Font(size=18))
         label3.grid(row=2, column=3, columnspan=3, padx=35, pady=20)
         self.student_pass = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory', show='*')
         self.student_pass.grid(row=2, column=5, columnspan=3, padx=15, pady=20)
 
         btn1 = tk.Button(self.window, text="登陆", width=20,
-                      font=tkFont.Font(size=15), command=self.login)
+                         font=tkFont.Font(size=15), command=self.login)
         btn1.grid(row=3, column=5, columnspan=3, padx=25, pady=20)
         btn2 = tk.Button(self.window, text="返回首页", width=20,
-                      font=tkFont.Font(size=15), command=self.back)
+                         font=tkFont.Font(size=15), command=self.back)
         btn2.grid(row=4, column=2, columnspan=3, padx=25, pady=20)
 
         self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
@@ -193,8 +188,6 @@ class StudentPage:
 
 
 # 学生信息查询
-
-
 class StudentInfoManage:
     def __init__(self, parent_window, student_id):
         parent_window.destroy()  # 销毁主界面
@@ -211,10 +204,10 @@ class StudentInfoManage:
                    padx=80, pady=30)  # pady=20 界面的长度
 
         btn1 = tk.Button(self.window, text="学生成绩查询", width=24, height=1, relief='raised', font=('Verdana', 20),
-                      command=lambda: StudentGradeView(
-                          self.window, student_id),
-                      fg='white', bg='blue', activebackground='black',
-                      activeforeground='white')
+                         command=lambda: StudentGradeView(
+                             self.window, student_id),
+                         fg='white', bg='blue', activebackground='black',
+                         activeforeground='white')
         btn1.grid(row=3, column=8, columnspan=5, padx=80, pady=30)
 
         # btn2 = Button(self.window, text="考勤信息查询", width=24, height=1, relief='raised', font=('Verdana', 20),
@@ -237,11 +230,8 @@ class StudentGradeView:
 
         self.window = tk.Tk()  # 初始框的声明
         self.window.title('学生成绩信息查看界面')
-        print("1234560")
         self.student_id = student_id
-        print("12345600")
         self.frame_center = tk.Frame(width=1100, height=400)
-        print("123456000")
         # 定义下方中心列表区域
         self.columns = ("学号", "姓名", "性别", "年龄", "语文成绩",
                         "数学成绩", "英语成绩", "总分", "平均分")
@@ -287,7 +277,7 @@ class StudentGradeView:
         self.m_grade.append(stu_dict["math_score"])
         self.e_grade.append(stu_dict["english_score"])
         grade_total = stu_dict["chinese_score"] + \
-            stu_dict["math_score"] + stu_dict["english_score"]
+                      stu_dict["math_score"] + stu_dict["english_score"]
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
@@ -299,7 +289,7 @@ class StudentGradeView:
         print("test***********************")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-                               self.e_grade), len(self.total), len(self.ave)
+                    self.e_grade), len(self.total), len(self.ave)
                            )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
@@ -330,7 +320,6 @@ class StudentGradeView:
             tv.move(k, '', index)
         tv.heading(col, command=lambda: self.tree_sort_column(
             tv, col, not reverse))  # 重写标题，使之成为再点倒序的标题
-
 
 # 管理员对学生成绩的管理界面
 # class AdminManage:

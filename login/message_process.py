@@ -2,6 +2,8 @@ import time
 import json
 import socket
 import struct
+from server import SERVER_HOST
+from server import SERVER_PORT
 
 
 def send_message(host, port, message):
@@ -40,7 +42,7 @@ def admin_on_login(username, password):  # 管理员登录消息处理
     message["redundant"] = list(redundant)
     message.update(content)
     # 发送消息
-    response = send_message('localhost', 10006, message)
+    response = send_message(SERVER_HOST, SERVER_PORT, message)
     response1 = response.decode()
     if response1 == "01":
         return 1
@@ -65,7 +67,7 @@ def stu_on_login(username, password):  # 学生登录消息处理
     message["redundant"] = list(redundant)
     message.update(content)
     # 发送消息
-    response = send_message('localhost', 10001, message)
+    response = send_message(SERVER_HOST, SERVER_PORT, message)
     response1 = response.decode()
     print("学生登录的回复：")
     print(response1)
@@ -81,14 +83,9 @@ def query_student_score(student_id):
     message = {
         "student_id": student_id
     }
-    response = send_message('localhost', 10001, message)
-    print("000")
+    response = send_message(SERVER_HOST, SERVER_PORT, message)
     response1 = response.decode()
-    print("001")
-    print(response1)
-    print("002")
     response_dict = json.loads(response1)
-    print("002")
     # 接收响应消息并进行解析
     if response_dict.get("error"):
         raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
