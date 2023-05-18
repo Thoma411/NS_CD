@@ -1,13 +1,29 @@
 import time
 import json
+import socket
 import struct
-from network import send_message
 
 
-# 管理员登录消息处理
+def send_message(host, port, message):
+    message_str = json.dumps(message)
+
+    # 连接到服务器并发送数据
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        sock.connect(server_address)
+        sock.sendall(message_str.encode())
+        print("Sent message:", message)
+        response = sock.recv(1024)
+        print("Received response:", response)
+        return response
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        sock.close()
 
 
-def admin_on_login(username, password):
+def admin_on_login(username, password):  # 管理员登录消息处理
     # 构造首部
     head_info = {"head": "01", "type": "01", "subtype": "01",
                  "timestamp": int(time.time())}  # 生成当前时间戳
@@ -28,15 +44,11 @@ def admin_on_login(username, password):
     response1 = response.decode()
     if response1 == "01":
         return 1
-
     else:
         pass
 
 
-# 学生登录消息处理
-
-
-def stu_on_login(username, password):
+def stu_on_login(username, password):  # 学生登录消息处理
     # 构造首部
     head_info = {"head": "01", "type": "01", "subtype": "02",
                  "timestamp": int(time.time())}  # 生成当前时间戳
@@ -59,7 +71,6 @@ def stu_on_login(username, password):
     print(response1)
     if response1 == "01":
         return 1
-
     else:
         pass
 
@@ -79,7 +90,6 @@ def query_student_score(student_id):
     response_dict = json.loads(response1)
     print("002")
     # 接收响应消息并进行解析
-
     if response_dict.get("error"):
         raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
     else:

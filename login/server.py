@@ -1,7 +1,12 @@
 import json
-import socket
-import threading
+import socket as sk
+import threading as th
 import pymysql
+
+SERVER_HOST = 'localhost'
+SERVER_PORT = 10001
+BUFFER_SIZE = 1024
+MAX_LISTEN = 16
 
 # 定义首部格式
 header = {
@@ -50,11 +55,13 @@ def handle_client(connection, client_address):
             if message["subtype"] == "01":  # 管理员
                 username = message["username"]
                 password = message["password"]
-                print("Received message 1: username=%s, password=%s" % (username, password))
+                print("Received message 1: username=%s, password=%s" %
+                      (username, password))
                 admin_pass = None
 
                 # 数据库操作 查询管理员表
-                db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+                db = pymysql.connect(
+                    host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
                 cursor = db.cursor()  # 使用cursor()方法获取操作游标
                 sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 0" % (
                     message["username"])  # SQL 查询语句
@@ -67,7 +74,8 @@ def handle_client(connection, client_address):
                         admin_id = row[0]
                         admin_pass = row[1]
                         # 打印结果
-                        print("admin_id=%s,admin_pass=%s" % (admin_id, admin_pass))
+                        print("admin_id=%s,admin_pass=%s" %
+                              (admin_id, admin_pass))
                 except:
                     print("Error: unable to fetch data")
                     # messagebox.showinfo('警告！', '用户名或密码不正确！')
@@ -83,10 +91,12 @@ def handle_client(connection, client_address):
             elif message["subtype"] == "02":  # 学生
                 username = message["username"]
                 password = message["password"]
-                print("Received message 1: username=%s, password=%s" % (username, password))
+                print("Received message 1: username=%s, password=%s" %
+                      (username, password))
                 stu_pass = None
 
-                db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+                db = pymysql.connect(
+                    host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
                 cursor = db.cursor()  # 使用cursor()方法获取操作游标
                 sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 1" % (
                     message["username"])  # SQL 查询语句
@@ -100,7 +110,8 @@ def handle_client(connection, client_address):
                         stu_pass = row[1]
                         stu_type = row[2]
                         # 打印结果
-                        print("stu_id=%s,stu_pass=%s,stu_type=%s" % (stu_id, stu_pass, stu_type))
+                        print("stu_id=%s,stu_pass=%s,stu_type=%s" %
+                              (stu_id, stu_pass, stu_type))
                 except:
                     print("Error: unable to fecth data")
                     # messagebox.showinfo('警告！', '用户名或密码不正确！')
@@ -131,7 +142,8 @@ def handle_client(connection, client_address):
             student_id = message["student_id"]
             print("1")
             # 数据库操作 查询学生成绩
-            db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+            db = pymysql.connect(host="127.0.0.1", user="root",
+                                 passwd="", db="student")  # 打开数据库连接
             cursor = db.cursor()  # 使用cursor()方法获取操作游标
             sql = "SELECT name, gender, age, c_grade, m_grade, e_grade FROM student_k WHERE id='%s'" % student_id  # SQL 查询语句
             try:
@@ -173,17 +185,15 @@ def handle_client(connection, client_address):
 
 
 if __name__ == '__main__':
-    SERVER_HOST = 'localhost'
-    SERVER_PORT = 10001
-    BUFFER_SIZE = 1024
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     server_socket.bind((SERVER_HOST, SERVER_PORT))
-    server_socket.listen(1)
+    server_socket.listen(MAX_LISTEN)
 
     print(f"Server listening on {SERVER_HOST}:{SERVER_PORT}...")
 
     while True:
         connection, client_address = server_socket.accept()
-        t = threading.Thread(target=handle_client, args=(connection, client_address))
+        t = th.Thread(target=handle_client,
+                             args=(connection, client_address))
         t.start()
