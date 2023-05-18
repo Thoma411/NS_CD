@@ -1,13 +1,12 @@
 '''
 Author: Thoma411
 Date: 2023-05-10 22:23:04
-LastEditTime: 2023-05-13 16:38:02
+LastEditTime: 2023-05-18 20:34:14
 Description: message definition
 '''
 import datetime as dt
 import random as rd
 import string as st
-import time as tm
 import cyDES as cd
 
 '''
@@ -75,10 +74,13 @@ def msg_getTime(dgt: int = 4):  # 获取当前时间,默认精确到.后4位
     return now_time
 
 
-def msg_rndKey(dgt: int = 8):  # 生成定长随机字符串,默认8位
+def msg_rndKey(dgt: int = 8, retType: str = 's'):  # 生成定长随机字符串,默认8位
     '''dgt: 生成字符串位数'''
     rnd_str = ''.join(rd.sample(st.ascii_letters + st.digits, dgt))
-    return rnd_str
+    if retType == 's':
+        return rnd_str
+    else:
+        return rnd_str.encode()
 
 
 '''-----控制报文类-----'''

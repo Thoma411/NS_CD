@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-18 15:20:01
+LastEditTime: 2023-05-18 20:33:12
 Description:
 '''
 import socket as sk
@@ -15,14 +15,9 @@ TGS_IP, TGS_PORT = '192.168.137.1', 8020
 V_IP, V_PORT = '192.168.137.1', 8030
 MAX_SIZE = 2048
 
-# *是否需要建立一个收包线程(疑似不需要)
-
 
 def Chandle_AS2C(mt):  # 处理AS2C控制报文
-    mt = mt.lstrip('b').strip("'")
-    Rhm_as2c = cyDES.binascii.unhexlify(mt.encode())  # 得到加密正文
-    Rsm_as2c = cyDES.DES_decry(Rhm_as2c, DKEY_C, 's')  # bytes直接解密为str
-    Rsm_as2c = rmLRctlstr(Rsm_as2c)  # 字符串掐头去尾
+    Rsm_as2c = cbDES.DES_decry(mt, DKEY_C)  # *bytes直接解密为str
     Rdm_as2c = str2dict(Rsm_as2c)  # str->dict
     k_ctgs = Rdm_as2c['K_C_TGS']  # 获取共享密钥k_ctgs
     Ticket_TGS = Rdm_as2c['mTKT_T']  # 获取Ticket_TGS
@@ -30,10 +25,7 @@ def Chandle_AS2C(mt):  # 处理AS2C控制报文
 
 
 def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
-    mt = mt.lstrip('b').strip("'")
-    Rhm_tgs2c = cyDES.binascii.unhexlify(mt.encode())  # 得到加密正文
-    Rsm_tgs2c = cyDES.DES_decry(Rhm_tgs2c, k_ctgs, 's')  # bytes直接解密为str
-    Rsm_tgs2c = rmLRctlstr(Rsm_tgs2c)  # 字符串掐头去尾
+    Rsm_tgs2c = cbDES.DES_decry(mt, k_ctgs)  # *bytes直接解密为str
     Rdm_tgs2c = str2dict(Rsm_tgs2c)  # str->dict
     # print(Rdm_tgs2c)
     k_cv = Rdm_tgs2c['K_C_V']  # 获取共享密钥k_cv
@@ -42,11 +34,8 @@ def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
 
 
 def Chandle_V2C(mt, k_cv):  # 处理V2C控制报文
-    mt = mt.lstrip('b').strip("'")
-    Rhm_v2c = cyDES.binascii.unhexlify(mt.encode())  # 得到加密正文
-    Rsm_v2c = cyDES.DES_decry(Rhm_v2c, k_cv, 's')  # bytes直接解密为str
-    Rsm_v2c = rmLRctlstr(Rsm_v2c)  # 字符串掐头去尾
-    Rdm_v2c = str2dict(Rsm_v2c)  # str->dict
+    Rsm_v2c = cbDES.DES_decry(mt, k_cv)  # *bytes直接解密为str
+    Rdm_v2c = str2dict(Rsm_v2c)  # str->dicts
     ts_5 = Rdm_v2c['TS_5']  # 获取ts_5
     return ts_5
 
@@ -210,7 +199,6 @@ def C_Main():
 
     # *接收k_cv, tkt_v
     k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
-    # print(k_cv, '\n', tkt_v)
     TGSsock.close()
 
     # *C-V建立连接
@@ -227,12 +215,3 @@ def C_Main():
 
 if __name__ == '__main__':
     C_Main()
-    # hostname = sk.gethostname()
-    # C_IP = sk.gethostbyname(hostname)
-    # print(C_IP)
-    # print(C2AS_REQ)
-    # packed_data = st.pack(
-    #     '!HH10s', C2AS_REQ['ID_C'], C2AS_REQ['ID_TGS'], C2AS_REQ['TS_1'].encode('ascii'))
-    # print(packed_data)
-    # upd = st.unpack('!HH10s', packed_data)
-    # print(upd)

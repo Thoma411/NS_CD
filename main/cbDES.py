@@ -357,8 +357,8 @@ if __name__ == '__main__':
     # myDES.modify_secretkey('1jC8wQ0c')
     k = '1jC8wQ0p'
     mstr1 = '\{csascasdw\}'
-    print(mstr1)
+    print(mstr1, type(mstr1))
     cstr1 = DES_encry(mstr1, k)
-    print(cstr1)
+    print(cstr1, type(cstr1))
     mstr2 = DES_decry(cstr1, k)
-    print(mstr2)
+    print(mstr2, type(mstr2))

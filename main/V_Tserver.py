@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-17 23:01:50
+LastEditTime: 2023-05-18 20:32:34
 Description: 
 '''
 import socket as sk
@@ -19,17 +19,13 @@ def handle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     tkt_v, atc_c = Rdm_c2v['mTKT_V'], Rdm_c2v['mATC_C']
 
     # *解密Ticket_V, 获得K_C_V
-    Rbm_tktV = cyDES.binascii.unhexlify(tkt_v)  # hex->bytes
-    Rsm_tktV = cyDES.DES_decry(Rbm_tktV, DKEY_V, 's')  # 解密为str
-    Rsm_tktV = rmLRctlstr(Rsm_tktV)  # 字符串掐头去尾
+    Rsm_tktV = cbDES.DES_decry(tkt_v, DKEY_V)  # *解密为str
     Rdm_tktV = str2dict(Rsm_tktV)  # str->dict
     k_cv = Rdm_tktV['K_SHARE']  # 取得k_cv共享密钥
     # print(Rdm_tktV)
 
     # *解密Authenticator_C, 获得TS_5
-    Rbm_ATCC = cyDES.binascii.unhexlify(atc_c)  # hex->bytes
-    Rsm_ATCC = cyDES.DES_decry(Rbm_ATCC, k_cv, 's')  # 解密为str
-    Rsm_ATCC = rmLRctlstr(Rsm_ATCC)  # 字符串掐头去尾
+    Rsm_ATCC = cbDES.DES_decry(atc_c, k_cv)  # *解密为str
     Rdm_ATCC = str2dict(Rsm_ATCC)  # str->dict
     # print('Rdm_ATCC:\n', Rdm_ATCC)
     ts_5 = Rdm_ATCC['TS_A']
@@ -39,9 +35,8 @@ def handle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Sdh_v2c = initHEAD(EX_CTL, INC_V2C, len(Sdm_v2c))  # 生成首部
     Ssm_v2c = dict2str(Sdm_v2c)  # 正文dict->str
     Ssh_v2c = dict2str(Sdh_v2c)  # 首部dict->str
-    Sbm_v2c = cyDES.DES_encry(Ssm_v2c, k_cv)  # 加密正文
-    Shm_v2c = cyDES.binascii.hexlify(Sbm_v2c)  # 转16进制
-    Ssa_v2c = Ssh_v2c + '|' + str(Shm_v2c)  # 拼接str
+    Sbm_v2c = cbDES.DES_encry(Ssm_v2c, k_cv)  # *加密正文
+    Ssa_v2c = Ssh_v2c + '|' + str(Sbm_v2c)  # 拼接str(Sbm_v2c已是str)
     return Ssa_v2c  # str+str(bytes)
 
 

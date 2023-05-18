@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-15 18:23:15
+LastEditTime: 2023-05-18 20:32:16
 Description: 
 '''
 import socket as sk
@@ -22,32 +22,27 @@ def handle_C2TGS(mt, caddr):  # 处理C2TGS报文 mt:str
     c_ip = mf.IP2AD(caddr[0])  # IP字符串->6位str
 
     # *解密Ticket_TGS, 获得K_C_TGS
-    Rbm_tktT = cyDES.binascii.unhexlify(tkt_tgs)  # hex->bytes
-    Rsm_tktT = cyDES.DES_decry(Rbm_tktT, DKEY_TGS, 's')  # 解密为str
-    Rsm_tktT = rmLRctlstr(Rsm_tktT)  # 字符串掐头去尾
+    Rsm_tktT = cbDES.DES_decry(tkt_tgs, DKEY_TGS)  # *解密为str
     Rdm_tktT = str2dict(Rsm_tktT)  # str->dict
     # print(Rdm_tktT)
     k_ctgs = Rdm_tktT['K_SHARE']  # 取得k_ctgs共享密钥
 
     # *解密Authenticator_C, 获得ID_C
-    Rbm_ATCC = cyDES.binascii.unhexlify(atc_c)  # hex->bytes
-    Rsm_ATCC = cyDES.DES_decry(Rbm_ATCC, k_ctgs, 's')  # 解密为str
-    Rsm_ATCC = rmLRctlstr(Rsm_ATCC)  # 字符串掐头去尾
+    Rsm_ATCC = cbDES.DES_decry(atc_c, k_ctgs)  # 解密为str
     Rdm_ATCC = str2dict(Rsm_ATCC)  # str->dict
     # print('Rdm_ATCC:\n', Rdm_ATCC)
     id_c = Rdm_ATCC['ID_C']
 
     # *生成Ticket_V 正文 首部
-    k_cv = mf.msg_rndKey().encode()  # *生成共享密钥(bytes类型)
+    k_cv = mf.msg_rndKey()  # *生成共享密钥(str类型)
     Sdm_tktV = initTKT(k_cv, id_c, id_v, c_ip)  # 初始化tkt_v
     Sdm_tgs2c = initM_TGS2C_REP(k_cv, id_v, Sdm_tktV)  # 生成正文tgs2c同时加密tkt
     Sdh_tgs2c = initHEAD(EX_CTL, INC_TGS2C, len(Sdm_tgs2c))  # 生成首部
     Ssm_tgs2c = dict2str(Sdm_tgs2c)  # dict->str
     Ssh_tgs2c = dict2str(Sdh_tgs2c)
-    Sbm_tgs2c = cyDES.DES_encry(Ssm_tgs2c, k_ctgs)  # 加密正文
-    Shm_tgs2c = cyDES.binascii.hexlify(Sbm_tgs2c)  # 转16进制
-    Ssa_tgs2c = Ssh_tgs2c + '|' + str(Shm_tgs2c)  # 拼接str
-    return Ssa_tgs2c  # str+str(bytes)
+    Sbm_tgs2c = cbDES.DES_encry(Ssm_tgs2c, k_ctgs)  # *加密正文
+    Ssa_tgs2c = Ssh_tgs2c + '|' + str(Sbm_tgs2c)  # 拼接str
+    return Ssa_tgs2c  # str+str
 
 
 msg_handles = {  # 消息处理函数字典

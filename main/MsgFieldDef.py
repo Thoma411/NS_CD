@@ -1,11 +1,10 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-18 18:00:02
+LastEditTime: 2023-05-18 20:34:41
 Description: 
 '''
 import messageFormat as mf
-import cyDES
 import cbDES
 import cyRSA
 
@@ -93,6 +92,8 @@ M_AS2C_CTF = {
     'PK_AS': bytes,  # AS的公钥
 }
 
+# *-----------------kerberos-----------------
+
 # kerberos step1 C->AS
 M_C2AS_REQ = {
     'ID_C': int,
@@ -102,33 +103,33 @@ M_C2AS_REQ = {
 
 # kerberos step2 AS->C
 M_AS2C_REP = {
-    'K_C_TGS': bytes,
+    'K_C_TGS': str,
     'ID_TGS': int,
     'TS_2': int,
     'LT_2': int,
-    'mTKT_T': bytes  # 加密bytes
+    'mTKT_T': str  # 加密
 }
 
 # kerberos step3 C->TGS
 M_C2TGS_REQ = {
     'ID_V': int,
-    'mTKT_T': bytes,  # 加密bytes
-    'mATC_C': bytes  # 加密bytes
+    'mTKT_T': str,  # 加密
+    'mATC_C': str  # 加密
 }
 
 # kerberos step4 TGS->C
 M_TGS2C_REP = {
-    'K_C_V': bytes,
+    'K_C_V': str,
     'ID_V': int,
     'TS_4': int,
     'LT_4': int,
-    'mTKT_V': bytes  # 加密bytes
+    'mTKT_V': str  # 加密
 }
 
 # kerberos step5 C->V
 M_C2V_REQ = {
-    'mTKT_V': bytes,  # 加密bytes
-    'mATC_C': bytes,  # 加密bytess
+    'mTKT_V': str,  # 加密
+    'mATC_C': str,  # 加密
 }
 
 # kerberos step6 V->C
@@ -257,9 +258,11 @@ def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # kerberos step2正文
     mmsg_eg['ID_TGS'] = id_tgs
     mmsg_eg['TS_2'] = mf.msg_getTime()
     mmsg_eg['LT_2'] = DEF_LT
-    mTKT_T = cyDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
-    hmTKT_T = cyDES.binascii.hexlify(mTKT_T)  # 转16进制
-    mmsg_eg['mTKT_T'] = hmTKT_T
+    # mTKT_T = cyDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
+    # hmTKT_T = cyDES.binascii.hexlify(mTKT_T)  # 转16进制
+    # *str(tkt_tgs)是为了防止传入的是非字符串类型(如字典)
+    sTKT_T = cbDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
+    mmsg_eg['mTKT_T'] = sTKT_T
     return mmsg_eg
 
 
@@ -267,9 +270,10 @@ def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # kerberos step3正文
     mmsg_eg = M_C2TGS_REQ
     mmsg_eg['ID_V'] = id_v
     mmsg_eg['mTKT_T'] = tkt_tgs  # 这里tkt_tgs沿用上一步,无需生成
-    mATC_C = cyDES.DES_encry(str(atc_c), k_ctgs)  # 使用k_ctgs加密ATC_C
-    hmATC_C = cyDES.binascii.hexlify(mATC_C)  # 转16进制
-    mmsg_eg['mATC_C'] = hmATC_C
+    # mATC_C = cyDES.DES_encry(str(atc_c), k_ctgs)  # 使用k_ctgs加密ATC_C
+    # hmATC_C = cyDES.binascii.hexlify(mATC_C)  # 转16进制
+    sATC_C = cbDES.DES_encry(str(atc_c), k_ctgs)  # 使用k_ctgs加密ATC_C
+    mmsg_eg['mATC_C'] = sATC_C  # sATC_C为字符串
     return mmsg_eg
 
 
@@ -279,18 +283,20 @@ def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # kerberos step4正文
     mmsg_eg['ID_V'] = id_v
     mmsg_eg['TS_4'] = mf.msg_getTime()
     mmsg_eg['LT_4'] = DEF_LT
-    mTKT_V = cyDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
-    hmTKT_V = cyDES.binascii.hexlify(mTKT_V)  # 转16进制
-    mmsg_eg['mTKT_V'] = hmTKT_V
+    # mTKT_V = cyDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
+    # hmTKT_V = cyDES.binascii.hexlify(mTKT_V)  # 转16进制
+    sTKT_V = cbDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
+    mmsg_eg['mTKT_V'] = sTKT_V
     return mmsg_eg
 
 
 def initM_C2V_REQ(tkt_v, atc_c, k_cv):  # kerberos step5正文
     mmsg_eg = M_C2V_REQ
     mmsg_eg['mTKT_V'] = tkt_v  # 这里tkt_v沿用上一步,无需生成
-    mATC_C = cyDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
-    hmATC_C = cyDES.binascii.hexlify(mATC_C)  # 转16进制
-    mmsg_eg['mATC_C'] = hmATC_C
+    # mATC_C = cyDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
+    # hmATC_C = cyDES.binascii.hexlify(mATC_C)  # 转16进制
+    sATC_C = cbDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
+    mmsg_eg['mATC_C'] = sATC_C
     return mmsg_eg
 
 

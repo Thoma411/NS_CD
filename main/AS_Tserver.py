@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-18 15:16:16
+LastEditTime: 2023-05-18 20:31:58
 Description: 
 '''
 import socket as sk
@@ -25,18 +25,17 @@ def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     Rdm_c2as = str2dict(mt)  # 正文str->dict
     id_c, id_tgs = Rdm_c2as['ID_C'], Rdm_c2as['ID_TGS']
     c_ip = mf.IP2AD(caddr[0])  # IP字符串->6位str
-    k_ctgs = mf.msg_rndKey().encode()  # *生成共享密钥(bytes类型)
+    k_ctgs = mf.msg_rndKey()  # *生成共享密钥(str类型)
     Sdm_tktT = initTKT(k_ctgs, id_c, id_tgs, c_ip)  # 初始化tkt_tgs
     Sdm_as2c = initM_AS2C_REP(k_ctgs, id_tgs, Sdm_tktT)  # 生成正文as2c同时加密tkt
     # print(Sdm_as2c['mTKT_T'], len(Sdm_as2c['mTKT_T']))
     Sdh_as2c = initHEAD(EX_CTL, INC_AS2C, len(Sdm_as2c))  # 生成首部
     Ssm_as2c = dict2str(Sdm_as2c)  # dict->str
     Ssh_as2c = dict2str(Sdh_as2c)
-    Sbm_as2c = cyDES.DES_encry(Ssm_as2c, DKEY_C)  # 加密正文
-    Shm_as2c = cyDES.binascii.hexlify(Sbm_as2c)  # 转16进制
+    Sbm_as2c = cbDES.DES_encry(Ssm_as2c, DKEY_C)  # *加密正文(Sbm_as2c已是str)
     # print(Shm_as2c, len(Shm_as2c))
-    Ssa_as2c = Ssh_as2c + '|' + str(Shm_as2c)  # 拼接str
-    return Ssa_as2c  # str+str(bytes)
+    Ssa_as2c = Ssh_as2c + '|' + str(Sbm_as2c)  # 拼接str
+    return Ssa_as2c  # str+str
 
 
 Cmsg_handles = {  # 控制报文处理函数字典
@@ -56,7 +55,8 @@ def AS_Recv(C_Socket: sk, cAddr):
             print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
-        Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
+        Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
+        # Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
         # *匹配报文类型
@@ -71,7 +71,7 @@ def AS_Recv(C_Socket: sk, cAddr):
             # *控制报文
             elif msg_extp == EX_CTL:
                 if msg_intp == INC_C2AS_CTF:
-                    handle_C2AS_CTF(Rsm_msg, Rsc_msg, cAddr)  # 处理CTF报文
+                    # handle_C2AS_CTF(Rsm_msg, Rsc_msg, cAddr)  # *处理CTF报文
                     pass
                 elif msg_intp == INC_C2AS:
                     Ssa_msg = handle_C2AS(Rsm_msg, cAddr)  # 处理C2AS正文
