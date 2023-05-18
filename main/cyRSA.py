@@ -1,12 +1,13 @@
 '''
 Author: Thoma411
 Date: 2023-05-17 23:38:16
-LastEditTime: 2023-05-18 00:21:00
+LastEditTime: 2023-05-18 14:43:19
 Description: 
 '''
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
+import binascii as ba
 
 
 def RSA_encry(PK, msg):  # RSA加密
@@ -21,11 +22,20 @@ def RSA_decry(SK, cpText):  # RSA解密
     return dcpText
 
 
-def RSA_sign(SK, msg):  # 生成数字签名
+def RSA_sign(SK, msg, retType='b'):  # 生成数字签名
     key = RSA.import_key(SK)
     h = SHA256.new(str(msg).encode('utf-8'))
-    Sign = pkcs1_15.new(key).sign(h)
-    return Sign
+    bSign = pkcs1_15.new(key).sign(h)
+    if retType == 'b':
+        return bSign
+    elif retType == 'h':
+        hSign = ba.hexlify(Sig)
+        return hSign
+    elif retType == 's':
+        hSign = ba.hexlify(Sig)
+        return str(hSign)
+    else:
+        print('[Func: RSA_sign] no such retType.')
 
 
 def RSA_verf(PK, msg, Sign):  # 验证数字签名
@@ -48,4 +58,8 @@ if __name__ == '__main__':
     dcpMsg = RSA_decry(test_SK, cpMsg)
 
     Sig = RSA_sign(test_SK, msg)
+    print(Sig)
+    hsig = ba.hexlify(Sig)
+    print(hsig)
+    print(str(hsig))
     RSA_verf(test_PK, msg, Sig)

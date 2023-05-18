@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-18 00:22:43
+LastEditTime: 2023-05-18 15:00:01
 Description: 
 '''
 import messageFormat as mf
@@ -63,20 +63,33 @@ ATC_C = {
     'TS_A': int
 }
 
+# (M)Signature_C/AS
+M_SIG_SRC = {
+    'ID_SRC': int,  # 发送方的ID
+    'PK_SRC': bytes,  # 发送方的公钥
+    'TS_0': int
+}
+
+# Signature_C/AS
+SIG_SRC = {
+    'M_SIG_SRC': bytes  # 加密后的数字签名
+}
+
 # certification step1 C->AS
 M_C2AS_CTF = {
     'ID_C': int,
     'PK_C': bytes,  # C的公钥
-    'SIG_S': bytes,  # C的数字签名
-    'TS_0': int
 }
 
-# certification step2 AS->C
+# certification step1.5 AS->C K
+M_AS2C_KC = {
+    'K_C': bytes  # 下一步会话的对称钥
+}
+
+# certification step2 AS->C MT
 M_AS2C_CTF = {
     'ID_AS': int,
     'PK_AS': bytes,  # AS的公钥
-    'K_C': bytes,  # 下一步会话的对称钥
-    'SIG_AS': bytes  # AS的数字签名
 }
 
 # kerberos step1 C->AS
@@ -200,22 +213,31 @@ def initATC(id_c, ad_c):  # 装载Authenticator_C
     return amsg_eg
 
 
-def initSIGN(sk_src, mtext):  # 生成数字签名
-    return
+def initSIGN(sk_src, id_src, pk_src):  # 生成数字签名
+    dmsg_eg = M_SIG_SRC
+    dmsg_eg['ID_SRC'] = id_src
+    dmsg_eg['PK_SRC'] = pk_src
+    dmsg_eg['TS_0'] = mf.msg_getTime()
+    smsg_eg = dict2str(dmsg_eg)  # dict->str
+    mt_sig = cyRSA.RSA_sign(sk_src, smsg_eg)
+    # SIG_SRC填充
+    dmsg_sg = SIG_SRC
+    dmsg_sg['M_SIG_SRC'] = mt_sig
+    return dmsg_sg
 
 
-def initM_C2AS_CTF(id_c, pk_c, sig_c):  # certification step1正文
+def initM_C2AS_CTF(id_c, pk_c):  # certification step1正文
     mmsg_eg = M_C2AS_CTF
     mmsg_eg['ID_C'] = id_c
     mmsg_eg['PK_C'] = pk_c
-    mmsg_eg['SIG_C'] = sig_c
-    mmsg_eg['TS_0'] = mf.msg_getTime()
     return mmsg_eg
 
 
-def initM_AS2C_CTF():
+def initM_AS2C_CTF(id_as, pk_as):  # certification step2正文
     mmsg_eg = M_AS2C_CTF
-    return
+    mmsg_eg['ID_AS'] = id_as
+    mmsg_eg['PK_AS'] = pk_as
+    return mmsg_eg
 
 
 def initM_C2AS_REQ(id_c, id_tgs):  # kerberos step1正文
