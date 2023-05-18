@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-18 20:44:15
+LastEditTime: 2023-05-18 22:34:58
 Description: 
 '''
 import socket as sk
@@ -24,8 +24,8 @@ def handle_C2AS_CTF(m_text, m_sig, cAddr):  # 处理C2AS_CTF报文
 def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     Rdm_c2as = str2dict(mt)  # 正文str->dict
     id_c, id_tgs = Rdm_c2as['ID_C'], Rdm_c2as['ID_TGS']
-    c_ip = mf.IP2AD(caddr[0])  # IP字符串->6位str
-    k_ctgs = mf.msg_rndKey()  # *生成共享密钥(str类型)
+    c_ip = IP2AD(caddr[0])  # IP字符串->6位str
+    k_ctgs = msg_rndKey()  # *生成共享密钥(str类型)
     Sdm_tktT = initTKT(k_ctgs, id_c, id_tgs, c_ip)  # 初始化tkt_tgs
     Sdm_as2c = initM_AS2C_REP(k_ctgs, id_tgs, Sdm_tktT)  # 生成正文as2c同时加密tkt
     Sdh_as2c = initHEAD(EX_CTL, INC_AS2C, len(Sdm_as2c))  # 生成首部

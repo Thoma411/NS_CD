@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-18 20:33:12
+LastEditTime: 2023-05-18 22:35:13
 Description:
 '''
 import socket as sk
@@ -175,7 +175,7 @@ def C_Send(Dst_socket: sk, dst_flag: int,
 
 
 def C_Main():
-    client_ip = mf.IP2AD(C_IP)  # 已是str
+    client_ip = IP2AD(C_IP)  # 已是str
 
     # *C-AS建立连接
     ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
