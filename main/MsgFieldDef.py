@@ -1,11 +1,12 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-18 15:00:01
+LastEditTime: 2023-05-18 18:00:02
 Description: 
 '''
 import messageFormat as mf
 import cyDES
+import cbDES
 import cyRSA
 
 H_LIGAL = 80  # 合法包
@@ -165,6 +166,8 @@ V2C_REP = {
     'M_V2C_REP': M_V2C_REP
 }
 
+# TODO:合并报文定义
+
 
 def dict2str(sdict: dict):
     st = str(sdict)
@@ -311,6 +314,8 @@ def initAS2C_REP(head, mt):  # step2
     msg_eg['M_AS2C_REP'] = mt
     return msg_eg
 
+
+# TODO:合并报文方法
 
 if __name__ == '__main__':
     m1 = initM_C2AS_REQ(1, 1)

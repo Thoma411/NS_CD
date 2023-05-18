@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-17 11:38:55
+LastEditTime: 2023-05-18 15:16:16
 Description: 
 '''
 import socket as sk
@@ -14,7 +14,10 @@ MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 
-def handle_C2AS_CTF():  # 处理C2AS_CTF报文
+def handle_C2AS_CTF(m_text, m_sig, cAddr):  # 处理C2AS_CTF报文
+    Rdm_c2as_ctf = str2dict(m_text)  # 正文str->dict
+    Rdc_c2as_ctf = str2dict(m_sig)  # 签名str->dict
+    print(Rdm_c2as_ctf, Rdc_c2as_ctf)
     pass
 
 
@@ -53,7 +56,7 @@ def AS_Recv(C_Socket: sk, cAddr):
             print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
-        Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
+        Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
         # *匹配报文类型
@@ -68,7 +71,7 @@ def AS_Recv(C_Socket: sk, cAddr):
             # *控制报文
             elif msg_extp == EX_CTL:
                 if msg_intp == INC_C2AS_CTF:
-                    # TODO:处理CTF报文
+                    handle_C2AS_CTF(Rsm_msg, Rsc_msg, cAddr)  # 处理CTF报文
                     pass
                 elif msg_intp == INC_C2AS:
                     Ssa_msg = handle_C2AS(Rsm_msg, cAddr)  # 处理C2AS正文

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-17 23:03:09
+LastEditTime: 2023-05-18 15:20:01
 Description:
 '''
 import socket as sk
@@ -117,16 +117,25 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
 
 
 def create_C2AS_CTF():  # 生成C2AS_CTF报文
-    return
-
-
-def create_C2AS():  # 生成C2AS报文
     '''
     变量说明:
     S/R - 发送/接收
     d/s/b/h - 字典/字符串/比特/16进制比特
-    h/m/a - 首部/正文/拼接整体
+    h/m/c/a - 首部/正文/签名/拼接整体
     '''
+    Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
+    Sdc_c2as_ctf = initSIGN(SKEY_C, ID_C, PKEY_C)  # 生成签名
+    Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF,
+                            len(Sdm_c2as_ctf + Sdc_c2as_ctf))  # 生成首部
+    Ssm_c2as_ctf = dict2str(Sdm_c2as_ctf)  # 正文dict->str
+    Ssc_c2as_ctf = dict2str(Sdc_c2as_ctf)  # 签名dict->str
+    Ssh_c2as_ctf = dict2str(Sdh_c2as_ctf)  # 首部dict->str
+    Ssa_c2as_ctf = Ssh_c2as_ctf + '|' + Ssm_c2as_ctf + '|'+Ssc_c2as_ctf  # 拼接
+    Sba_c2as_ctf = Ssa_c2as_ctf.encode()  # str->bytes
+    return Sba_c2as_ctf
+
+
+def create_C2AS():  # 生成C2AS报文
     Sdm_c2as = initM_C2AS_REQ(ID_C, DID_TGS)  # 生成正文
     Sdh_c2as = initHEAD(EX_CTL, INC_C2AS, len(Sdm_c2as))  # 生成首部
     Ssm_c2as = dict2str(Sdm_c2as)  # 正文dict->str
@@ -163,7 +172,9 @@ def C_Send(Dst_socket: sk, dst_flag: int,
            caddr_ip, tkt=None, k_share=None):
     # *生成报文
     Sba_msg = None
-    if dst_flag == 1:
+    if dst_flag == 0:
+        Sba_msg = create_C2AS_CTF()  # *生成C2AS_CTF报文
+    elif dst_flag == 1:
         Sba_msg = create_C2AS()  # *生成C2AS报文
     elif dst_flag == 2:
         Sba_msg = create_C2TGS(caddr_ip, tkt, k_share)  # *生成C2TGS报文
@@ -180,6 +191,8 @@ def C_Main():
     # *C-AS建立连接
     ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     ASsock.connect((AS_IP, AS_PORT))
+
+    # TODO:ctf
 
     # *发送给AS
     C_Send(ASsock, 1, client_ip)
