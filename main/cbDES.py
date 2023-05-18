@@ -176,21 +176,21 @@ class ArrangeSimpleDES():
         else:
             return [binary[j:j + 64] for j in range(0, len(binary), 64)]
 
-    def modify_secretkey(self):
+    def modify_secretkey(self, newkey):
         """
         修改默认密钥函数
         :return: None
         """
         # print('当前二进制形式密钥为: {}'.format(self.K))
         # print("当前字符串形式密钥为: {}".format(self.bin2str(self.K)))
-        newkey = input("KEY(8): ")
+        #newkey = input("KEY(8): ")
         if len(newkey) != 8:
-            print("密钥长度不符合, 请重新输入: ")
-            self.modify_secretkey()
+            print("len(newkey) is not 8!")
+            # self.modify_secretkey()
         else:
             bin_key = self.str2bin(newkey)
             self.K = bin_key
-            print("binKey:{}".format(self.K))
+            # print("binKey:{}".format(self.K))
 
     def __f_funtion(self, right: str, key: str):
         """
@@ -273,7 +273,7 @@ class ArrangeSimpleDES():
         bin_plaintext_result = left + right
         return bin_plaintext_result[32:] + bin_plaintext_result[:32]
 
-    def encode(self, plaintext):
+    def encrypt(self, plaintext):
         """
         :param plaintext: 明文字符串
         :return: 密文字符串
@@ -293,7 +293,7 @@ class ArrangeSimpleDES():
         result = self.__bin2int(ciphertext_bin)
         return bytes(result).hex().upper()
 
-    def decode(self, ciphertext):
+    def decrypt(self, ciphertext):
         '''
         :param ciphertext: 密文字符串
         :return: 明文字符串
@@ -319,12 +319,12 @@ class ArrangeSimpleDES():
         if select == '1':
             plaintext = input("Input plaintext: ")
             # print("Your plaintext is:{}".format(plaintext))
-            ciphertext = self.encode(plaintext)
+            ciphertext = self.encrypt(plaintext)
             print("The ciphertext is:{}".format(ciphertext))
         elif select == '2':
             plaintext = input("Input ciphertext: ")
             # print("Your ciphertext is:{}".format(plaintext))
-            plaintext = self.decode(plaintext)
+            plaintext = self.decrypt(plaintext)
             print("The plaintext is:{}".format(plaintext))
             # print(len(plaintext))
         else:
@@ -338,9 +338,27 @@ class ArrangeSimpleDES():
         # print("[DES]明文:{}".format(plaintext))
 
 
-if __name__ == '__main__':
+def DES_encry(msg, key):  # 供调用的DES加密方法
     myDES = ArrangeSimpleDES()
-    myDES.modify_secretkey()
-    while True:
-        myDES.main()
-        print('')
+    myDES.modify_secretkey(key)
+    cmsg = myDES.encrypt(msg)
+    return cmsg
+
+
+def DES_decry(cmsg, key):  # 供调用的DES解密方法
+    myDES = ArrangeSimpleDES()
+    myDES.modify_secretkey(key)
+    dmsg = myDES.decrypt(cmsg)
+    return dmsg
+
+
+if __name__ == '__main__':
+    # myDES = ArrangeSimpleDES()
+    # myDES.modify_secretkey('1jC8wQ0c')
+    k = '1jC8wQ0p'
+    mstr1 = '\{csascasdw\}'
+    print(mstr1)
+    cstr1 = DES_encry(mstr1, k)
+    print(cstr1)
+    mstr2 = DES_decry(cstr1, k)
+    print(mstr2)
