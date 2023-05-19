@@ -2,6 +2,9 @@ import json
 import socket as sk
 import threading as th
 import pymysql
+# from MsgFieldDef import dict2str
+# from MsgFieldDef import str2dict
+
 
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 10001
@@ -9,6 +12,18 @@ BUFFER_SIZE = 1024
 MAX_LISTEN = 16
 
 
+# 字典和字符串转化
+def dict2str(sdict: dict):  # 字典转字符串
+    st = str(sdict)
+    return st
+
+
+def str2dict(dstr: str):  # 字符串转字典
+    dt = eval(dstr)
+    return dt
+
+
+# 管理员登陆连接数据库
 def sql_login_admin(username):
     db = pymysql.connect(
         host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
@@ -34,6 +49,7 @@ def sql_login_admin(username):
     db.close()  # 关闭数据库连接
 
 
+# 学生登录连接数据库
 def sql_login_stu(username):
     db = pymysql.connect(
         host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
@@ -61,6 +77,7 @@ def sql_login_stu(username):
     print("正在登陆学生信息查看界面")
 
 
+# 学生成绩查询连接数据库
 def sql_search_stu(student_id):
     db = pymysql.connect(host="127.0.0.1", user="root",
                          passwd="", db="student")  # 打开数据库连接
@@ -84,15 +101,15 @@ def sql_search_stu(student_id):
                 "english_score": result[5]
             }
             # 发送成绩字典数据给客户端
-            connection.sendall(json.dumps(scores_dict).encode())
+            connection.sendall(dict2str(scores_dict).encode())
         else:
             # 没有找到学生记录，发送空字典给客户端
-            connection.sendall(json.dumps({}).encode())
+            connection.sendall(dict2str({}).encode())
             print("没有找到学生记录")
     except Exception as e:
         print("查询学生成绩时发生错误。错误消息：", e)
         # 数据库操作时发生错误，将错误信息发送给客户端
-        connection.sendall(json.dumps({"error": str(e)}).encode())
+        connection.sendall(dict2str({"error": str(e)}).encode())
     finally:
         db.close()  # 关闭数据库连接
 
@@ -106,10 +123,10 @@ def handle_client(connection, client_address):
         print("Received:", repr(data), type(data))
 
         # 解析数据
-        message = json.loads(data.decode('utf-8'))
-        print(type(message))
+        message = str2dict(data.decode('utf-8'))
+        print(message)
         if "username" in message and "password" in message:
-            if message["subtype"] == "01":  # 管理员
+            if message["INTYPE"] == 10:  # 管理员
                 username = message["username"]
                 password = message["password"]
                 print("Received message 1: username=%s, password=%s" %
@@ -122,7 +139,7 @@ def handle_client(connection, client_address):
                     connection.sendall("01".encode())
                 else:
                     pass
-            elif message["subtype"] == "02":  # 学生
+            elif message["INTYPE"] == 11:  # 学生
                 username = message["username"]
                 password = message["password"]
                 print("Received message 1: username=%s, password=%s" %
@@ -133,7 +150,7 @@ def handle_client(connection, client_address):
                     connection.sendall("01".encode())  # 进入学生信息查看界面
                     data = connection.recv(1024)
                     # 解析数据
-                    message = json.loads(data.decode('utf-8'))
+                    message = str2dict(data.decode('utf-8'))
 
                 else:
                     pass

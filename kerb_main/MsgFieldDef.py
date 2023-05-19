@@ -8,12 +8,17 @@ Description:
 import datetime as dt
 import random as rd
 import string as st
+import socket
+import struct
 import cbDES
-# import cyRSA
+import cyRSA
+import time
 
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
 EX_DAT = 20  # 数据报文
+C_HOST = 'localhost'
+C_PORT = 10001
 
 # INC_:控制报文类型
 INC_C2AS_CTF = 95  # C->AS 申请证书报文
@@ -188,9 +193,8 @@ M_C2V_GRADE = {
     "english_score": int
 }
 
+
 # *-----------------share method-----------------
-
-
 def dict2str(sdict: dict):  # 字典转字符串
     st = str(sdict)
     return st
@@ -234,7 +238,6 @@ def msg_rndKey(dgt: int = 8, retType: str = 's'):  # 生成定长随机字符串
 
 
 # *-----------------init method-----------------
-
 
 def initHEAD(extp, intp, lmt):  # 装载首部
     hmsg_eg = MSG_HEAD
@@ -362,7 +365,99 @@ def initAS2C_REP(head, mt):  # step2
     return msg_eg
 
 
+# 消息的发送与接收
+def send_message(host, port, message):
+    message_str = dict2str(message)
+
+    # 连接到服务器并发送数据
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        sock.connect(server_address)
+        sock.sendall(message_str.encode())
+        print("Sent message:", message)
+        response = sock.recv(1024)
+        print("Received response:", response)
+        return response
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        sock.close()
+
+
+# 管理员登录消息
+def admin_on_login(username, password):
+    # 计算正文长度并填充冗余位
+    M_C2V_LOG = {"username": username, "password": password}
+    MSG_HEAD = {"LIGAL": 10, "EXTYPE": 10, "INTYPE": 10,
+                "TS_H": int(time.time()), "LEN_MT": 0, "REDD": b"\x00\x00\x00\x00"}
+    content_str = dict2str(M_C2V_LOG)
+    content_len = len(content_str.encode('utf-8'))
+    MSG_HEAD["LEN_MT"] = content_len
+    message = {**MSG_HEAD, **M_C2V_LOG}
+
+    # 发送消息
+    response = send_message(C_HOST, C_PORT, message)
+    response1 = response.decode()
+    print("管理员登陆回复")
+    if response1 == "01":
+        return 1
+    else:
+        pass
+
+
+# 学生登陆消息
+def stu_on_login(username, password):
+    # 计算正文长度并填充冗余位
+    M_C2V_LOG = {"username": username, "password": password}
+    MSG_HEAD = {"LIGAL": 10, "EXTYPE": 10, "INTYPE": 11,
+                "TS_H": int(time.time()), "LEN_MT": 0, "REDD": b"\x00\x00\x00\x00"}
+    content_str = dict2str(M_C2V_LOG)
+    content_len = len(content_str.encode('utf-8'))
+    MSG_HEAD["LEN_MT"] = content_len
+    message = {**MSG_HEAD, **M_C2V_LOG}
+
+    # 发送消息
+    response = send_message(C_HOST, C_PORT, message)
+    response1 = response.decode()
+    print("学生登陆回复")
+    if response1 == "01":
+        return 1
+    else:
+        pass
+
+
+# 学生成绩查询
+def query_student_score(student_id):
+    # 构建请求消息并发送
+    message = {
+        "student_id": student_id
+    }
+    response = send_message(C_HOST, C_PORT, message)
+    response1 = response.decode()
+    response_dict = str2dict(response1)
+    # 接收响应消息并进行解析
+    if response_dict.get("error"):
+        raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
+    else:
+        name = response_dict.get("name")
+        gender = response_dict.get("gender")
+        age = response_dict.get("age")
+        chinese_score = response_dict.get("chinese_score")
+        math_score = response_dict.get("math_score")
+        english_score = response_dict.get("english_score")
+        return {
+            "name": name,
+            "gender": gender,
+            "age": age,
+            "chinese_score": chinese_score,
+            "math_score": math_score,
+            "english_score": english_score
+        }
+
+
 # TODO:合并报文方法
+
 
 if __name__ == '__main__':
     m1 = initM_C2AS_REQ(1, 1)

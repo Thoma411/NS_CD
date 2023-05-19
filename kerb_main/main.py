@@ -1,4 +1,4 @@
-from loginui import StartPage
+from kerb_main.loginui import StartPage
 import tkinter as tk
 
 

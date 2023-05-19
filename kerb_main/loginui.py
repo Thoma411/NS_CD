@@ -1,7 +1,14 @@
+import time
+import socket
 import tkinter as tk
 from tkinter import ttk, messagebox
 import tkinter.font as tkFont
-from message_process import *
+# from MsgFieldDef import admin_on_login
+# from MsgFieldDef import stu_on_login
+# from MsgFieldDef import query_student_score
+
+C_HOST = 'localhost'
+C_PORT = 10001
 
 
 class StartPage:  # 主菜单
@@ -666,3 +673,104 @@ class StudentGradeView:
 #         self.var_e_grade.set('')
 #         self.var_total.set('')
 #         self.var_ave.set('')
+
+
+# 字典和字符串转化
+def dict2str(sdict: dict):  # 字典转字符串
+    st = str(sdict)
+    return st
+
+
+def str2dict(dstr: str):  # 字符串转字典
+    dt = eval(dstr)
+    return dt
+
+# 消息的发送与接收
+def send_message(host, port, message):
+    message_str = dict2str(message)
+
+    # 连接到服务器并发送数据
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        sock.connect(server_address)
+        sock.sendall(message_str.encode())
+        print("Sent message:", message)
+        response = sock.recv(1024)
+        print("Received response:", response)
+        return response
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        sock.close()
+
+
+# 管理员登录消息
+def admin_on_login(username, password):
+    # 计算正文长度并填充冗余位
+    M_C2V_LOG = {"username": username, "password": password}
+    MSG_HEAD = {"LIGAL": 10, "EXTYPE": 10, "INTYPE": 10,
+                "TS_H": int(time.time()), "LEN_MT": 0, "REDD": b"\x00\x00\x00\x00"}
+    content_str = dict2str(M_C2V_LOG)
+    content_len = len(content_str.encode('utf-8'))
+    MSG_HEAD["LEN_MT"] = content_len
+    message = {**MSG_HEAD, **M_C2V_LOG}
+
+    # 发送消息
+    response = send_message(C_HOST, C_PORT, message)
+    response1 = response.decode()
+    print("管理员登陆回复")
+    if response1 == "01":
+        return 1
+    else:
+        pass
+
+
+# 学生登陆消息
+def stu_on_login(username, password):
+    # 计算正文长度并填充冗余位
+    M_C2V_LOG = {"username": username, "password": password}
+    MSG_HEAD = {"LIGAL": 10, "EXTYPE": 10, "INTYPE": 11,
+                "TS_H": int(time.time()), "LEN_MT": 0, "REDD": b"\x00\x00\x00\x00"}
+    content_str = dict2str(M_C2V_LOG)
+    content_len = len(content_str.encode('utf-8'))
+    MSG_HEAD["LEN_MT"] = content_len
+    message = {**MSG_HEAD, **M_C2V_LOG}
+
+    # 发送消息
+    response = send_message(C_HOST, C_PORT, message)
+    response1 = response.decode()
+    print("学生登陆回复")
+    if response1 == "01":
+        return 1
+    else:
+        pass
+
+
+# 学生成绩查询
+def query_student_score(student_id):
+    # 构建请求消息并发送
+    message = {
+        "student_id": student_id
+    }
+    response = send_message(C_HOST, C_PORT, message)
+    response1 = response.decode()
+    response_dict = str2dict(response1)
+    # 接收响应消息并进行解析
+    if response_dict.get("error"):
+        raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
+    else:
+        name = response_dict.get("name")
+        gender = response_dict.get("gender")
+        age = response_dict.get("age")
+        chinese_score = response_dict.get("chinese_score")
+        math_score = response_dict.get("math_score")
+        english_score = response_dict.get("english_score")
+        return {
+            "name": name,
+            "gender": gender,
+            "age": age,
+            "chinese_score": chinese_score,
+            "math_score": math_score,
+            "english_score": english_score
+        }

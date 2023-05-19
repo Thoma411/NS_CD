@@ -27,3 +27,10 @@ UDP：
 * 不可否认的数字签名
 
 亟待联调测试
+
+## 230519
+
+合并：
+* 把login的server.py、loginui.py、main.py重构到kerb_main中
+* 将原本的message_process中的消息处理函数合并到MsgFieldDef中
+* 由于Crypto安装问题，暂时先将server.py和loginui.py引用到的MsgFieldDef中的函数写在自己文件里
