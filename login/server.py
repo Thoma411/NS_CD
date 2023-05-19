@@ -8,38 +8,6 @@ SERVER_PORT = 10001
 BUFFER_SIZE = 1024
 MAX_LISTEN = 16
 
-# 定义首部格式
-header = {
-    "head": "int:2",  # 头部，长度为2
-    "type": "int:2",  # 大类型标识，长度为2
-    "subtype": "int:2",  # 小类型标识，长度为2
-    "timestamp": "str:10",  # 时间戳，长度为10
-    "length": "int:4",  # 正文长度，长度为4
-    "redundancy": "int:4"  # 冗余位，长度为4
-}
-
-# 定义第一个报文的类型
-message1 = {
-    "head": "int:2",  # 头部，长度为2
-    "type": "int:2",  # 大类型标识，长度为2
-    "subtype": "int:2",  # 小类型标识，长度为2
-    "timestamp": "str:10",  # 时间戳，长度为10
-    "length": "int:4",  # 正文长度，长度为4
-    "redundancy": "int:4",  # 冗余位，长度为4
-    "username": "str",
-    "password": "str"
-}
-
-# 定义第二个报文的类型
-message2 = {
-    "header": header,
-    "name": "str",
-    "student_id": "str",
-    "chinese_score": "int",
-    "math_score": "int",
-    "english_score": "int",
-}
-
 
 def sql_login_admin(username):
     db = pymysql.connect(

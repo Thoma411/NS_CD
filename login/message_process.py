@@ -2,8 +2,7 @@ import time
 import json
 import socket
 import struct
-from server import SERVER_HOST
-from server import SERVER_PORT
+from server import *
 
 
 def send_message(host, port, message):

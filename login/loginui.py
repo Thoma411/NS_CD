@@ -277,7 +277,7 @@ class StudentGradeView:
         self.m_grade.append(stu_dict["math_score"])
         self.e_grade.append(stu_dict["english_score"])
         grade_total = stu_dict["chinese_score"] + \
-                      stu_dict["math_score"] + stu_dict["english_score"]
+            stu_dict["math_score"] + stu_dict["english_score"]
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
@@ -289,12 +289,11 @@ class StudentGradeView:
         print("test***********************")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-                    self.e_grade), len(self.total), len(self.ave)
-                           )):  # 写入数据
+            self.e_grade), len(self.total), len(self.ave)
+        )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
-                                            self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
-                                            self.ave[i]
-                                            ))
+                                            self.c_grade[i], self.m_grade[i], self.e_grade[i],
+                                            self.total[i], self.ave[i]))
 
         for col in self.columns:  # 绑定函数，使表头可排序
             self.tree.heading(col, text=col,
