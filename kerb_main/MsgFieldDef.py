@@ -9,7 +9,7 @@ import datetime as dt
 import random as rd
 import string as st
 import cbDES
-import cyRSA
+# import cyRSA
 
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
@@ -171,7 +171,18 @@ V2C_REP = {
 }
 
 # TODO:合并报文定义
-
+M_C2V_LOG= {
+    'username': str,
+    'password': str
+}
+M_C2V_GRADE={
+    "name": str,
+    "gender": str,
+    "age": int,
+    "chinese_score": int,
+    "math_score": int,
+    "english_score": int
+}
 
 def dict2str(sdict: dict):
     st = str(sdict)
@@ -245,17 +256,17 @@ def initATC(id_c, ad_c):  # 装载Authenticator_C
     return amsg_eg
 
 
-def initSIGN(sk_src, id_src, pk_src):  # 生成数字签名
-    dmsg_eg = M_SIG_SRC
-    dmsg_eg['ID_SRC'] = id_src
-    dmsg_eg['PK_SRC'] = pk_src
-    dmsg_eg['TS_0'] = msg_getTime()
-    smsg_eg = dict2str(dmsg_eg)  # dict->str
-    mt_sig = cyRSA.RSA_sign(sk_src, smsg_eg)
-    # SIG_SRC填充
-    dmsg_sg = SIG_SRC
-    dmsg_sg['M_SIG_SRC'] = mt_sig
-    return dmsg_sg
+# def initSIGN(sk_src, id_src, pk_src):  # 生成数字签名
+#     dmsg_eg = M_SIG_SRC
+#     dmsg_eg['ID_SRC'] = id_src
+#     dmsg_eg['PK_SRC'] = pk_src
+#     dmsg_eg['TS_0'] = msg_getTime()
+#     smsg_eg = dict2str(dmsg_eg)  # dict->str
+#     mt_sig = cyRSA.RSA_sign(sk_src, smsg_eg)
+#     # SIG_SRC填充
+#     dmsg_sg = SIG_SRC
+#     dmsg_sg['M_SIG_SRC'] = mt_sig
+#     return dmsg_sg
 
 
 def initM_C2AS_CTF(id_c, pk_c):  # certification step1正文
