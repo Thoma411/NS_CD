@@ -1,6 +1,8 @@
 import random as rd
 import hashlib as hs
 
+LEN_RKEY = 256  # 默认密钥长度
+
 
 def gcd(a, b):  # 求最大公约数
     if a < b:
@@ -101,46 +103,65 @@ def KeyGen(p: int, q: int):  # 生成公钥和私钥
     return n, e, d
 
 
-def hash_string(message):
+def hash_string(msg):
     sha256 = hs.sha256()
-    sha256.update(message.encode('utf-8'))
+    sha256.update(msg.encode('utf-8'))
     return int(sha256.hexdigest(), 16)
 
 
-def RSA_sign(message: str, d: int, n: int) -> int:
-    x = hash_string(message)
-    s = power(x, d, n)
-    return s
+def RSA_initKey(typeK: str = None, lenK: int = LEN_RKEY):  # 生成PK/SK
+    '''typeK: return KEY type\nlenK: KEY length'''
+    p, q = Generate_prime(lenK), Generate_prime(lenK)
+    n, e, d = KeyGen(p, q)
+    pkey, skey = (n, e), (n, d)
+    if typeK == 'p':  # 仅返回公钥
+        return pkey
+    elif typeK == 's':  # 仅返回私钥
+        return skey
+    elif typeK == 'a':  # 返回公私钥
+        return pkey, skey
+    else:
+        return n, e, d
 
 
-def RSA_verf(message: str, s: int, e: int, n: int) -> bool:
-    x_ = hash_string(message)
-    x_verified = power(s, e, n)
+def RSA_sign(msg: str, skey) -> int:
+    '''msg: input_text\nd&n: SK'''
+    n, d = skey
+    x = hash_string(msg)
+    Signature = power(x, d, n)
+    return Signature
+
+
+def RSA_verf(msg: str, sig: int, pkey) -> bool:
+    '''msg: input_text\nsig: signature\ne&n: PK'''
+    n, e = pkey
+    x_ = hash_string(msg)
+    x_verified = power(sig, e, n)
     return x_ == x_verified
 
 
 if __name__ == '__main__':
-    key_size = 128
-    p = Generate_prime(key_size)
-    q = Generate_prime(key_size)
-    n, e, d = KeyGen(p, q)
-
+    key_size = 130  # 控制长度
+    pk, sk = RSA_initKey('a', key_size)
     # 消息
     inputMsg = '\{123cs4\}'
-    sig = RSA_sign(inputMsg, d, n)
+    sig = RSA_sign(inputMsg, sk)
     print("Signature:", sig)
 
     testMsg = '\{123cs4\}'
-    is_verified = RSA_verf(inputMsg, sig, e, n)
+    is_verified = RSA_verf(inputMsg, sig, pk)
     print("Verification result:", is_verified)
 
     # Output
-    print("Private Key: ")
-    print("N: ", n)
-    print("d: ", d)
-    print("Public Key: ")
-    print("N: ", n)
-    print("e: ", e)
+    # print("Private Key: ")
+    print('pk:', pk)
+    print('sk:', sk)
+    # *感觉PK/SK可以只显示e/d, n可以不显示
+    # print("N: ", n)
+    # print("d: ", d)
+    # print("Public Key: ")
+    # print("N: ", n)
+    # print("e: ", e)
     print("Signature: ")
     print("s: ", sig)
     print("Verify s of m: ")
