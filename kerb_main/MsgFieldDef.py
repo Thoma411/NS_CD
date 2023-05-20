@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 09:07:39
+LastEditTime: 2023-05-20 10:37:04
 Description: 
 '''
 
@@ -29,6 +29,10 @@ INC_C2TGS = 30
 INC_TGS2C = 40
 INC_C2V = 50
 INC_V2C = 60
+
+# IND_:控制报文类型
+IND_ADM = 10  # 管理员
+IND_STU = 11  # 学生
 
 DEF_LT = 6000  # 默认有效期
 
@@ -179,18 +183,18 @@ V2C_REP = {
 
 # login in
 M_C2V_LOG = {
-    'username': str,
-    'password': str
+    'USER': str,  # 用户名
+    'PSWD': str  # 密码
 }
 
 # add del mdf chk
 M_C2V_GRADE = {
-    "name": str,
-    "gender": str,
-    "age": int,
-    "chinese_score": int,
-    "math_score": int,
-    "english_score": int
+    'NAME': str,  # 姓名
+    'GEND': str,  # 性别
+    'AGE': int,
+    'MARK_C': int,  # 语文成绩
+    'MARK_M': int,  # 数学成绩
+    'MARK_E': int  # 英语成绩
 }
 
 
@@ -365,10 +369,26 @@ def initAS2C_REP(head, mt):  # step2
     return msg_eg
 
 
-# 消息的发送与接收
-def send_message(host, port, message):
-    message_str = dict2str(message)
+def initM_C2V_LOG(user, pswd):  # 管理员登录正文
+    mmsg_eg = M_C2V_LOG
+    mmsg_eg['USER'] = user
+    mmsg_eg['PSWD'] = pswd
+    return mmsg_eg
 
+
+def initM_C2V_GRADE(name, gend, age, markc, markm, marke):  # 学生成绩管理正文
+    mmsg_eg = M_C2V_GRADE
+    mmsg_eg['NAME'] = name
+    mmsg_eg['GEND'] = gend
+    mmsg_eg['AGE'] = age
+    mmsg_eg['MARK_C'] = markc
+    mmsg_eg['MARK_M'] = markm
+    mmsg_eg['MARK_E'] = marke
+    return mmsg_eg
+
+
+def send_message(host, port, message):  # 消息的发送与接收
+    message_str = dict2str(message)
     # 连接到服务器并发送数据
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -1,12 +1,13 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-18 20:32:34
-Description: 
+LastEditTime: 2023-05-20 10:47:08
+Description:
 '''
 import socket as sk
 import threading as th
 from MsgFieldDef import *
+import server as ss
 
 SERVER_HOST = '192.168.137.1'
 V_PORT = 8030
@@ -14,7 +15,7 @@ MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 
-def handle_C2V(mt, caddr):  # 处理C2V报文 mt:str
+def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Rdm_c2v = str2dict(mt)  # 正文str->dict
     tkt_v, atc_c = Rdm_c2v['mTKT_V'], Rdm_c2v['mATC_C']
 
@@ -40,16 +41,28 @@ def handle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     return Ssa_v2c  # str+str(bytes)
 
 
-Cmsg_handles = {  # 控制报文处理函数字典
-    (EX_CTL, INC_C2V): handle_C2V
-}
+def Dhangle_ADM_LOG(mt, k_cv):  # 处理管理员LOG报文 mt:str
+    Rsm_log = cbDES.DES_decry(mt, k_cv)
+    Rdm_log = str2dict(Rsm_log)  # str->dict
+    user = Rdm_log['USER']  # 获取登录的用户名和密码
+    pswd = Rdm_log['PSWD']
+    return user, pswd
+
+
+def Dhangle_STU_LOG(mt, k_cv):  # 处理学生LOG报文 mt:str
+    Rsm_log = cbDES.DES_decry(mt, k_cv)
+    Rdm_log = str2dict(Rsm_log)  # str->dict
+    user = Rdm_log['USER']  # 获取登录的用户名和密码
+    pswd = Rdm_log['PSWD']
+    return user, pswd
+
 
 Dmsg_handles = {  # 数据报文处理函数字典
     # TODO:预留存放数据报文处理函数
 }
 
 
-def V_Recv(C_Socket: sk, cAddr):
+def V_Recv(C_Socket: sk, cAddr, k_cv):
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -65,20 +78,23 @@ def V_Recv(C_Socket: sk, cAddr):
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
             msg_extp = Rdh_msg['EXTYPE']
             msg_intp = Rdh_msg['INTYPE']
-            if msg_extp == EX_DAT:
-                if msg_intp == 10:  # 管理员
-                    pass
-                elif msg_intp == 11:#学生
-                    pass
-                print('This is a dataMsg.')
-            elif msg_extp == EX_CTL:
-                # 在消息处理函数字典中匹配
-                handler = Cmsg_handles.get((msg_extp, msg_intp))
-                if handler:
-                    Ssa_msg = handler(Rsm_msg, cAddr)  # 相应函数处理
+
+            if msg_extp == EX_CTL:  # *控制报文
+                if msg_intp == INC_C2V:
+                    Ssa_msg = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
+
+            elif msg_extp == EX_DAT:  # *数据报文
+                if msg_intp == IND_ADM:  # 管理员
+                    user, pswd = Dhangle_ADM_LOG(Rsm_msg, k_cv)
+                    check_pwd = ss.sql_login_admin(user)  # 登录
+                    if pswd == check_pwd:
+                        C_Socket.send('01'.encode())  # !格式
+                elif msg_intp == IND_STU:  # 学生
+                    pass
+                print('This is a dataMsg.')
         else:  # 收包非法
             print('illegal package!')
             break
@@ -94,10 +110,11 @@ def V_Main():
     Vsock.bind(('', V_PORT))
     Vsock.listen(MAX_LISTEN)
     print('V_Tserver started...')
+    K_cv = '00000000'
     while True:
         cSocket, cAddr = Vsock.accept()
         print('conn:', cAddr)
-        thr = th.Thread(target=V_Recv, args=(cSocket, cAddr))
+        thr = th.Thread(target=V_Recv, args=(cSocket, cAddr, K_cv))
         thr.start()
     Vsock.close()
 
