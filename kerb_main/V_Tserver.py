@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 17:22:37
+LastEditTime: 2023-05-21 00:46:05
 Description:
 '''
 import socket as sk
@@ -9,7 +9,6 @@ import threading as th
 from MsgFieldDef import *
 import server as ss
 
-SERVER_HOST = '192.168.137.1'
 V_PORT = 8030
 MAX_SIZE = 2048
 MAX_LISTEN = 16
@@ -64,13 +63,9 @@ def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
     return sid
 
 
-Dmsg_handles = {  # 数据报文处理函数字典
-    # TODO:预留存放数据报文处理函数
-}
-
-
 def V_Recv(C_Socket: sk, cAddr):
-    global K_CV  # 保存K_cv
+    # global K_CV  # 保存K_cv
+    local_data = th.local()  # *创建线程本地存储对象
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -89,9 +84,9 @@ def V_Recv(C_Socket: sk, cAddr):
 
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
-                    Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
-                    print('V got the K_cv:', k_cv)
-                    K_CV = k_cv
+                    Ssa_msg, Ck_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
+                    print('V got the K_cv:', Ck_cv)
+                    local_data.K_CV = Ck_cv  # *将K_CV存储到线程本地存储中
                     # print(K_CV)
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
@@ -99,20 +94,23 @@ def V_Recv(C_Socket: sk, cAddr):
 
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
-                    user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, K_CV)
-                    check_adm_pwd = ss.sql_login_adm(user_adm)  # 登录
+                    Da_k_cv = local_data.K_CV
+                    user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, Da_k_cv)
+                    check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
 
                 elif msg_intp == IND_STU:  # 学生
-                    user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, K_CV)
-                    check_stu_pwd = ss.sql_login_stu(user_stu)  # 登录
+                    Ds_k_cv = local_data.K_CV
+                    user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, Ds_k_cv)
+                    check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
 
                 elif msg_intp == IND_QRY:  # 请求/删除
-                    sid = Dhangle_STU_QRY(Rsm_msg, K_CV)
-                    stu_dict = ss.sql_search_stu(sid)
+                    Dq_k_cv = local_data.K_CV
+                    sid = Dhangle_STU_QRY(Rsm_msg, Dq_k_cv)
+                    stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
                     C_Socket.send(dict2str(stu_dict).encode())  # !格式
 
         else:  # 收包非法
@@ -122,7 +120,7 @@ def V_Recv(C_Socket: sk, cAddr):
         # print(Rsh_msg, Rsm_msg, cAddr)
         # *发送
         # C_Socket.send(Rsa_msg.encode())
-        print('external loop K_CV:', K_CV)
+        # print('external loop K_CV:', local_data.K_CV)
     C_Socket.close()
 
 
@@ -131,7 +129,6 @@ def V_Main():
     Vsock.bind(('', V_PORT))
     Vsock.listen(MAX_LISTEN)
     print('V_Tserver started...')
-    # K_cv = '00000000'  # !临时共享密钥
     while True:
         cSocket, cAddr = Vsock.accept()
         print('conn:', cAddr)
