@@ -6,6 +6,7 @@ from MsgFieldDef import *
 
 
 SERVER_HOST = '0.0.0.0'
+DB_HOST = '192.168.137.60'
 SERVER_PORT = 10001
 BUFFER_SIZE = 1024
 MAX_LISTEN = 16
@@ -14,7 +15,7 @@ MAX_LISTEN = 16
 # 管理员登陆连接数据库
 def sql_login_admin(username):
     db = pymysql.connect(
-        host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+        host=DB_HOST, user="root", passwd="", db="student")  # 打开数据库连接
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 0" % (
         username)  # SQL 查询语句
@@ -40,7 +41,7 @@ def sql_login_admin(username):
 # 学生登录连接数据库
 def sql_login_stu(username):
     db = pymysql.connect(
-        host="127.0.0.1", user="root", passwd="", db="student")  # 打开数据库连接
+        host=DB_HOST, user="root", passwd="", db="student")  # 打开数据库连接
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 1" % (
         username)  # SQL 查询语句
@@ -67,7 +68,7 @@ def sql_login_stu(username):
 
 # 学生成绩查询连接数据库
 def sql_search_stu(student_id):
-    db = pymysql.connect(host="127.0.0.1", user="root",
+    db = pymysql.connect(host=DB_HOST, user="root",
                          passwd="", db="student")  # 打开数据库连接
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT name, gender, age, c_grade, m_grade, e_grade FROM student_k WHERE id='%s'" % student_id  # SQL 查询语句
