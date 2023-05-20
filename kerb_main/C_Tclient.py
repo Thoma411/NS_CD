@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 17:11:13
+LastEditTime: 2023-05-20 17:27:17
 Description:
 '''
 import socket as sk
@@ -12,7 +12,7 @@ C_IP = '192.168.137.60'  # !IP需提前声明
 
 AS_IP, AS_PORT = '192.168.137.1', 8010
 TGS_IP, TGS_PORT = '192.168.137.1', 8020
-V_IP, V_PORT = '192.168.137.1', 8030
+V_IP, V_PORT = '192.168.137.60', 8030
 MAX_SIZE = 2048
 
 
@@ -290,7 +290,7 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
 
 
 def admin_on_login(username, password):  # 管理员登录消息
-    atc_flag, k_cv = C_Kerberos()
+    atc_flag, k_cv = C_Kerberos()  # 获取共享密钥
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
@@ -311,22 +311,26 @@ def admin_on_login(username, password):  # 管理员登录消息
         print('[admin_on_login] fatal.')
 
 
-def stu_on_login(username, password, k_cv):  # 学生登陆消息
-    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
-    Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
-    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
-    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
-    Sba_log = Ssa_log.encode()
-    # 发送消息
-    response = send_message(C_HOST, C_PORT, Sba_log)
-    response1 = response.decode()
-    print("学生登陆回复")
-    if response1 == "stu login":
-        return 1
+def stu_on_login(username, password):  # 学生登陆消息
+    atc_flag, k_cv = C_Kerberos()
+    if atc_flag:  # 认证成功
+        Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+        Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
+        Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+        Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+        Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+        Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+        Sba_log = Ssa_log.encode()
+        # 发送消息
+        response = send_message(C_HOST, C_PORT, Sba_log)
+        response1 = response.decode()
+        print("学生登陆回复")
+        if response1 == "stu login":
+            return 1
+        else:
+            pass
     else:
-        pass
+        print('[stu_on_login] fatal.')
 
 
 # 解析响应消息并返回查询结果

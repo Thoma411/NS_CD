@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 17:07:47
+LastEditTime: 2023-05-20 17:22:37
 Description:
 '''
 import socket as sk
@@ -70,7 +70,7 @@ Dmsg_handles = {  # 数据报文处理函数字典
 
 
 def V_Recv(C_Socket: sk, cAddr):
-    K_CV = None  # 保存K_cv
+    global K_CV  # 保存K_cv
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 

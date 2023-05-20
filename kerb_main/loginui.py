@@ -139,10 +139,10 @@ class StudentPage:  # 学生登陆界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        tag = cc.stu_on_login(username, password, TMP_K_CV)
+        tag = cc.stu_on_login(username, password)
 
         if tag == 1:
-            # AdminManage(self.window)  # 进入管理员操作界面
+            # AdminManage(self.window)  # 进入学生操作界面
             StudentInfoManage(self.window, self.student_id.get())
         else:
             messagebox.showinfo('警告！', '用户名或密码不正确！')
