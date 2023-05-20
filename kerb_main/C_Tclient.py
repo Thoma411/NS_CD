@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 10:48:32
+LastEditTime: 2023-05-20 11:39:40
 Description:
 '''
 import socket as sk
@@ -12,7 +12,7 @@ C_IP = '192.168.137.60'  # !IP需提前声明
 
 AS_IP, AS_PORT = '192.168.137.1', 8010
 TGS_IP, TGS_PORT = '192.168.137.1', 8020
-V_IP, V_PORT = '192.168.137.1', 8030
+V_IP, V_PORT = '192.168.137.60', 8030
 MAX_SIZE = 2048
 
 
@@ -241,7 +241,7 @@ def C_Main():
 
     # TODO:业务逻辑
     k_cv = '00000000'
-    C_D_Send(Vsock, IND_ADM, '01', '01', k_cv)
+    C_D_Send(Vsock, IND_STU, '001', '001', k_cv)
     msg01 = Vsock.recv(MAX_SIZE)
     print(msg01)
 

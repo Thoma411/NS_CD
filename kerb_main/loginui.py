@@ -43,8 +43,7 @@ class StartPage:  # 主菜单
         self.window.mainloop()  # 主消息循环
 
 
-# 管理员登录界面
-class AdminPage:
+class AdminPage:  # 管理员登录界面
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
         self.admin_on_login = admin_on_login  # 登录回调函数
@@ -98,44 +97,7 @@ class AdminPage:
         StartPage(self.window)  # 显示主窗口 销毁本窗口
 
 
-# 信息管理界面
-class InfoManage:
-    def __init__(self, parent_window):
-        parent_window.destroy()  # 销毁主界面
-
-        self.window = tk.Tk()  # 初始框的声明
-        self.window.title('信息管理')
-        self.window.geometry('900x600')  # 这里的乘是小x
-
-        # label = tk.Label(self.window, text='信息管理', width=24, height=1, font=('Verdana', 20))
-        # label.grid(row=1, column=5, columnspan=3, padx=80, pady=30)  # pady=20 界面的长度
-        #
-        # btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised', font=('Verdana', 20),
-        #               command=lambda: AdminManage(self.window),
-        #               fg='white', bg='green', activebackground='black',
-        #               activeforeground='blue')
-        # btn1.grid(row=2, column=5, columnspan=3, padx=80, pady=30)
-        #
-        # btn2 = Button(self.window, text="用户信息管理", width=30, height=1, relief='raised', font=('Verdana', 20),
-        #               command=lambda: UserInfoManage(self.window),
-        #               fg='white', bg='green', activebackground='black',
-        #               activeforeground='blue')
-        # btn2.grid(row=5, column=5, columnspan=3, padx=80, pady=30)
-        #
-        # btn3 = Button(self.window, text="考勤信息管理", width=36, height=1, relief='raised', font=('Verdana', 20),
-        #               command=lambda: AttendanceInfoManage(self.window),
-        #               fg='white', bg='green', activebackground='red',
-        #               activeforeground='blue')
-        # btn3.grid(row=8, column=5, columnspan=3, padx=80, pady=30)
-        self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
-        self.window.mainloop()  # 进入消息循环
-
-    def back(self):
-        StartPage(self.window)  # 显示主窗口 销毁本窗口
-
-
-# 学生登陆界面
-class StudentPage:
+class StudentPage:  # 学生登陆界面
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
 
@@ -187,8 +149,42 @@ class StudentPage:
         StartPage(self.window)  # 显示主窗口 销毁本窗口
 
 
-# 学生信息查询
-class StudentInfoManage:
+class InfoManage:  # 信息管理界面
+    def __init__(self, parent_window):
+        parent_window.destroy()  # 销毁主界面
+
+        self.window = tk.Tk()  # 初始框的声明
+        self.window.title('信息管理')
+        self.window.geometry('900x600')  # 这里的乘是小x
+
+        # label = tk.Label(self.window, text='信息管理', width=24, height=1, font=('Verdana', 20))
+        # label.grid(row=1, column=5, columnspan=3, padx=80, pady=30)  # pady=20 界面的长度
+        #
+        # btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised', font=('Verdana', 20),
+        #               command=lambda: AdminManage(self.window),
+        #               fg='white', bg='green', activebackground='black',
+        #               activeforeground='blue')
+        # btn1.grid(row=2, column=5, columnspan=3, padx=80, pady=30)
+        #
+        # btn2 = Button(self.window, text="用户信息管理", width=30, height=1, relief='raised', font=('Verdana', 20),
+        #               command=lambda: UserInfoManage(self.window),
+        #               fg='white', bg='green', activebackground='black',
+        #               activeforeground='blue')
+        # btn2.grid(row=5, column=5, columnspan=3, padx=80, pady=30)
+        #
+        # btn3 = Button(self.window, text="考勤信息管理", width=36, height=1, relief='raised', font=('Verdana', 20),
+        #               command=lambda: AttendanceInfoManage(self.window),
+        #               fg='white', bg='green', activebackground='red',
+        #               activeforeground='blue')
+        # btn3.grid(row=8, column=5, columnspan=3, padx=80, pady=30)
+        self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
+        self.window.mainloop()  # 进入消息循环
+
+    def back(self):
+        StartPage(self.window)  # 显示主窗口 销毁本窗口
+
+
+class StudentInfoManage:  # 学生信息查询
     def __init__(self, parent_window, student_id):
         parent_window.destroy()  # 销毁主界面
 
@@ -223,8 +219,7 @@ class StudentInfoManage:
         StartPage(self.window)  # 显示主窗口 销毁本窗口
 
 
-# 学生成绩信息查看界面
-class StudentGradeView:
+class StudentGradeView:  # 学生成绩信息查看界面
     def __init__(self, parent_window, student_id):
         parent_window.destroy()  # 销毁主界面
 
@@ -669,7 +664,3 @@ class StudentGradeView:
 
 
 # 字典和字符串转化
-
-
-
-

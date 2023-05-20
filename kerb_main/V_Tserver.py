@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 10:47:08
+LastEditTime: 2023-05-20 11:40:29
 Description:
 '''
 import socket as sk
@@ -89,10 +89,14 @@ def V_Recv(C_Socket: sk, cAddr, k_cv):
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
                     user, pswd = Dhangle_ADM_LOG(Rsm_msg, k_cv)
-                    check_pwd = ss.sql_login_admin(user)  # 登录
-                    if pswd == check_pwd:
+                    check_adm_pwd = ss.sql_login_admin(user)  # 登录
+                    if pswd == check_adm_pwd:
                         C_Socket.send('01'.encode())  # !格式
                 elif msg_intp == IND_STU:  # 学生
+                    user, pswd = Dhangle_STU_LOG(Rsm_msg, k_cv)
+                    check_stu_pwd = ss.sql_login_stu(user)  # 登录
+                    if pswd == check_stu_pwd:
+                        C_Socket.send('01'.encode())  # !格式
                     pass
                 print('This is a dataMsg.')
         else:  # 收包非法
@@ -110,7 +114,7 @@ def V_Main():
     Vsock.bind(('', V_PORT))
     Vsock.listen(MAX_LISTEN)
     print('V_Tserver started...')
-    K_cv = '00000000'
+    K_cv = '00000000'  # !临时共享密钥
     while True:
         cSocket, cAddr = Vsock.accept()
         print('conn:', cAddr)
