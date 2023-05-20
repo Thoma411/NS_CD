@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 10:37:04
+LastEditTime: 2023-05-20 14:44:54
 Description: 
 '''
 
@@ -202,6 +202,11 @@ M_C2V_DEL = {
     'SID': int  # 学号
 }
 
+# OK msg
+M_V2C_ACC = {
+    'STAT': int  # 确认状态
+}
+
 # *-----------------share method-----------------
 
 
@@ -396,6 +401,12 @@ def initM_C2V_GRADE(name, gend, age, markc, markm, marke):  # 学生成绩管理
 def initM_C2V_DEL(sid):  # 删除正文
     mmsg_eg = M_C2V_DEL
     mmsg_eg['SID'] = sid
+    return mmsg_eg
+
+
+def initM_V2C_ACC(state):  # 确认状态正文
+    mmsg_eg = M_V2C_ACC
+    mmsg_eg['STAT'] = state
     return mmsg_eg
 
 
