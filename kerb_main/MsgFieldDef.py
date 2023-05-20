@@ -187,7 +187,7 @@ M_C2V_LOG = {
     'PSWD': str  # 密码
 }
 
-# add del mdf chk
+# add mdf chk
 M_C2V_GRADE = {
     'NAME': str,  # 姓名
     'GEND': str,  # 性别
@@ -197,8 +197,14 @@ M_C2V_GRADE = {
     'MARK_E': int  # 英语成绩
 }
 
+# del msg
+M_C2V_DEL = {
+    'SID': int  # 学号
+}
 
 # *-----------------share method-----------------
+
+
 def dict2str(sdict: dict):  # 字典转字符串
     st = str(sdict)
     return st
@@ -384,6 +390,12 @@ def initM_C2V_GRADE(name, gend, age, markc, markm, marke):  # 学生成绩管理
     mmsg_eg['MARK_C'] = markc
     mmsg_eg['MARK_M'] = markm
     mmsg_eg['MARK_E'] = marke
+    return mmsg_eg
+
+
+def initM_C2V_DEL(sid):  # 删除正文
+    mmsg_eg = M_C2V_DEL
+    mmsg_eg['SID'] = sid
     return mmsg_eg
 
 
