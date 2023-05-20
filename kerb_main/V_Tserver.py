@@ -66,6 +66,10 @@ def V_Recv(C_Socket: sk, cAddr):
             msg_extp = Rdh_msg['EXTYPE']
             msg_intp = Rdh_msg['INTYPE']
             if msg_extp == EX_DAT:
+                if msg_intp == 10:  # 管理员
+                    pass
+                elif msg_intp == 11:#学生
+                    pass
                 print('This is a dataMsg.')
             elif msg_extp == EX_CTL:
                 # 在消息处理函数字典中匹配
