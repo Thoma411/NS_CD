@@ -2,25 +2,13 @@ import json
 import socket as sk
 import threading as th
 import pymysql
-# from MsgFieldDef import dict2str
-# from MsgFieldDef import str2dict
+from MsgFieldDef import *
 
 
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 10001
 BUFFER_SIZE = 1024
 MAX_LISTEN = 16
-
-
-# 字典和字符串转化
-def dict2str(sdict: dict):  # 字典转字符串
-    st = str(sdict)
-    return st
-
-
-def str2dict(dstr: str):  # 字符串转字典
-    dt = eval(dstr)
-    return dt
 
 
 # 管理员登陆连接数据库
