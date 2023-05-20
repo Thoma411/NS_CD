@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 16:07:13
+LastEditTime: 2023-05-20 16:29:57
 Description: 
 '''
 
@@ -408,93 +408,6 @@ def initM_V2C_ACC(state):  # 确认状态正文
     mmsg_eg = M_V2C_ACC
     mmsg_eg['STAT'] = state
     return mmsg_eg
-
-
-def send_message(host, port, message):  # 消息的发送与接收
-    message_str = dict2str(message)
-    # 连接到服务器并发送数据
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
-        sock.connect(server_address)
-        sock.sendall(message_str.encode())
-        print("Sent message:", message)
-        response = sock.recv(1024)  # *收
-        print("Received response:", response)
-        return response
-    except Exception as e:
-        print("Error:", e)
-    finally:
-        sock.close()
-
-
-def tmp_send_message(host, port, bmsg):  # 消息的发送与接收
-    # 连接到服务器并发送数据
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
-        sock.connect(server_address)
-        sock.sendall(bmsg)  # 发送
-        print("Sent message:", bmsg)
-        response = sock.recv(1024)
-        print("Received response:", response)
-        return response
-    except Exception as e:
-        print("Error:", e)
-    finally:
-        sock.close()
-
-
-def admin_on_login(username, password, k_cv):  # 管理员登录消息
-    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
-    Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
-    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
-    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
-    Sba_log = Ssa_log.encode()
-    # 发送消息
-    response = tmp_send_message(C_HOST, C_PORT, Sba_log)
-    response1 = response.decode()
-    print("管理员登陆回复")
-    if response1 == "adm login":
-        return 1
-    else:
-        pass
-
-
-def stu_on_login(username, password, k_cv):  # 学生登陆消息
-    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
-    Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
-    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
-    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
-    Sba_log = Ssa_log.encode()
-    # 发送消息
-    response = tmp_send_message(C_HOST, C_PORT, Sba_log)
-    response1 = response.decode()
-    print("学生登陆回复")
-    if response1 == "stu login":
-        return 1
-    else:
-        pass
-
-
-# 解析响应消息并返回查询结果
-def query_student_score(student_id, k_cv):
-    Rdm_qry = initM_C2V_DEL(student_id)
-    Rdh_qry = initHEAD(EX_DAT, IND_QRY, len(Rdm_qry))
-    Rsm_qry = dict2str(Rdm_qry)  # 正文dict->str
-    Rsh_qry = dict2str(Rdh_qry)  # 首部dict->str
-    Rbm_qry = cbDES.DES_encry(Rsm_qry, k_cv)  # 已是str类型
-    Rsa_qry = Rsh_qry + '|' + Rbm_qry  # 拼接
-    Rba_qry = Rsa_qry.encode()
-
-    response = tmp_send_message(C_HOST, C_PORT, Rba_qry)
-    response = response.decode()
-    response_dict = str2dict(response)
-    return response_dict
 
 
 if __name__ == '__main__':

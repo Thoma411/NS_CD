@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 11:48:18
+LastEditTime: 2023-05-20 16:30:29
 Description:
 '''
 import socket as sk
@@ -215,44 +215,115 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
     Dst_socket.send(Sba_msg)
     pass
 
+# *登录调用函数
+
+
+def send_message(host, port, bmsg):  # 消息的发送与接收
+    # 连接到服务器并发送数据
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        sock.connect(server_address)
+        sock.sendall(bmsg)  # 发送
+        print("Sent message:", bmsg)
+        response = sock.recv(1024)
+        print("Received response:", response)
+        return response
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        sock.close()
+
+
+def admin_on_login(username, password, k_cv):  # 管理员登录消息
+    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+    Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
+    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Sba_log = Ssa_log.encode()
+    # 发送消息
+    response = send_message(C_HOST, C_PORT, Sba_log)
+    response1 = response.decode()
+    print("管理员登陆回复")
+    if response1 == "adm login":
+        return 1
+    else:
+        pass
+
+
+def stu_on_login(username, password, k_cv):  # 学生登陆消息
+    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+    Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
+    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Sba_log = Ssa_log.encode()
+    # 发送消息
+    response = send_message(C_HOST, C_PORT, Sba_log)
+    response1 = response.decode()
+    print("学生登陆回复")
+    if response1 == "stu login":
+        return 1
+    else:
+        pass
+
+
+# 解析响应消息并返回查询结果
+def query_student_score(student_id, k_cv):
+    Sdm_qry = initM_C2V_DEL(student_id)
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
+    Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
+    Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
+    Sba_qry = Ssa_qry.encode()
+
+    response = send_message(C_HOST, C_PORT, Sba_qry)
+    response = response.decode()
+    response_dict = str2dict(response)
+    return response_dict
+
 
 def C_Main():
     client_ip = IP2AD(C_IP)  # 已是str
 
     # *C-AS建立连接
-    # ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    # ASsock.connect((AS_IP, AS_PORT))
+    ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    ASsock.connect((AS_IP, AS_PORT))
 
     # TODO:ctf
 
-    # # *发送给AS
-    # C_C_Send(ASsock, INC_C2AS, client_ip)
+    # *发送给AS
+    C_C_Send(ASsock, INC_C2AS, client_ip)
 
-    # # *接收k_ctgs, tkt_tgs
-    # k_ctgs, ticket_tgs = C_Recv(ASsock)
-    # ASsock.close()
+    # *接收k_ctgs, tkt_tgs
+    k_ctgs, ticket_tgs = C_Recv(ASsock)
+    ASsock.close()
 
-    # # *C-TGS建立连接
-    # TGSsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    # TGSsock.connect((TGS_IP, TGS_PORT))
+    # *C-TGS建立连接
+    TGSsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    TGSsock.connect((TGS_IP, TGS_PORT))
 
-    # # *发送给TGS
-    # C_C_Send(TGSsock, INC_C2TGS, client_ip, tkt=ticket_tgs, k_share=k_ctgs)
+    # *发送给TGS
+    C_C_Send(TGSsock, INC_C2TGS, client_ip, tkt=ticket_tgs, k_share=k_ctgs)
 
-    # # *接收k_cv, tkt_v
-    # k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
-    # TGSsock.close()
+    # *接收k_cv, tkt_v
+    k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
+    TGSsock.close()
 
-    # # *C-V建立连接
+    # *C-V建立连接
     Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     Vsock.connect((V_IP, V_PORT))
 
-    # # *发送给V
-    # C_C_Send(Vsock, INC_C2V, client_ip, tkt_v, k_cv)
+    # *发送给V
+    C_C_Send(Vsock, INC_C2V, client_ip, tkt_v, k_cv)
 
-    # # *接收mdTS_5
-    # ts_5 = C_Recv(Vsock, k_cv)
-    # print(ts_5)  # !待验证时间戳
+    # *接收mdTS_5
+    ts_5 = C_Recv(Vsock, k_cv)
+    print(ts_5)  # !待验证时间戳
 
     # TODO:业务逻辑
     k_cv = '00000000'

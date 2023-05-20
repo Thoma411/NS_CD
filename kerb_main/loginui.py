@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import tkinter.font as tkFont
-from MsgFieldDef import *
+# from MsgFieldDef import *
 import C_Tclient as cc
 
 TMP_K_CV = '00000000'  # 临时共享密钥
@@ -49,7 +49,7 @@ class StartPage:  # 主菜单
 class AdminPage:  # 管理员登录界面
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
-        self.admin_on_login = admin_on_login  # 登录回调函数
+        self.admin_on_login = cc.admin_on_login  # 登录回调函数
         self.window = tk.Tk()  # 初始框的声明
         self.window.title('管理员登陆页面')
         self.window.geometry('900x800')  # 这里的乘是小x
@@ -87,7 +87,8 @@ class AdminPage:  # 管理员登录界面
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
 
-        tag = admin_on_login(username, password, TMP_K_CV)  # *
+        tag = cc.admin_on_login(username, password, TMP_K_CV)  # *
+        # cc.C_Main()
 
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
@@ -138,7 +139,7 @@ class StudentPage:  # 学生登陆界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        tag = stu_on_login(username, password, TMP_K_CV)
+        tag = cc.stu_on_login(username, password, TMP_K_CV)
 
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
@@ -263,7 +264,7 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.ave = []
         print("xx")
         # 打开数据库连接
-        stu_dict = query_student_score(student_id, TMP_K_CV)
+        stu_dict = cc.query_student_score(student_id, TMP_K_CV)
         self.id.append(student_id)
         self.name.append(stu_dict['NAME'])
         self.gender.append(stu_dict['GEND'])
