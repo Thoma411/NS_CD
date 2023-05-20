@@ -11,7 +11,7 @@ import string as st
 import socket
 import struct
 import cbDES
-import cyRSA
+# import cyRSA
 import time
 
 H_LIGAL = 80  # 合法包
@@ -427,16 +427,29 @@ def stu_on_login(username, password):
         pass
 
 
-# 学生成绩查询
-def query_student_score(student_id):
-    # 构建请求消息并发送
+# 构建请求消息
+def generate_query_message(student_id):
     message = {
         "student_id": student_id
     }
+    return message
+
+
+# 发送请求消息并接收响应
+def send_query_message(message):
+    # 发送请求消息并接收响应
     response = send_message(C_HOST, C_PORT, message)
-    response1 = response.decode()
-    response_dict = str2dict(response1)
-    # 接收响应消息并进行解析
+    response_dict = str2dict(response.decode())
+    return response_dict
+
+
+# 解析响应消息并返回查询结果
+def query_student_score(student_id):
+    # 生成请求消息
+    message = generate_query_message(student_id)
+    # 发送请求消息并接收响应
+    response_dict = send_query_message(message)
+    # 解析响应消息并返回查询结果
     if response_dict.get("error"):
         raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
     else:
@@ -454,9 +467,6 @@ def query_student_score(student_id):
             "math_score": math_score,
             "english_score": english_score
         }
-
-
-# TODO:合并报文方法
 
 
 if __name__ == '__main__':
