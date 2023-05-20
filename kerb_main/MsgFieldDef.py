@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 15:15:35
+LastEditTime: 2023-05-20 15:36:06
 Description: 
 '''
 
@@ -32,6 +32,7 @@ INC_V2C = 60
 # IND_:控制报文类型
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生
+IND_QRY = 12  # 请求/删除
 
 DEF_LT = 6000  # 默认有效期
 
@@ -418,7 +419,7 @@ def send_message(host, port, message):  # 消息的发送与接收
         sock.connect(server_address)
         sock.sendall(message_str.encode())
         print("Sent message:", message)
-        response = sock.recv(1024)
+        response = sock.recv(1024)  # *收
         print("Received response:", response)
         return response
     except Exception as e:
@@ -443,10 +444,8 @@ def tmp_send_message(host, port, bmsg):  # 消息的发送与接收
     finally:
         sock.close()
 
-# 管理员登录消息
 
-
-def admin_on_login(username, password, k_cv):
+def admin_on_login(username, password, k_cv):  # 管理员登录消息
     Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
     Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
@@ -465,8 +464,7 @@ def admin_on_login(username, password, k_cv):
         pass
 
 
-# 学生登陆消息
-def stu_on_login(username, password, k_cv):
+def stu_on_login(username, password, k_cv):  # 学生登陆消息
     Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
     Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
@@ -502,29 +500,42 @@ def send_query_message(message):
 
 
 # 解析响应消息并返回查询结果
-def query_student_score(student_id):
+def query_student_score(student_id, k_cv):
     # 生成请求消息
-    message = generate_query_message(student_id)
+    #message = generate_query_message(student_id)
     # 发送请求消息并接收响应
-    response_dict = send_query_message(message)
+    # response_dict = send_query_message(message)
+
+    Rdm_qry = initM_C2V_DEL(student_id)
+    Rdh_qry = initHEAD(EX_DAT, IND_QRY, len(Rdm_qry))
+    Rsm_qry = dict2str(Rdm_qry)  # 正文dict->str
+    Rsh_qry = dict2str(Rdh_qry)  # 首部dict->str
+    Rbm_qry = cbDES.DES_encry(Rsm_qry, k_cv)  # 已是str类型
+    Rsa_qry = Rsh_qry + '|' + Rbm_qry  # 拼接
+    Rba_qry = Rsa_qry.encode()
+
+    response = tmp_send_message(C_HOST, C_PORT, Rba_qry)
+    response = response.decode()
+    response_dict = str2dict(response)
+    return response_dict
     # 解析响应消息并返回查询结果
-    if response_dict.get("error"):
-        raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
-    else:
-        name = response_dict.get("name")
-        gender = response_dict.get("gender")
-        age = response_dict.get("age")
-        chinese_score = response_dict.get("chinese_score")
-        math_score = response_dict.get("math_score")
-        english_score = response_dict.get("english_score")
-        return {
-            "name": name,
-            "gender": gender,
-            "age": age,
-            "chinese_score": chinese_score,
-            "math_score": math_score,
-            "english_score": english_score
-        }
+    # if response_dict.get("error"):
+    #     raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
+    # else:
+    #     name = response_dict.get('NAME')
+    #     gender = response_dict.get('GEND')
+    #     age = response_dict.get('AGE')
+    #     chinese_score = response_dict.get('MARK_C')
+    #     math_score = response_dict.get('MARK_M')
+    #     english_score = response_dict.get('MARK_E')
+    #     return {
+    #         'NAME': name,
+    #         'GEND': gender,
+    #         'AGE': age,
+    #         'MARK_C': chinese_score,
+    #         'MARK_M': math_score,
+    #         'MARK_E': english_score
+    #     }
 
 
 if __name__ == '__main__':

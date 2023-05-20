@@ -263,17 +263,16 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.ave = []
         print("xx")
         # 打开数据库连接
-        query_student_score(student_id)
-        stu_dict = query_student_score(student_id)
+        stu_dict = query_student_score(student_id, TMP_K_CV)
         self.id.append(student_id)
-        self.name.append(stu_dict["name"])
-        self.gender.append(stu_dict["gender"])
-        self.age.append(stu_dict["age"])
-        self.c_grade.append(stu_dict["chinese_score"])
-        self.m_grade.append(stu_dict["math_score"])
-        self.e_grade.append(stu_dict["english_score"])
-        grade_total = stu_dict["chinese_score"] + \
-            stu_dict["math_score"] + stu_dict["english_score"]
+        self.name.append(stu_dict['NAME'])
+        self.gender.append(stu_dict['GEND'])
+        self.age.append(stu_dict['AGE'])
+        self.c_grade.append(stu_dict['MARK_C'])
+        self.m_grade.append(stu_dict['MARK_M'])
+        self.e_grade.append(stu_dict['MARK_E'])
+        grade_total = stu_dict['MARK_C'] + \
+            stu_dict['MARK_M'] + stu_dict['MARK_E']
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
