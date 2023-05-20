@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 11:40:29
+LastEditTime: 2023-05-20 11:51:17
 Description:
 '''
 import socket as sk
@@ -44,17 +44,17 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
 def Dhangle_ADM_LOG(mt, k_cv):  # 处理管理员LOG报文 mt:str
     Rsm_log = cbDES.DES_decry(mt, k_cv)
     Rdm_log = str2dict(Rsm_log)  # str->dict
-    user = Rdm_log['USER']  # 获取登录的用户名和密码
-    pswd = Rdm_log['PSWD']
-    return user, pswd
+    user_adm = Rdm_log['USER']  # 获取登录的用户名和密码
+    pswd_adm = Rdm_log['PSWD']
+    return user_adm, pswd_adm
 
 
 def Dhangle_STU_LOG(mt, k_cv):  # 处理学生LOG报文 mt:str
     Rsm_log = cbDES.DES_decry(mt, k_cv)
     Rdm_log = str2dict(Rsm_log)  # str->dict
-    user = Rdm_log['USER']  # 获取登录的用户名和密码
-    pswd = Rdm_log['PSWD']
-    return user, pswd
+    user_stu = Rdm_log['USER']  # 获取登录的用户名和密码
+    pswd_stu = Rdm_log['PSWD']
+    return user_stu, pswd_stu
 
 
 Dmsg_handles = {  # 数据报文处理函数字典
@@ -88,17 +88,17 @@ def V_Recv(C_Socket: sk, cAddr, k_cv):
 
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
-                    user, pswd = Dhangle_ADM_LOG(Rsm_msg, k_cv)
-                    check_adm_pwd = ss.sql_login_admin(user)  # 登录
-                    if pswd == check_adm_pwd:
-                        C_Socket.send('01'.encode())  # !格式
+                    user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, k_cv)
+                    check_adm_pwd = ss.sql_login_adm(user_adm)  # 登录
+                    if pswd_adm == check_adm_pwd:
+                        C_Socket.send('adm login'.encode())  # !格式
                 elif msg_intp == IND_STU:  # 学生
-                    user, pswd = Dhangle_STU_LOG(Rsm_msg, k_cv)
-                    check_stu_pwd = ss.sql_login_stu(user)  # 登录
-                    if pswd == check_stu_pwd:
-                        C_Socket.send('01'.encode())  # !格式
+                    user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, k_cv)
+                    check_stu_pwd = ss.sql_login_stu(user_stu)  # 登录
+                    if pswd_stu == check_stu_pwd:
+                        C_Socket.send('stu login'.encode())  # !格式
                     pass
-                print('This is a dataMsg.')
+                # print('This is a dataMsg.')
         else:  # 收包非法
             print('illegal package!')
             break

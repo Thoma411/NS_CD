@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 11:39:40
+LastEditTime: 2023-05-20 11:48:18
 Description:
 '''
 import socket as sk
@@ -161,7 +161,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv):  # 生成C2V报文
 # *------------生成数据报文------------
 
 
-def create_D_LOG(user, pswd, k_cv):
+def create_D_ADMLOG(user, pswd, k_cv):
     Sdm_log = initM_C2V_LOG(user, pswd)  # 生成登录正文
     Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
@@ -170,6 +170,19 @@ def create_D_LOG(user, pswd, k_cv):
     Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
     Sba_log = Ssa_log.encode()
     # TODO:数字签名
+    return Sba_log
+
+
+def create_D_STULOG(user, pswd, k_cv):
+    Sdm_log = initM_C2V_LOG(user, pswd)  # 生成登录正文
+    Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
+    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Sba_log = Ssa_log.encode()
+    # TODO:数字签名
+    print(Ssa_log)
     return Sba_log
 
 
@@ -195,7 +208,9 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
              user, pswd, k_share=None):  # 发送数据报文
     Sba_msg = None
     if dst_flag == IND_ADM:
-        Sba_msg = create_D_LOG(user, pswd, k_share)  # 生成登录报文
+        Sba_msg = create_D_ADMLOG(user, pswd, k_share)  # 生成管理员登录报文
+    elif dst_flag == IND_STU:
+        Sba_msg = create_D_STULOG(user, pswd, k_share)  # 生成学生登录报文
     # *发送
     Dst_socket.send(Sba_msg)
     pass
@@ -242,6 +257,7 @@ def C_Main():
     # TODO:业务逻辑
     k_cv = '00000000'
     C_D_Send(Vsock, IND_STU, '001', '001', k_cv)
+    print('sent')
     msg01 = Vsock.recv(MAX_SIZE)
     print(msg01)
 

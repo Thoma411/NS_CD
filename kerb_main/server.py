@@ -13,7 +13,7 @@ MAX_LISTEN = 16
 
 
 # 管理员登陆连接数据库
-def sql_login_admin(username):
+def sql_login_adm(username):
     db = pymysql.connect(
         host=DB_HOST, user="root", passwd="", db="student")  # 打开数据库连接
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
@@ -121,7 +121,7 @@ def handle_client(connection, client_address):
                 print("Received message 1: username=%s, password=%s" %
                       (username, password))
                 # 数据库操作 查询管理员表
-                admin_pass = sql_login_admin(username)
+                admin_pass = sql_login_adm(username)
 
                 if message["password"] == admin_pass:
                     print(admin_pass)
