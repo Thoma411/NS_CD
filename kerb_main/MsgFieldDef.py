@@ -1,23 +1,19 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 16:52:37
+LastEditTime: 2023-05-21 00:41:58
 Description: 
 '''
 
 import datetime as dt
 import random as rd
 import string as st
-import socket
 import cbDES
 import cbRSA
-import time
 
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
 EX_DAT = 20  # 数据报文
-C_HOST = '192.168.137.60'
-C_PORT = 8030
 
 # INC_:控制报文类型
 INC_C2AS_CTF = 95  # C->AS 申请证书报文
@@ -39,10 +35,11 @@ DEF_LT = 6000  # 默认有效期
 DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
-PKEY_C = '00000000'  # C的公钥
-SKEY_C = '00000000'  # C的私钥
-PKEY_AS = '00000000'  # AS的公钥
-SKEY_AS = '00000000'  # AS的私钥
+PKEY_C, SKEY_C = cbRSA.RSA_initKey(typeK='a')
+PKEY_V, SKEY_V = cbRSA.RSA_initKey(typeK='a')
+
+# PKEY_AS = '00000000'  # AS的公钥
+# SKEY_AS = '00000000'  # AS的私钥
 
 DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
@@ -76,15 +73,20 @@ ATC_C = {
 }
 
 # (M)Signature_C/AS
-M_SIG_SRC = {
+M_SIG_SRC_AC = {
     'ID_SRC': int,  # 发送方的ID
     'PK_SRC': bytes,  # 发送方的公钥
     'TS_0': int
 }
 
 # Signature_C/AS
-SIG_SRC = {
+SIG_SRC_AC = {
     'M_SIG_SRC': bytes  # 加密后的数字签名
+}
+
+# Signature_C/V
+SIG_SRC_CV = {
+    'CPT_SIG': str  # 密文->摘要->签名
 }
 
 # certification step1 C->AS
@@ -290,17 +292,11 @@ def initATC(id_c, ad_c, ts=None):  # 装载Authenticator_C
     return amsg_eg
 
 
-# def initSIGN(sk_src, id_src, pk_src):  # 生成数字签名
-#     dmsg_eg = M_SIG_SRC
-#     dmsg_eg['ID_SRC'] = id_src
-#     dmsg_eg['PK_SRC'] = pk_src
-#     dmsg_eg['TS_0'] = msg_getTime()
-#     smsg_eg = dict2str(dmsg_eg)  # dict->str
-#     mt_sig = cyRSA.RSA_sign(sk_src, smsg_eg)
-#     # SIG_SRC填充
-#     dmsg_sg = SIG_SRC
-#     dmsg_sg['M_SIG_SRC'] = mt_sig
-#     return dmsg_sg
+def initSIGN(cpmsg, sk_src):  # 生成数字签名
+    dmsg_eg = SIG_SRC_CV
+    ssmg_sig = cbRSA.RSA_sign(cpmsg, sk_src)
+    dmsg_eg['CPT_SIG'] = ssmg_sig
+    return dmsg_eg
 
 
 def initM_C2AS_CTF(id_c, pk_c):  # certification step1正文
@@ -417,17 +413,9 @@ def initM_V2C_ACC(state):  # 确认状态正文
 
 
 if __name__ == '__main__':
-    # m1 = initM_C2AS_REQ(1, 1)
-    # h1 = initHEAD(10, 10, len(m1))
-    # hm1 = initC2AS_REQ(h1, m1)
-    # shm1 = dict2str(hm1)
-    # print(shm1, type(shm1))
-
-    # # s1 = dict2str(m1)
-    # # print(s1, type(s1))
-    # rhm1 = str2dict(shm1)
-    # idc = rhm1['M_C2AS_REQ']['ID_C']
-    # print(rhm1, type(rhm1))
-    # print(idc)
     atc1 = initATC(1, '137001', 1)
     print(atc1)
+    ds_atc1 = cbDES.DES_encry(str(atc1), msg_rndKey())
+    print(ds_atc1)
+    s1 = initSIGN('fw7qw', SKEY_C)
+    print(s1)
