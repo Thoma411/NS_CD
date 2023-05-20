@@ -87,7 +87,7 @@ class AdminPage:  # 管理员登录界面
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
 
-        tag = cc.admin_on_login(username, password, TMP_K_CV)  # *
+        tag = cc.admin_on_login(username, password)  # *
         # cc.C_Main()
 
         if tag == 1:

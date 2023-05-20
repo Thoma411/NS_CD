@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 16:29:57
+LastEditTime: 2023-05-20 16:52:37
 Description: 
 '''
 
@@ -237,10 +237,13 @@ def IP2AD(IP: str):  # IP -> 6位AD字段
     return msg_ad[6:]
 
 
-def msg_getTime(dgt: int = 4):  # 获取当前时间,默认精确到.后4位
+def msg_getTime(dgt: int = 4, retType: str = 's'):  # 获取当前时间,默认精确到.后4位
     '''dgt: 时间精确到小数点后 dgt 位'''
     now_time = dt.datetime.now().strftime('%H%M%S%f')[:-(6 - dgt)]
-    return now_time
+    if retType == 's':
+        return now_time
+    else:
+        return int(now_time)
 
 
 def msg_rndKey(dgt: int = 8, retType: str = 's'):  # 生成定长随机字符串,默认8位
@@ -276,11 +279,14 @@ def initTKT(k_share, id_c, id_dst, ad_c):  # 装载票据
     return tmsg_eg
 
 
-def initATC(id_c, ad_c):  # 装载Authenticator_C
+def initATC(id_c, ad_c, ts=None):  # 装载Authenticator_C
     amsg_eg = ATC_C
     amsg_eg['ID_C'] = id_c
     amsg_eg['AD_C'] = ad_c
-    amsg_eg['TS_A'] = msg_getTime()
+    if ts is not None:
+        amsg_eg['TS_A'] = ts  # 手动给TS_5赋值
+    else:
+        amsg_eg['TS_A'] = msg_getTime()
     return amsg_eg
 
 
@@ -411,15 +417,17 @@ def initM_V2C_ACC(state):  # 确认状态正文
 
 
 if __name__ == '__main__':
-    m1 = initM_C2AS_REQ(1, 1)
-    h1 = initHEAD(10, 10, len(m1))
-    hm1 = initC2AS_REQ(h1, m1)
-    shm1 = dict2str(hm1)
-    print(shm1, type(shm1))
+    # m1 = initM_C2AS_REQ(1, 1)
+    # h1 = initHEAD(10, 10, len(m1))
+    # hm1 = initC2AS_REQ(h1, m1)
+    # shm1 = dict2str(hm1)
+    # print(shm1, type(shm1))
 
-    # s1 = dict2str(m1)
-    # print(s1, type(s1))
-    rhm1 = str2dict(shm1)
-    idc = rhm1['M_C2AS_REQ']['ID_C']
-    print(rhm1, type(rhm1))
-    print(idc)
+    # # s1 = dict2str(m1)
+    # # print(s1, type(s1))
+    # rhm1 = str2dict(shm1)
+    # idc = rhm1['M_C2AS_REQ']['ID_C']
+    # print(rhm1, type(rhm1))
+    # print(idc)
+    atc1 = initATC(1, '137001', 1)
+    print(atc1)

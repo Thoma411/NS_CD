@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 16:30:29
+LastEditTime: 2023-05-20 17:11:13
 Description:
 '''
 import socket as sk
@@ -12,7 +12,7 @@ C_IP = '192.168.137.60'  # !IP需提前声明
 
 AS_IP, AS_PORT = '192.168.137.1', 8010
 TGS_IP, TGS_PORT = '192.168.137.1', 8020
-V_IP, V_PORT = '192.168.137.60', 8030
+V_IP, V_PORT = '192.168.137.1', 8030
 MAX_SIZE = 2048
 
 
@@ -148,8 +148,8 @@ def create_C_C2TGS(c_ip, tkt_tgs, k_ctgs):  # 生成C2TGS报文
     return Sba_c2tgs
 
 
-def create_C_C2V(c_ip, tkt_v, k_cv):  # 生成C2V报文
-    Sdm_ATCC = initATC(ID_C, c_ip)  # 生成Authenticator_C
+def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
+    Sdm_ATCC = initATC(ID_C, c_ip, ts_5)  # 生成Authenticator_C
     Sdm_c2v = initM_C2V_REQ(tkt_v, Sdm_ATCC, k_cv)  # 生成正文并用k_cv加密ATC_C
     Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
     Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
@@ -187,7 +187,7 @@ def create_D_STULOG(user, pswd, k_cv):
 
 
 def C_C_Send(Dst_socket: sk, dst_flag: int,
-             caddr_ip, tkt=None, k_share=None):  # 发送控制报文
+             caddr_ip, tkt=None, k_share=None, ts_5=None):  # 发送控制报文
     # *生成报文
     Sba_msg = None
     if dst_flag == INC_C2AS_CTF:
@@ -198,7 +198,7 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
     elif dst_flag == INC_C2TGS:
         Sba_msg = create_C_C2TGS(caddr_ip, tkt, k_share)  # *生成C2TGS报文
     elif dst_flag == INC_C2V:
-        Sba_msg = create_C_C2V(caddr_ip, tkt, k_share)  # *生成C2V报文
+        Sba_msg = create_C_C2V(caddr_ip, tkt, k_share, ts_5)  # *生成C2V报文
     # *发送
     Dst_socket.send(Sba_msg)
     pass
@@ -215,13 +215,67 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
     Dst_socket.send(Sba_msg)
     pass
 
+
+def C_Kerberos():
+    client_ip = IP2AD(C_IP)  # 已是str
+
+    # *C-AS建立连接
+    ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    ASsock.connect((AS_IP, AS_PORT))
+
+    # TODO:ctf
+
+    # *发送给AS
+    C_C_Send(ASsock, INC_C2AS, client_ip)
+
+    # *接收k_ctgs, tkt_tgs
+    k_ctgs, ticket_tgs = C_Recv(ASsock)
+    ASsock.close()
+
+    # *C-TGS建立连接
+    TGSsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    TGSsock.connect((TGS_IP, TGS_PORT))
+
+    # *发送给TGS
+    C_C_Send(TGSsock, INC_C2TGS, client_ip, tkt=ticket_tgs, k_share=k_ctgs)
+
+    # *接收k_cv, tkt_v
+    k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
+    TGSsock.close()
+
+    # *C-V建立连接
+    Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    Vsock.connect((V_IP, V_PORT))
+
+    # *发送给V
+    send_ts_5 = msg_getTime()
+    # print(send_ts_5, type(send_ts_5))
+    C_C_Send(Vsock, INC_C2V, client_ip, tkt_v, k_cv, send_ts_5)
+
+    # *接收mdTS_5
+    recv_ts_5 = C_Recv(Vsock, k_cv)
+    # print(recv_ts_5, type(recv_ts_5))
+    if send_ts_5 == recv_ts_5:
+        print('[Kerberos] Authentication success.')
+        return True, k_cv  # 返回业务逻辑所需的对称钥
+    else:
+        print('[Kerberos] Authentication failed.')
+        return False
+
+    # TODO:业务逻辑
+    # k_cv = '00000000'
+    # C_D_Send(Vsock, IND_STU, '001', '001', k_cv)
+    # print('sent')
+    # msg01 = Vsock.recv(MAX_SIZE)
+    # print(msg01)
+
 # *登录调用函数
 
 
 def send_message(host, port, bmsg):  # 消息的发送与接收
     # 连接到服务器并发送数据
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
         server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
         sock.connect(server_address)
         sock.sendall(bmsg)  # 发送
@@ -235,22 +289,26 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
         sock.close()
 
 
-def admin_on_login(username, password, k_cv):  # 管理员登录消息
-    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
-    Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
-    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
-    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
-    Sba_log = Ssa_log.encode()
-    # 发送消息
-    response = send_message(C_HOST, C_PORT, Sba_log)
-    response1 = response.decode()
-    print("管理员登陆回复")
-    if response1 == "adm login":
-        return 1
+def admin_on_login(username, password):  # 管理员登录消息
+    atc_flag, k_cv = C_Kerberos()
+    if atc_flag:  # 认证成功
+        Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+        Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
+        Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+        Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+        Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+        Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+        Sba_log = Ssa_log.encode()
+        # 发送消息
+        response = send_message(C_HOST, C_PORT, Sba_log)
+        response1 = response.decode()
+        print("管理员登陆回复")
+        if response1 == "adm login":
+            return 1
+        else:
+            pass
     else:
-        pass
+        print('[admin_on_login] fatal.')
 
 
 def stu_on_login(username, password, k_cv):  # 学生登陆消息
@@ -287,51 +345,5 @@ def query_student_score(student_id, k_cv):
     return response_dict
 
 
-def C_Main():
-    client_ip = IP2AD(C_IP)  # 已是str
-
-    # *C-AS建立连接
-    ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    ASsock.connect((AS_IP, AS_PORT))
-
-    # TODO:ctf
-
-    # *发送给AS
-    C_C_Send(ASsock, INC_C2AS, client_ip)
-
-    # *接收k_ctgs, tkt_tgs
-    k_ctgs, ticket_tgs = C_Recv(ASsock)
-    ASsock.close()
-
-    # *C-TGS建立连接
-    TGSsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    TGSsock.connect((TGS_IP, TGS_PORT))
-
-    # *发送给TGS
-    C_C_Send(TGSsock, INC_C2TGS, client_ip, tkt=ticket_tgs, k_share=k_ctgs)
-
-    # *接收k_cv, tkt_v
-    k_cv, tkt_v = C_Recv(TGSsock, k_ctgs)
-    TGSsock.close()
-
-    # *C-V建立连接
-    Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    Vsock.connect((V_IP, V_PORT))
-
-    # *发送给V
-    C_C_Send(Vsock, INC_C2V, client_ip, tkt_v, k_cv)
-
-    # *接收mdTS_5
-    ts_5 = C_Recv(Vsock, k_cv)
-    print(ts_5)  # !待验证时间戳
-
-    # TODO:业务逻辑
-    k_cv = '00000000'
-    C_D_Send(Vsock, IND_STU, '001', '001', k_cv)
-    print('sent')
-    msg01 = Vsock.recv(MAX_SIZE)
-    print(msg01)
-
-
 if __name__ == '__main__':
-    C_Main()
+    print(C_Kerberos())

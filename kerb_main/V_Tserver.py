@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 16:17:31
+LastEditTime: 2023-05-20 17:07:47
 Description:
 '''
 import socket as sk
@@ -69,8 +69,8 @@ Dmsg_handles = {  # 数据报文处理函数字典
 }
 
 
-def V_Recv(C_Socket: sk, cAddr, tmp_k_cv):
-    k_cv = None  # 保存K_cv
+def V_Recv(C_Socket: sk, cAddr):
+    K_CV = None  # 保存K_cv
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -90,25 +90,28 @@ def V_Recv(C_Socket: sk, cAddr, tmp_k_cv):
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
                     Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
+                    print('V got the K_cv:', k_cv)
+                    K_CV = k_cv
+                    # print(K_CV)
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
 
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
-                    user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, tmp_k_cv)
+                    user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, K_CV)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
 
                 elif msg_intp == IND_STU:  # 学生
-                    user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, tmp_k_cv)
+                    user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, K_CV)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
 
                 elif msg_intp == IND_QRY:  # 请求/删除
-                    sid = Dhangle_STU_QRY(Rsm_msg, tmp_k_cv)
+                    sid = Dhangle_STU_QRY(Rsm_msg, K_CV)
                     stu_dict = ss.sql_search_stu(sid)
                     C_Socket.send(dict2str(stu_dict).encode())  # !格式
 
@@ -119,6 +122,7 @@ def V_Recv(C_Socket: sk, cAddr, tmp_k_cv):
         # print(Rsh_msg, Rsm_msg, cAddr)
         # *发送
         # C_Socket.send(Rsa_msg.encode())
+        print('external loop K_CV:', K_CV)
     C_Socket.close()
 
 
@@ -127,11 +131,11 @@ def V_Main():
     Vsock.bind(('', V_PORT))
     Vsock.listen(MAX_LISTEN)
     print('V_Tserver started...')
-    K_cv = '00000000'  # !临时共享密钥
+    # K_cv = '00000000'  # !临时共享密钥
     while True:
         cSocket, cAddr = Vsock.accept()
         print('conn:', cAddr)
-        thr = th.Thread(target=V_Recv, args=(cSocket, cAddr, K_cv))
+        thr = th.Thread(target=V_Recv, args=(cSocket, cAddr))
         thr.start()
     Vsock.close()
 
