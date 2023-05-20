@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 17:35:45
+LastEditTime: 2023-05-20 23:56:28
 Description:
 '''
 import socket as sk
@@ -262,13 +262,6 @@ def C_Kerberos():
         print('[Kerberos] Authentication failed.')
         return False
 
-    # TODO:业务逻辑
-    # k_cv = '00000000'
-    # C_D_Send(Vsock, IND_STU, '001', '001', k_cv)
-    # print('sent')
-    # msg01 = Vsock.recv(MAX_SIZE)
-    # print(msg01)
-
 # *登录调用函数
 
 
@@ -289,10 +282,10 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
         sock.close()
 
 
-def admin_on_login(username, password):  # 管理员登录消息
+def admin_on_login(usr, pwd):  # 管理员登录消息
     atc_flag, k_cv = C_Kerberos()  # 获取共享密钥
     if atc_flag:  # 认证成功
-        Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+        Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
         Ssm_log = dict2str(Sdm_log)  # 正文dict->str
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
@@ -300,10 +293,10 @@ def admin_on_login(username, password):  # 管理员登录消息
         Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
         Sba_log = Ssa_log.encode()
         # 发送消息
-        response = send_message(C_HOST, C_PORT, Sba_log)
-        response1 = response.decode()
-        print("管理员登陆回复")
-        if response1 == "adm login":
+        Rba_log = send_message(V_IP, V_PORT, Sba_log)
+        Rsa_log = Rba_log.decode()
+        print("[C] admin login response")
+        if Rsa_log == "adm login":
             return 1, k_cv
         else:
             pass
@@ -311,10 +304,10 @@ def admin_on_login(username, password):  # 管理员登录消息
         print('[admin_on_login] fatal.')
 
 
-def stu_on_login(username, password):  # 学生登陆消息
+def stu_on_login(usr, pwd):  # 学生登陆消息
     atc_flag, k_cv = C_Kerberos()
     if atc_flag:  # 认证成功
-        Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+        Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
         Ssm_log = dict2str(Sdm_log)  # 正文dict->str
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
@@ -322,10 +315,10 @@ def stu_on_login(username, password):  # 学生登陆消息
         Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
         Sba_log = Ssa_log.encode()
         # 发送消息
-        response = send_message(C_HOST, C_PORT, Sba_log)
-        response1 = response.decode()
-        print("学生登陆回复")
-        if response1 == "stu login":
+        Rba_log = send_message(V_IP, V_PORT, Sba_log)
+        Rsa_log = Rba_log.decode()
+        print("[C] stu login response")
+        if Rsa_log == "stu login":
             return 1, k_cv
         else:
             pass
@@ -334,8 +327,8 @@ def stu_on_login(username, password):  # 学生登陆消息
 
 
 # 解析响应消息并返回查询结果
-def query_student_score(student_id, k_cv):
-    Sdm_qry = initM_C2V_DEL(student_id)
+def query_student_score(sid, k_cv):
+    Sdm_qry = initM_C2V_DEL(sid)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
@@ -343,10 +336,10 @@ def query_student_score(student_id, k_cv):
     Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
     Sba_qry = Ssa_qry.encode()
 
-    response = send_message(C_HOST, C_PORT, Sba_qry)
-    response = response.decode()
-    response_dict = str2dict(response)
-    return response_dict
+    Rba_log = send_message(V_IP, V_PORT, Sba_qry)
+    Rsa_log = Rba_log.decode()
+    Rda_log = str2dict(Rsa_log)
+    return Rda_log
 
 
 if __name__ == '__main__':
