@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-19 18:50:58
+LastEditTime: 2023-05-20 09:07:39
 Description: 
 '''
 
@@ -11,7 +11,7 @@ import string as st
 import socket
 import struct
 import cbDES
-# import cyRSA
+import cbRSA
 import time
 
 H_LIGAL = 80  # 合法包

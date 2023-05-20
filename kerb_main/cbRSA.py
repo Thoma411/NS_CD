@@ -1,5 +1,5 @@
-import random
-import hashlib
+import random as rd
+import hashlib as hs
 
 
 def gcd(a, b):  # 求最大公约数
@@ -32,7 +32,7 @@ def quick_power(a: int, b: int) -> int:  # 快速幂
 
 
 def Miller_Rabin(n):  # 大素数检测
-    a = random.randint(2, n - 2)  # 随机第选取一个a∈[2,n-2]
+    a = rd.randint(2, n - 2)  # 随机第选取一个a∈[2,n-2]
     # print("随机选取的a=%lld\n"%a)
     s = 0  # s为d中的因子2的幂次数。
     d = n - 1
@@ -86,7 +86,7 @@ def Extended_Eulid(a: int, m: int) -> int:
 
 def Generate_prime(key_size: int) -> int:  # 按照需要的bit来生成大素数
     while True:
-        num = random.randrange(quick_power(
+        num = rd.randrange(quick_power(
             2, key_size - 1), quick_power(2, key_size))
         if Miller_Rabin(num):
             return num
@@ -94,15 +94,15 @@ def Generate_prime(key_size: int) -> int:  # 按照需要的bit来生成大素�
 
 def KeyGen(p: int, q: int):  # 生成公钥和私钥
     n = p * q
-    e = random.randint(1, (p - 1) * (q - 1))
+    e = rd.randint(1, (p - 1) * (q - 1))
     while gcd(e, (p - 1) * (q - 1)) != 1:
-        e = random.randint(1, (p - 1) * (q - 1))
+        e = rd.randint(1, (p - 1) * (q - 1))
     d = Extended_Eulid(e, (p - 1) * (q - 1))
     return n, e, d
 
 
 def hash_string(message):
-    sha256 = hashlib.sha256()
+    sha256 = hs.sha256()
     sha256.update(message.encode('utf-8'))
     return int(sha256.hexdigest(), 16)
 
