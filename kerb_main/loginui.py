@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import tkinter.font as tkFont
 from MsgFieldDef import *
+import C_Tclient as cc
 
 
 class StartPage:  # 主菜单
@@ -84,10 +85,10 @@ class AdminPage:  # 管理员登录界面
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
 
-        tag = admin_on_login(username, password)
+        k_cv = '00000000'  # TODO:密钥存储
+        tag = admin_on_login(username, password, k_cv)
 
         if tag == 1:
-
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
         else:
