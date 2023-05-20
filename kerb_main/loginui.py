@@ -4,7 +4,7 @@ import tkinter.font as tkFont
 # from MsgFieldDef import *
 import C_Tclient as cc
 
-TMP_K_CV = '00000000'  # 临时共享密钥
+K_CV = None
 
 
 class StartPage:  # 主菜单
@@ -86,10 +86,9 @@ class AdminPage:  # 管理员登录界面
     def login(self):
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
-
-        tag = cc.admin_on_login(username, password)  # *
-        # cc.C_Main()
-
+        global K_CV  # *声明K_CV为共享密钥
+        tag, k_cv = cc.admin_on_login(username, password)
+        K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
@@ -139,8 +138,9 @@ class StudentPage:  # 学生登陆界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        tag = cc.stu_on_login(username, password)
-
+        global K_CV  # *声明K_CV为共享密钥
+        tag, k_cv = cc.stu_on_login(username, password)
+        K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入学生操作界面
             StudentInfoManage(self.window, self.student_id.get())
@@ -264,7 +264,7 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.ave = []
         print("xx")
         # 打开数据库连接
-        stu_dict = cc.query_student_score(student_id, TMP_K_CV)
+        stu_dict = cc.query_student_score(student_id, K_CV)
         self.id.append(student_id)
         self.name.append(stu_dict['NAME'])
         self.gender.append(stu_dict['GEND'])

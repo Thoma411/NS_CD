@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-20 17:27:17
+LastEditTime: 2023-05-20 17:35:45
 Description:
 '''
 import socket as sk
@@ -304,7 +304,7 @@ def admin_on_login(username, password):  # 管理员登录消息
         response1 = response.decode()
         print("管理员登陆回复")
         if response1 == "adm login":
-            return 1
+            return 1, k_cv
         else:
             pass
     else:
@@ -326,7 +326,7 @@ def stu_on_login(username, password):  # 学生登陆消息
         response1 = response.decode()
         print("学生登陆回复")
         if response1 == "stu login":
-            return 1
+            return 1, k_cv
         else:
             pass
     else:
