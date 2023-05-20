@@ -1,4 +1,5 @@
 import random
+import hashlib
 
 
 def gcd(a, b):  # 求最大公约数
@@ -100,35 +101,38 @@ def KeyGen(p: int, q: int):  # 生成公钥和私钥
     return n, e, d
 
 
-def Sign(x: int, d: int, n: int) -> int:  # 数字签名
+def hash_string(message):
+    sha256 = hashlib.sha256()
+    sha256.update(message.encode('utf-8'))
+    return int(sha256.hexdigest(), 16)
+
+
+def RSA_sign(message: str, d: int, n: int) -> int:
+    x = hash_string(message)
     s = power(x, d, n)
     return s
 
 
-def Verify(s: int, e: int, n: int) -> int:  # 验证
-    x_ = power(s, e, n)
-    return x_
+def RSA_verf(message: str, s: int, e: int, n: int) -> bool:
+    x_ = hash_string(message)
+    x_verified = power(s, e, n)
+    return x_ == x_verified
 
 
 if __name__ == '__main__':
-    key_size = 64
+    key_size = 128
     p = Generate_prime(key_size)
     q = Generate_prime(key_size)
     n, e, d = KeyGen(p, q)
 
     # 消息
-    x = int(input("Message: "))
-    if type(x) != int:
-        raise ValueError("Must be an integer!")
-    # 签名
-    s = Sign(x, d, n)
-    # 验证
-    x_ = Verify(s, e, n)
-    Valid = (x_ == x)
+    inputMsg = '\{123cs4\}'
+    sig = RSA_sign(inputMsg, d, n)
+    print("Signature:", sig)
 
-    # Attack
-    s_ = random.randint(1, (p - 1) * (q - 1))
-    m_ = random.randint(1, (p - 1) * (q - 1))
+    testMsg = '\{123cs4\}'
+    is_verified = RSA_verf(inputMsg, sig, e, n)
+    print("Verification result:", is_verified)
 
     # Output
     print("Private Key: ")
@@ -138,20 +142,9 @@ if __name__ == '__main__':
     print("N: ", n)
     print("e: ", e)
     print("Signature: ")
-    print("s: ", s)
+    print("s: ", sig)
     print("Verify s of m: ")
-    if Valid:
-        print("valid")
-    else:
-        print("invalid")
-
-    print("m' (faked): ", m_)
-    if Verify(m_, s, n) == x:
-        print("valid")
-    else:
-        print("invalid")
-    print("s' (faked): ", s_)
-    if Verify(x_, s_, n) == x:
+    if is_verified:
         print("valid")
     else:
         print("invalid")
