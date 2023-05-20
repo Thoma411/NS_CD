@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 11:51:17
+LastEditTime: 2023-05-20 16:01:17
 Description:
 '''
 import socket as sk
@@ -57,6 +57,19 @@ def Dhangle_STU_LOG(mt, k_cv):  # 处理学生LOG报文 mt:str
     return user_stu, pswd_stu
 
 
+def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
+    Rsm_qry = cbDES.DES_decry(mt, k_cv)
+    Rdm_qry = str2dict(Rsm_qry)  # str->dict
+    sid = Rdm_qry['SID']  # 获取学生ID
+    # sname = Rdm_qry['NAME']
+    # sgend = Rdm_qry['GEND']
+    # sage = Rdm_qry['AGE']
+    # smark_c = Rdm_qry['MARK_C']
+    # smark_m = Rdm_qry['MARK_M']
+    # smark_e = Rdm_qry['MARK_E']
+    return sid
+
+
 Dmsg_handles = {  # 数据报文处理函数字典
     # TODO:预留存放数据报文处理函数
 }
@@ -97,8 +110,11 @@ def V_Recv(C_Socket: sk, cAddr, k_cv):
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
-                    pass
-                # print('This is a dataMsg.')
+                elif msg_intp == IND_QRY:  # 请求/删除
+                    sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
+                    stu_dict = ss.sql_search_stu(sid, k_cv)
+                    C_Socket.send(dict2str(stu_dict).encode())  # !格式
+                    # print('This is a dataMsg.')
         else:  # 收包非法
             print('illegal package!')
             break

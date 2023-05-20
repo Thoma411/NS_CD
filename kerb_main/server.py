@@ -82,18 +82,20 @@ def sql_search_stu(student_id):
             result = results[0]
             # 构建成绩字典
             scores_dict = {
-                "name": result[0],
-                "gender": result[1],
-                "age": result[2],
-                "chinese_score": result[3],
-                "math_score": result[4],
-                "english_score": result[5]
+                'NAME': result[0],
+                'GEND': result[1],
+                'AGE': result[2],
+                'MARK_C': result[3],
+                'MARK_M': result[4],
+                'MARK_E': result[5]
             }
             # 发送成绩字典数据给客户端
-            connection.sendall(dict2str(scores_dict).encode())
+            # connection.sendall(dict2str(scores_dict).encode())
+            return scores_dict
         else:
             # 没有找到学生记录，发送空字典给客户端
-            connection.sendall(dict2str({}).encode())
+            # connection.sendall(dict2str({}).encode())
+            return {}
             print("没有找到学生记录")
     except Exception as e:
         print("查询学生成绩时发生错误。错误消息：", e)
