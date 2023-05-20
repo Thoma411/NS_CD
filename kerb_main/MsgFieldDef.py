@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 15:07:36
+LastEditTime: 2023-05-20 15:15:35
 Description: 
 '''
 
@@ -9,7 +9,6 @@ import datetime as dt
 import random as rd
 import string as st
 import socket
-import struct
 import cbDES
 import cbRSA
 import time
@@ -17,8 +16,8 @@ import time
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
 EX_DAT = 20  # 数据报文
-C_HOST = 'localhost'
-C_PORT = 10001
+C_HOST = '192.168.137.60'
+C_PORT = 8030
 
 # INC_:控制报文类型
 INC_C2AS_CTF = 95  # C->AS 申请证书报文
@@ -448,14 +447,6 @@ def tmp_send_message(host, port, bmsg):  # 消息的发送与接收
 
 
 def admin_on_login(username, password, k_cv):
-    # 计算正文长度并填充冗余位
-    # M_C2V_LOG = {"username": username, "password": password}
-    # MSG_HEAD = {"LIGAL": 10, "EXTYPE": 10, "INTYPE": 10,
-    #             "TS_H": int(time.time()), "LEN_MT": 0, "REDD": b"\x00\x00\x00\x00"}
-    # content_str = dict2str(M_C2V_LOG)
-    # content_len = len(content_str.encode('utf-8'))
-    # MSG_HEAD["LEN_MT"] = content_len
-    # message = {**MSG_HEAD, **M_C2V_LOG}
     Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
     Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
@@ -475,21 +466,20 @@ def admin_on_login(username, password, k_cv):
 
 
 # 学生登陆消息
-def stu_on_login(username, password):
-    # 计算正文长度并填充冗余位
-    M_C2V_LOG = {"username": username, "password": password}
-    MSG_HEAD = {"LIGAL": 10, "EXTYPE": 10, "INTYPE": 11,
-                "TS_H": int(time.time()), "LEN_MT": 0, "REDD": b"\x00\x00\x00\x00"}
-    content_str = dict2str(M_C2V_LOG)
-    content_len = len(content_str.encode('utf-8'))
-    MSG_HEAD["LEN_MT"] = content_len
-    message = {**MSG_HEAD, **M_C2V_LOG}
+def stu_on_login(username, password, k_cv):
+    Sdm_log = initM_C2V_LOG(username, password)  # 生成登录正文
+    Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
+    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Sba_log = Ssa_log.encode()
 
     # 发送消息
-    response = send_message(C_HOST, C_PORT, message)
+    response = tmp_send_message(C_HOST, C_PORT, Sba_log)
     response1 = response.decode()
     print("学生登陆回复")
-    if response1 == "01":
+    if response1 == "stu login":
         return 1
     else:
         pass

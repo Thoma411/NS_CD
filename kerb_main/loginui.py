@@ -4,6 +4,8 @@ import tkinter.font as tkFont
 from MsgFieldDef import *
 import C_Tclient as cc
 
+TMP_K_CV = '00000000'  # 临时共享密钥
+
 
 class StartPage:  # 主菜单
     def __init__(self, parent_window):
@@ -85,8 +87,7 @@ class AdminPage:  # 管理员登录界面
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
 
-        k_cv = '00000000'  # TODO:密钥存储
-        tag = admin_on_login(username, password, k_cv)
+        tag = admin_on_login(username, password, TMP_K_CV)  # *
 
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
@@ -137,10 +138,9 @@ class StudentPage:  # 学生登陆界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        tag = stu_on_login(username, password)
+        tag = stu_on_login(username, password, TMP_K_CV)
 
         if tag == 1:
-
             # AdminManage(self.window)  # 进入管理员操作界面
             StudentInfoManage(self.window, self.student_id.get())
         else:
