@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-20 16:01:17
+LastEditTime: 2023-05-20 16:09:21
 Description:
 '''
 import socket as sk
@@ -105,16 +105,18 @@ def V_Recv(C_Socket: sk, cAddr, k_cv):
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
+
                 elif msg_intp == IND_STU:  # 学生
                     user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, k_cv)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
+
                 elif msg_intp == IND_QRY:  # 请求/删除
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
-                    stu_dict = ss.sql_search_stu(sid, k_cv)
+                    stu_dict = ss.sql_search_stu(sid)
                     C_Socket.send(dict2str(stu_dict).encode())  # !格式
-                    # print('This is a dataMsg.')
+
         else:  # 收包非法
             print('illegal package!')
             break

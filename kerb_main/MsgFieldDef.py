@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-20 15:36:06
+LastEditTime: 2023-05-20 16:07:13
 Description: 
 '''
 
@@ -453,7 +453,6 @@ def admin_on_login(username, password, k_cv):  # 管理员登录消息
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
     Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
     Sba_log = Ssa_log.encode()
-
     # 发送消息
     response = tmp_send_message(C_HOST, C_PORT, Sba_log)
     response1 = response.decode()
@@ -472,7 +471,6 @@ def stu_on_login(username, password, k_cv):  # 学生登陆消息
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
     Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
     Sba_log = Ssa_log.encode()
-
     # 发送消息
     response = tmp_send_message(C_HOST, C_PORT, Sba_log)
     response1 = response.decode()
@@ -483,29 +481,8 @@ def stu_on_login(username, password, k_cv):  # 学生登陆消息
         pass
 
 
-# 构建请求消息
-def generate_query_message(student_id):
-    message = {
-        "student_id": student_id
-    }
-    return message
-
-
-# 发送请求消息并接收响应
-def send_query_message(message):
-    # 发送请求消息并接收响应
-    response = send_message(C_HOST, C_PORT, message)
-    response_dict = str2dict(response.decode())
-    return response_dict
-
-
 # 解析响应消息并返回查询结果
 def query_student_score(student_id, k_cv):
-    # 生成请求消息
-    #message = generate_query_message(student_id)
-    # 发送请求消息并接收响应
-    # response_dict = send_query_message(message)
-
     Rdm_qry = initM_C2V_DEL(student_id)
     Rdh_qry = initHEAD(EX_DAT, IND_QRY, len(Rdm_qry))
     Rsm_qry = dict2str(Rdm_qry)  # 正文dict->str
@@ -518,24 +495,6 @@ def query_student_score(student_id, k_cv):
     response = response.decode()
     response_dict = str2dict(response)
     return response_dict
-    # 解析响应消息并返回查询结果
-    # if response_dict.get("error"):
-    #     raise Exception("查询学生成绩失败：{}".format(response_dict["error"]))
-    # else:
-    #     name = response_dict.get('NAME')
-    #     gender = response_dict.get('GEND')
-    #     age = response_dict.get('AGE')
-    #     chinese_score = response_dict.get('MARK_C')
-    #     math_score = response_dict.get('MARK_M')
-    #     english_score = response_dict.get('MARK_E')
-    #     return {
-    #         'NAME': name,
-    #         'GEND': gender,
-    #         'AGE': age,
-    #         'MARK_C': chinese_score,
-    #         'MARK_M': math_score,
-    #         'MARK_E': english_score
-    #     }
 
 
 if __name__ == '__main__':

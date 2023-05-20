@@ -1,4 +1,3 @@
-import json
 import socket as sk
 import threading as th
 import pymysql
