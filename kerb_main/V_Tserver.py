@@ -1,7 +1,13 @@
 '''
 Author: Thoma411
+Date: 2023-05-20 09:45:34
+LastEditTime: 2023-05-21 17:50:56
+Description: 
+'''
+'''
+Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-21 17:16:02
+LastEditTime: 2023-05-21 17:49:18
 Description:
 '''
 import socket as sk
@@ -70,10 +76,12 @@ def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
 
 
 local_Kcv = th.local()  # *创建线程本地存储对象
+lock = th.Lock()
 
 
 def V_Recv(C_Socket: sk, cAddr):
     # global K_CV  # 保存K_cv
+    local_Kcv.value = None
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -91,13 +99,14 @@ def V_Recv(C_Socket: sk, cAddr):
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
             msg_extp = Rdh_msg['EXTYPE']
             msg_intp = Rdh_msg['INTYPE']
-            TMP_KCV = None
 
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
                     Ssa_msg, Ck_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
                     print('V got the K_cv:', Ck_cv)
-                    TMP_KCV = Ck_cv  # *将K_CV存储到线程本地存储中
+                    # local_Kcv.value = Ck_cv  # *将K_CV存储到线程本地存储中
+                    with lock:  # 使用锁对象进行加锁保护
+                        local_Kcv.value = Ck_cv
                     # print(K_CV)
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
@@ -105,28 +114,31 @@ def V_Recv(C_Socket: sk, cAddr):
 
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
-                    user_adm, pswd_adm = Dhangle_ADM_LOG(
-                        Rsm_msg, local_Kcv.val)
-                    check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
+                    with lock:
+                        user_adm, pswd_adm = Dhangle_ADM_LOG(
+                            Rsm_msg, local_Kcv.value)
+                        check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
 
                 elif msg_intp == IND_STU:  # 学生
-                    user_stu, pswd_stu = Dhangle_STU_LOG(
-                        Rsm_msg, local_Kcv.val)
-                    check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
+                    with lock:
+                        user_stu, pswd_stu = Dhangle_STU_LOG(
+                            Rsm_msg, local_Kcv.value)
+                        check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
 
                 elif msg_intp == IND_QRY:  # 请求/删除
-                    sid = Dhangle_STU_QRY(Rsm_msg, local_Kcv.val)
-                    stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
-                    C_Socket.send(dict2str(stu_dict).encode())  # !格式
+                    with lock:
+                        sid = Dhangle_STU_QRY(Rsm_msg, local_Kcv.value)
+                        stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
+                        C_Socket.send(dict2str(stu_dict).encode())  # !格式
 
         else:  # 收包非法
             print('illegal package!')
             break
-        local_Kcv.val = TMP_KCV
+
         # print(Rsh_msg, Rsm_msg, cAddr)
         # *发送
         # C_Socket.send(Rsa_msg.encode())
