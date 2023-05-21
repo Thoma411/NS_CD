@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-21 00:46:05
+LastEditTime: 2023-05-21 16:20:59
 Description:
 '''
 import socket as sk
@@ -13,6 +13,8 @@ V_PORT = 8030
 MAX_SIZE = 2048
 MAX_LISTEN = 16
 
+PRT_LOG = False  # 是否打印输出
+
 
 def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Rdm_c2v = str2dict(mt)  # 正文str->dict
@@ -22,12 +24,14 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Rsm_tktV = cbDES.DES_decry(tkt_v, DKEY_V)  # *解密为str
     Rdm_tktV = str2dict(Rsm_tktV)  # str->dict
     k_cv = Rdm_tktV['K_SHARE']  # 取得k_cv共享密钥
-    # print(Rdm_tktV)
+    if PRT_LOG:
+        print('Ticket_V:\n',Rdm_tktV)
 
     # *解密Authenticator_C, 获得TS_5
     Rsm_ATCC = cbDES.DES_decry(atc_c, k_cv)  # *解密为str
     Rdm_ATCC = str2dict(Rsm_ATCC)  # str->dict
-    # print('Rdm_ATCC:\n', Rdm_ATCC)
+    if PRT_LOG:
+        print('Rdm_ATCC:\n', Rdm_ATCC)
     ts_5 = Rdm_ATCC['TS_A']
 
     # *生成mdTS_5 首部
@@ -37,6 +41,8 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Ssh_v2c = dict2str(Sdh_v2c)  # 首部dict->str
     Sbm_v2c = cbDES.DES_encry(Ssm_v2c, k_cv)  # *加密正文
     Ssa_v2c = Ssh_v2c + '|' + str(Sbm_v2c)  # 拼接str(Sbm_v2c已是str)
+    if PRT_LOG:
+        print('V->C:\n', Ssa_v2c)
     return Ssa_v2c, k_cv  # str+str(bytes)
 
 
@@ -71,9 +77,11 @@ def V_Recv(C_Socket: sk, cAddr):
 
         # *初步分割
         if not Rba_msg:  # 判空
-            print('msg is empty!')
+            # print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
+        if PRT_LOG:
+            print('C->V:\n', Rsa_msg)
         Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 

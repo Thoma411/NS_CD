@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-21 00:41:58
+LastEditTime: 2023-05-21 16:15:31
 Description: 
 '''
 
@@ -270,7 +270,7 @@ def initHEAD(extp, intp, lmt):  # 装载首部
     return hmsg_eg
 
 
-def initTKT(k_share, id_c, id_dst, ad_c):  # 装载票据
+def initTKT(k_share, id_c, id_dst, ad_c, prtLog=False):  # 装载票据
     tmsg_eg = TKT_A
     tmsg_eg['K_SHARE'] = k_share
     tmsg_eg['ID_C'] = id_c
@@ -278,6 +278,8 @@ def initTKT(k_share, id_c, id_dst, ad_c):  # 装载票据
     tmsg_eg['AD_C'] = ad_c
     tmsg_eg['TS_A'] = msg_getTime()
     tmsg_eg['LT_A'] = DEF_LT
+    if prtLog:  # 是否打印输出
+        print('Ticket:\n', tmsg_eg)
     return tmsg_eg
 
 
