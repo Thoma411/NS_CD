@@ -1,4 +1,4 @@
-from loginui import StartPage
+from C_ui import StartPage
 import tkinter as tk
 
 if __name__ == '__main__':

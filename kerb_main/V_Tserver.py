@@ -1,13 +1,13 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-21 18:39:04
+LastEditTime: 2023-05-21 18:52:34
 Description:
 '''
 import socket as sk
 import threading as th
 from MsgFieldDef import *
-import server as ss
+import DB_method as ss
 
 V_PORT = 8030
 MAX_SIZE = 2048
