@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 00:01:08
+LastEditTime: 2023-05-22 00:28:08
 Description:
 '''
 import socket as sk
@@ -25,6 +25,8 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Rsm_tktV = cbDES.DES_decry(tkt_v, DKEY_V)  # *解密为str
     Rdm_tktV = str2dict(Rsm_tktV)  # str->dict
     k_cv = Rdm_tktV['K_SHARE']  # 取得k_cv共享密钥
+    K_CV.k_cv = k_cv  # 在当前线程中设置 k_cv 的值，只对当前线程可见
+    print('[ex_ctl] V got the K_cv:', K_CV.k_cv)  # *
     if PRT_LOG:
         print('Ticket_V:\n', Rdm_tktV)
 
@@ -47,7 +49,11 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     return Ssa_v2c, k_cv  # str+str(bytes)
 
 
-def Dhangle_ADM_LOG(mt, k_cv):  # 处理管理员LOG报文 mt:str
+def Dhangle_ADM_LOG(mt):  # 处理管理员LOG报文 mt:str
+    if hasattr(K_CV, 'k_cv'):
+        k_cv = K_CV.k_cv
+    else:
+        raise ValueError("Current thread doesn't have k_cv value.")  # 抛出值错误异常
     Rsm_log = cbDES.DES_decry(mt, k_cv)
     Rdm_log = str2dict(Rsm_log)  # str->dict
     user_adm = Rdm_log['USER']  # 获取登录的用户名和密码
@@ -93,17 +99,20 @@ def V_Recv(C_Socket: sk, cAddr):
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
                     Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
-                    K_CV.k_cv = k_cv  # 在当前线程中设置 K_CV 的值，只对当前线程可见
-                    print('[ex_ctl] V got the K_cv:', K_CV.k_cv)
+                    # K_CV.k_cv = k_cv  # 在当前线程中设置 K_CV 的值，只对当前线程可见
+                    # print('[ex_ctl] V got the K_cv:', K_CV.k_cv)
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
 
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
-                    print('[ex_dat] K_cv:', K_CV.k_cv)
-                    user_adm, pswd_adm = Dhangle_ADM_LOG(
-                        Rsm_msg, K_CV.k_cv)
+                    try:
+                        print('[ex_dat] K_cv:', K_CV.k_cv)
+                        user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg)
+                    except ValueError as e:
+                        print(str(e))
+                        # continue  # 如果没设置当前线程的 k_cv 值，则直接跳过该次循环
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
