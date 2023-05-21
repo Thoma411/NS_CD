@@ -70,6 +70,7 @@ def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
 
 
 def V_Recv(C_Socket: sk, cAddr):
+    k_cv = None  # 在while外临时存储k_cv
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
