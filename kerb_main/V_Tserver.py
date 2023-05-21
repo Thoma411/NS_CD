@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-21 19:54:17
+LastEditTime: 2023-05-22 00:01:08
 Description:
 '''
 import socket as sk
@@ -14,6 +14,7 @@ MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 PRT_LOG = False  # 是否打印输出
+K_CV = th.local()
 
 
 def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
@@ -69,9 +70,6 @@ def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
     return sid
 
 
-K_CV = th.local()
-
-
 def V_Recv(C_Socket: sk, cAddr):
     # k_cv = None  # 在while外临时存储k_cv
     while True:
@@ -95,31 +93,31 @@ def V_Recv(C_Socket: sk, cAddr):
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
                     Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
-                    K_CV.__dict__['k_cv'] = k_cv  # 在当前线程中设置 K_CV 的值，只对当前线程可见
-                    print('[ex_ctl] V got the K_cv:', k_cv)
+                    K_CV.k_cv = k_cv  # 在当前线程中设置 K_CV 的值，只对当前线程可见
+                    print('[ex_ctl] V got the K_cv:', K_CV.k_cv)
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
 
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员
-                    print('[ex_dat] K_cv:', K_CV.__dict__['k_cv'])
+                    print('[ex_dat] K_cv:', K_CV.k_cv)
                     user_adm, pswd_adm = Dhangle_ADM_LOG(
-                        Rsm_msg, K_CV.__dict__['k_cv'])
+                        Rsm_msg, K_CV.k_cv)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
 
                 elif msg_intp == IND_STU:  # 学生
-                    print('[ex_dat] K_cv:', K_CV.__dict__['k_cv'])
+                    print('[ex_dat] K_cv:', K_CV.k_cv)
                     user_stu, pswd_stu = Dhangle_STU_LOG(
-                        Rsm_msg, K_CV.__dict__['k_cv'])
+                        Rsm_msg, K_CV.k_cv)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
 
                 elif msg_intp == IND_QRY:  # 请求/删除
-                    sid = Dhangle_STU_QRY(Rsm_msg, K_CV.__dict__['k_cv'])
+                    sid = Dhangle_STU_QRY(Rsm_msg, K_CV.k_cv)
                     stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
                     C_Socket.send(dict2str(stu_dict).encode())  # !格式
 
