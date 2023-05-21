@@ -1,14 +1,13 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-21 16:20:32
+LastEditTime: 2023-05-21 16:30:03
 Description: 
 '''
 import socket as sk
 import threading as th
 from MsgFieldDef import *
 
-SERVER_HOST = '192.168.137.1'
 TGS_PORT = 8020
 MAX_SIZE = 2048
 MAX_LISTEN = 16
