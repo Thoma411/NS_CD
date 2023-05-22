@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 18:12:39
+LastEditTime: 2023-05-22 18:25:58
 Description:
 '''
 import socket as sk
@@ -350,7 +350,7 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         print('[stu_on_login] fatal.')
 
 
-# 解析响应消息并返回查询结果
+# 学生查询学生成绩
 def query_student_score(sid, k_cv):
     Sdm_qry = initM_C2V_DEL(sid)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
@@ -368,8 +368,9 @@ def query_student_score(sid, k_cv):
     return Rda_log
 
 
-# 处理管理员发送过来的报文 返回查询结果
+# 管理员查询学生成绩
 def query_admin_stuscore(qry, k_cv):
+    print('[query_admin_stuscore]')
     Sdm_qry = initM_C2V_ADMIN_QRY(qry)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
@@ -379,13 +380,14 @@ def query_admin_stuscore(qry, k_cv):
     Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
     # Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
     Sba_qry = Ssa_qry.encode()
-
+    print('[query_admin_stuscore] encode')
     Rba_qry = send_message(V_IP, V_PORT, Sba_qry)  # 发送接收
     Rsa_qry = Rba_qry.decode()
     Rda_qry = str2dict(Rsa_qry)
     return Rda_qry
 
 
+# 管理员添加学生信息
 def add_admin_stuscore(stu_dict, k_cv):
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
