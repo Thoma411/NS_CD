@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 16:59:06
+LastEditTime: 2023-05-22 17:22:11
 Description:
 '''
 import socket as sk
@@ -312,7 +312,9 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Ssm_log = dict2str(Sdm_log)  # 正文dict->str
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-        Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+        Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
+        # Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        Ssa_log = Ssh_log + '|' + Sbm_log
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)
@@ -334,6 +336,8 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         Ssm_log = dict2str(Sdm_log)  # 正文dict->str
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+        Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
+        # Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
         Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
         Sba_log = Ssa_log.encode()
         # 发送消息
@@ -355,6 +359,8 @@ def query_student_score(sid, k_cv):
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
     Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
+    # Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
     Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
     Sba_qry = Ssa_qry.encode()
 
@@ -364,42 +370,48 @@ def query_student_score(sid, k_cv):
     return Rda_log
 
 
-# 处理管理员发送过来的报文，返回查询结果。
+# 处理管理员发送过来的报文 返回查询结果
 def query_admin_stuscore(qry, k_cv):
-    Sadm_m_qry = initM_C2V_ADMIN_QRY(qry)
-    Sadm_h_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sadm_m_qry))
-    Sadm_m_str_qry = dict2str(Sadm_m_qry)  # 正文dict->str
-    Sadm_h_str_qry = dict2str(Sadm_h_qry)  # 首部dict->str
-    Sadm_h_byte_qry = cbDES.DES_encry(Sadm_m_str_qry, k_cv)  # 已是str类型
-    Sadm_a_str_qry = Sadm_h_str_qry + '|' + Sadm_h_byte_qry  # 拼接
-    Sadm_a_byte_qry = Sadm_a_str_qry.encode()
+    Sdm_qry = initM_C2V_ADMIN_QRY(qry)
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
+    Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
+    Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
+    # Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
+    Sba_qry = Ssa_qry.encode()
 
-    Radm_a_byte_qry = send_message(V_IP, V_PORT, Sadm_a_byte_qry)
-    Radm_a_str_qry = Radm_a_byte_qry.decode()
-    Radm_a_dict_qry = str2dict(Radm_a_str_qry)
-    return Radm_a_dict_qry
+    Rba_qry = send_message(V_IP, V_PORT, Sba_qry)  # 发送接收
+    Rsa_qry = Rba_qry.decode()
+    Rda_qry = str2dict(Rsa_qry)
+    return Rda_qry
 
 
 def add_admin_stuscore(stu_dict, k_cv):
-    Sadm_h_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
-    Sadm_m_str_add = dict2str(stu_dict)
-    Sadm_h_str_add = dict2str(Sadm_h_add)
-    Sadm_h_byte_add = cbDES.DES_encry(Sadm_m_str_add, k_cv)
-    Sadm_a_str_add = Sadm_h_str_add + '|' + Sadm_h_byte_add
-    Sadm_a_byte_add = Sadm_a_str_add.encode()
-
-    Radm_a_byte_add = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
+    Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
+    Ssm_add = dict2str(stu_dict)  # 正文dict->str
+    Ssh_add = dict2str(Sdh_add)  # 首部dict->str
+    Sbm_add = cbDES.DES_encry(Ssm_add, k_cv)
+    Sbc_add = cbRSA.RSA_sign(Sbm_add, SKEY_C)  # *加密正文生成数字签名
+    # Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
+    Ssa_add = Ssh_add + '|' + Sbm_add
+    Sba_add = Ssa_add.encode()
+    send_message_tmp(V_IP, V_PORT, Sba_add)
+    pass
 
 
 def del_admin_stuscore(stu_id, k_cv):
-    Sadm_m_del = initM_C2V_DEL(stu_id)
-    Sadm_h_del = initHEAD(EX_DAT, IND_DEL, len(Sadm_m_del))
-    Sadm_m_str_del = dict2str(Sadm_m_del)
-    Sadm_h_str_del = dict2str(Sadm_h_del)
-    Sadm_h_byte_del = cbDES.DES_encry(Sadm_m_str_del, k_cv)
-    Sadm_a_str_del = Sadm_h_str_del + '|' + Sadm_h_byte_del
-    Sadm_a_byte_del = Sadm_a_str_del.encode()
-    Radm_a_byte_del = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_del)
+    Sdm_del = initM_C2V_DEL(stu_id)
+    Sdh_del = initHEAD(EX_DAT, IND_DEL, len(Sdm_del))
+    Ssm_del = dict2str(Sdm_del)  # 正文dict->str
+    Ssh_del = dict2str(Sdh_del)  # 首部dict->str
+    Sbm_del = cbDES.DES_encry(Ssm_del, k_cv)
+    Sbc_del = cbRSA.RSA_sign(Sbm_del, SKEY_C)  # *加密正文生成数字签名
+    # Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
+    Ssa_del = Sdh_del + '|' + Sbm_del
+    Sba_del = Ssa_del.encode()
+    send_message_tmp(V_IP, V_PORT, Sba_del)
 
 
 if __name__ == '__main__':

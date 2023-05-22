@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-22 16:59:42
+LastEditTime: 2023-05-22 17:10:07
 Description: 
 '''
 
@@ -203,6 +203,7 @@ M_C2V_GRADE = {
     'MARK_M': int,  # 数学成绩
     'MARK_E': int  # 英语成绩
 }
+
 M_C2V_ADD = {
     'ID': int,  # 学号
     'NAME': str,  # 姓名
@@ -212,6 +213,7 @@ M_C2V_ADD = {
     'MARK_M': int,  # 数学成绩
     'MARK_E': int  # 英语成绩
 }
+
 # del msg
 M_C2V_DEL = {
     'SID': int  # 学号

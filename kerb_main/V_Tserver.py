@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 16:59:51
+LastEditTime: 2023-05-22 17:23:28
 Description:
 '''
 import socket as sk
@@ -122,7 +122,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     print('no match func for msg.')
 
             elif msg_extp == EX_DAT:  # *数据报文
-                if msg_intp == IND_ADM:  # 管理员
+                if msg_intp == IND_ADM:  # 管理员登录
                     print('[ex_dat] K_cv:', K_CV)
                     user_adm, pswd_adm = Dhangle_ADM_LOG(
                         Rsm_msg, K_CV)
@@ -130,7 +130,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
 
-                elif msg_intp == IND_STU:  # 学生
+                elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', K_CV)
                     user_stu, pswd_stu = Dhangle_STU_LOG(
                         Rsm_msg, K_CV)
@@ -148,10 +148,12 @@ def V_Recv(C_Socket: sk, cAddr):
                     qry = Dhangle_ADM_QRY(Rsm_msg, K_CV)
                     stu_all_dict = ss.sql_search_adm()
                     C_Socket.send(dict2str(stu_all_dict).encode())
-                elif msg_intp == IND_ADD:
+
+                elif msg_intp == IND_ADD:  # 管理员添加
                     stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, K_CV)
                     ss.sql_add_stu(stu_add_dict)
-                elif msg_intp == IND_DEL:
+
+                elif msg_intp == IND_DEL:  # 管理员删除
                     stu_id = Dhangle_ADM_DEL(Rsm_msg, K_CV)
                     ss.sql_del_stu(stu_id)
 
