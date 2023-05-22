@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 18:04:29
+LastEditTime: 2023-05-22 18:12:39
 Description:
 '''
 import socket as sk
@@ -116,8 +116,6 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     d/s/b/h - 字典/字符串/比特/16进制比特
     h/m/c/a - 首部/正文/签名/拼接整体
     '''
-
-
 #     Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
 #     Sdc_c2as_ctf = initSIGN(SKEY_C, ID_C, PKEY_C)  # 生成签名
 #     Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF,
@@ -160,7 +158,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
     Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
     Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
     Ssh_c2v = dict2str(Sdh_c2v)  # 首部dict->str
-    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v  # 拼接
+    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|'  # 拼接
     Sba_c2v = Ssa_c2v.encode()  # str->bytes
     return Sba_c2v
 
@@ -174,7 +172,7 @@ def create_D_ADMLOG(user, pswd, k_cv):
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
     Sba_log = Ssa_log.encode()
     # TODO:数字签名
     return Sba_log
@@ -186,7 +184,7 @@ def create_D_STULOG(user, pswd, k_cv):
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
     Sba_log = Ssa_log.encode()
     # TODO:数字签名
     print(Ssa_log)
@@ -281,7 +279,7 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
         sock.connect(server_address)
         sock.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        response = sock.recv(1024)
+        response = sock.recv(MAX_SIZE)
         print("Received response:", response)
         return response
     except Exception as e:
