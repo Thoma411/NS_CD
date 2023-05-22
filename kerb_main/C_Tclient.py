@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 18:25:58
+LastEditTime: 2023-05-22 18:34:14
 Description:
 '''
 import socket as sk
@@ -370,7 +370,7 @@ def query_student_score(sid, k_cv):
 
 # 管理员查询学生成绩
 def query_admin_stuscore(qry, k_cv):
-    print('[query_admin_stuscore]')
+    # print('[query_admin_stuscore]')
     Sdm_qry = initM_C2V_ADMIN_QRY(qry)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
@@ -380,7 +380,7 @@ def query_admin_stuscore(qry, k_cv):
     Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
     # Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
     Sba_qry = Ssa_qry.encode()
-    print('[query_admin_stuscore] encode')
+    # print('[query_admin_stuscore] encode')
     Rba_qry = send_message(V_IP, V_PORT, Sba_qry)  # 发送接收
     Rsa_qry = Rba_qry.decode()
     Rda_qry = str2dict(Rsa_qry)
