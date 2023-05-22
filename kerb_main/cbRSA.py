@@ -135,7 +135,7 @@ def RSA_sign(msg: str, skey, retType='s'):
         return Signature  # int
 
 
-def RSA_verf(msg: str, sig, pkey) -> bool:
+def RSA_verf(msg, sig, pkey):
     '''msg: input_text\nsig: signature\ne&n: PK'''
     if type(sig) == str:
         sig = int(sig)
