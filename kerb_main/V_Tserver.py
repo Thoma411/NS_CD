@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 17:37:41
+LastEditTime: 2023-05-22 18:17:40
 Description:
 '''
 import socket as sk
@@ -111,6 +111,7 @@ def V_Recv(C_Socket: sk, cAddr):
             print('C->V:\n', Rsa_msg)
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
+        print('sign:', Rsc_msg)
 
         # *匹配报文类型
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
