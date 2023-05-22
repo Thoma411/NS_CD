@@ -388,7 +388,7 @@ def add_admin_stuscore(stu_dict, k_cv):
     Sadm_a_str_add = Sadm_h_str_add + '|' + Sadm_h_byte_add
     Sadm_a_byte_add = Sadm_a_str_add.encode()
 
-    Radm_a_byte_add = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
+    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
 
 
 def del_admin_stuscore(stu_id, k_cv):
@@ -399,8 +399,16 @@ def del_admin_stuscore(stu_id, k_cv):
     Sadm_h_byte_del = cbDES.DES_encry(Sadm_m_str_del, k_cv)
     Sadm_a_str_del = Sadm_h_str_del + '|' + Sadm_h_byte_del
     Sadm_a_byte_del = Sadm_a_str_del.encode()
-    Radm_a_byte_del = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_del)
+    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_del)
 
+def update_admin_stuscore(stu_dict,k_cv):
+    Sadm_h_update = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
+    Sadm_m_str_update = dict2str(stu_dict)
+    Sadm_h_str_update = dict2str(Sadm_h_update)
+    Sadm_h_byte_update = cbDES.DES_encry(Sadm_m_str_update, k_cv)
+    Sadm_a_str_update = Sadm_h_str_update + '|' + Sadm_h_byte_update
+    Sadm_a_byte_update = Sadm_a_str_update.encode()
+    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_update)
 
 if __name__ == '__main__':
     print(C_Kerberos())
