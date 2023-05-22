@@ -124,16 +124,21 @@ def RSA_initKey(typeK: str = None, lenK: int = LEN_RKEY):  # 生成PK/SK
         return n, e, d
 
 
-def RSA_sign(msg: str, skey) -> int:
+def RSA_sign(msg: str, skey, retType='s'):
     '''msg: input_text\nd&n: SK'''
     n, d = skey
     x = hash_string(msg)
     Signature = power(x, d, n)
-    return Signature
+    if retType == 's':
+        return str(Signature)  # str
+    else:
+        return Signature  # int
 
 
-def RSA_verf(msg: str, sig: int, pkey) -> bool:
+def RSA_verf(msg: str, sig, pkey) -> bool:
     '''msg: input_text\nsig: signature\ne&n: PK'''
+    if type(sig) == str:
+        sig = int(sig)
     n, e = pkey
     x_ = hash_string(msg)
     x_verified = power(sig, e, n)
