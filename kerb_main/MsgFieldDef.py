@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-22 20:08:14
+LastEditTime: 2023-05-22 20:39:16
 Description: 
 '''
 
@@ -432,11 +432,6 @@ def initM_C2V_ADMIN_QRY(qry):  # 请求查询全部学生信息的正文
     mmsg_eg = M_C2V_QRY
     mmsg_eg['QRY'] = qry
     return mmsg_eg
-
-
-def initM_C2V_ADMIN_ADD(stu_dict):
-    mmsg_eg = M_C2V_ADD
-    mmsg_eg['ID']
 
 
 def initM_V2C_ACC(state):  # 确认状态正文
