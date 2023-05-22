@@ -1,7 +1,7 @@
 <!--
  * @Author: Thoma411
  * @Date: 2023-04-30 23:49:24
- * @LastEditTime: 2023-05-18 23:15:52
+ * @LastEditTime: 2023-05-22 15:44:28
  * @Description: 更新日志
 -->
 # 更新日志
@@ -31,6 +31,7 @@ UDP：
 ## 230519
 
 合并：
+
 * 把login的server.py、loginui.py、main.py重构到kerb_main中
 * 将原本的message_process中的消息处理函数合并到MsgFieldDef中
 * 由于Crypto安装问题，暂时先将server.py和loginui.py引用到的MsgFieldDef中的函数写在自己文件里
