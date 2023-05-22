@@ -82,6 +82,10 @@ def Dhangle_ADM_ADD(mt, k_cv):  # 处理管理员添加学生的报文
     adm_dict_add = str2dict(adm_str_add)
     return adm_dict_add
 
+def Dhangle_ADM_UPD(mt,k_cv): #处理管理员更新学生信息的报文
+    adm_str_update =cbDES.DES_decry(mt, k_cv)
+    adm_dict_update = str2dict(adm_str_update)
+    return adm_dict_update
 
 def Dhangle_ADM_DEL(mt, k_cv):
     adm_str_del = cbDES.DES_decry(mt, k_cv)
@@ -156,6 +160,9 @@ def V_Recv(C_Socket: sk, cAddr):
                 elif msg_intp == IND_DEL:  # 管理员删除
                     stu_id = Dhangle_ADM_DEL(Rsm_msg, K_CV)
                     ss.sql_del_stu(stu_id)
+                elif msg_intp == IND_UPD:
+                    stu_update_dict=Dhangle_ADM_UPD(Rsm_msg,K_CV)
+                    ss.sql_update_stu(stu_update_dict)
 
         else:  # 收包非法
             print('illegal package!')

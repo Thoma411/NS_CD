@@ -381,7 +381,7 @@ class AdminManage:
             total = stu_all_dict[key]['c_grade'] + \
                 stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
-            ave = (float)(total / 3)
+            ave = int(total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
@@ -474,8 +474,8 @@ class AdminManage:
         self.tree.bind('<Button-1>', self.click)  # 左键获取位置
         self.right_top_button1 = ttk.Button(
             self.frame_right_top, text='新建学生信息', width=20, command=self.new_row)
-        # self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
-        #                                     command=self.updata_row)
+        self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
+                                            command=self.updata_row)
         self.right_top_button3 = ttk.Button(self.frame_right_top, text='删除选中学生信息', width=20,
                                             command=self.del_row)
         self.right_top_button4 = ttk.Button(self.frame_right_top, text='清空', width=20,
@@ -483,7 +483,7 @@ class AdminManage:
         # 位置设置
         self.right_top_title.grid(row=0, column=0, pady=10)
         self.right_top_button1.grid(row=1, column=0, padx=20, pady=10)
-        # self.right_top_button2.grid(row=2, column=0, padx=20, pady=10)
+        self.right_top_button2.grid(row=2, column=0, padx=20, pady=10)
         self.right_top_button3.grid(row=3, column=0, padx=20, pady=10)
         self.right_top_button4.grid(row=4, column=0, padx=20, pady=10)
         # 整体区域定位
@@ -614,3 +614,37 @@ class AdminManage:
             print(self.id)
             self.tree.delete(self.tree.selection()[0])  # 删除所选行
             print(self.tree.get_children())
+
+    def updata_row(self):
+        res = messagebox.askyesnocancel('警告！', '是否更新所填数据？')
+        if res == True:
+            if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
+                # 打开数据库连接
+                stu_dict = {
+                    'ID': self.var_id.get(),  # 学号
+                    'NAME': self.var_name.get(),  # 姓名
+                    'GEND': self.var_gender.get(),  # 性别
+                    'AGE': self.var_age.get(),
+                    'MARK_C': self.var_c_grade.get(),  # 语文成绩
+                    'MARK_M': self.var_m_grade.get(),  # 数学成绩
+                    'MARK_E': self.var_e_grade.get()  # 英语成绩
+                }
+                id_index = self.id.index(self.row_info[0])
+                cc.update_admin_stuscore(stu_dict,K_CV)
+                self.name[id_index] = self.var_name.get()
+                self.gender[id_index] = self.var_gender.get()
+                self.age[id_index] = self.var_age.get()
+                self.c_grade[id_index] = self.var_c_grade.get()
+                self.m_grade[id_index] = self.var_m_grade.get()
+                self.e_grade[id_index] = self.var_e_grade.get()
+                self.total[id_index] = self.var_total.get()
+                self.ave[id_index] = self.var_ave.get()
+
+                self.tree.item(self.tree.selection()[0], values=(
+                    self.var_id.get(), self.var_name.get(), self.var_gender.get(),
+                    self.var_age.get(), self.var_c_grade.get(), self.var_m_grade.get(), self.var_e_grade.get(),
+                    float(self.var_c_grade.get()) + float(self.var_m_grade.get()) + float(self.var_e_grade.get()),
+                    (float(self.var_c_grade.get()) + float(self.var_m_grade.get()) + float(self.var_e_grade.get())) / 3
+                ))  # 修改对于行信息
+            else:
+                messagebox.showinfo('警告！', '不能修改学生学号！')

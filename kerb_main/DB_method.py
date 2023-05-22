@@ -198,22 +198,23 @@ def sql_add_stu(stu_dict):
 
 
 # 管理员更新学生信息
-def sql_update_stu(stu_id, stu_dict):
+def sql_update_stu(stu_dict):
     # res = messagebox.askyesnocancel('警告！', '是否更新所填数据？')
     # if res == True:
     #     if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
     #         # 打开数据库连接
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
+    print("更新的学生的信息为：",stu_dict)
     sql = "UPDATE student_k SET name = '%s', gender = '%s', age = '%s',c_grade = '%s', m_grade = '%s', e_grade = '%s' , total = '%s', ave = '%s'  \
 				 WHERE id = '%s'" % (
-        stu_dict['NAME'], stu_dict['GENDER'], stu_dict['AGE'],
+        stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
         stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
         float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) +
         float(stu_dict['MARK_E']),
         (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']
                                            ) + float(stu_dict['MARK_E'])) / 3,
-        stu_id)  # SQL 插入语句
+        stu_dict['ID'])  # SQL 插入语句
 
     try:
         cursor.execute(sql)  # 执行sql语句
