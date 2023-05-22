@@ -3,7 +3,6 @@ import threading as th
 import pymysql
 from MsgFieldDef import *
 
-
 SERVER_HOST = '0.0.0.0'
 DB_HOST = '127.0.0.1'
 SERVER_PORT = 10001
@@ -128,13 +127,13 @@ def sql_search_adm():
                 "e_grade": row[6]
             }
 
-            student_list.append(stu_dict) # 将学生信息的字典添加到列表中
- # 将学生信息的字典添加到列表中
+            student_list.append(stu_dict)  # 将学生信息的字典添加到列表中
+        # 将学生信息的字典添加到列表中
         students_all_dict = {}  # 创建一个字典用于保存所有学生的信息， 其中键值是每个学生的id
         for student in student_list:
             id = student['id']
             students_all_dict[id] = student
-        print('学生成绩的所有字典db:',students_all_dict)
+        print('学生成绩的所有字典db:', students_all_dict)
         return students_all_dict
     except Exception as e:  # 捕获异常
         print("查询学生成绩时发生错误。错误消息：", e)
@@ -169,23 +168,27 @@ def sql_del_stu(stu_id):
 
 
 # 管理员增加学生信息
-def sql_add_stu(stu_id, stu_dict):
+def sql_add_stu(stu_dict):
     # if str(self.var_id.get()) in self.id:
     #     messagebox.showinfo('警告！', '该学生已存在！')
     # else:
-    if stu_id != '' and stu_dict['NAME'] != '' and stu_dict['GENDER'] != '' and stu_dict['AGE'] != '' \
+    print('增加学生的字典', stu_dict)
+    if stu_dict['ID'] != '' and stu_dict['NAME'] != '' and stu_dict['GEND'] != '' and stu_dict['AGE'] != '' \
             and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
         # 打开数据库连接
-        db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
+        db = pymysql.connect(host='127.0.0.1', user="root", passwd="", db="student")
         cursor = db.cursor()  # 使用cursor()方法获取操作游标
-        sql = "INSERT INTO student_stu_dict['NAME']k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
+        print("sql执行前")
+        total = float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])
+        ave = (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']))/3
+        sql = "INSERT INTO student_k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
-              (stu_id, stu_dict['NAME'], stu_dict['GENDER'], stu_dict['AGE'],
-               stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
-               float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']),
-               (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(
-                   stu_dict['MARK_E'])) / 3
+              (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
+               stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'], total, ave
                )  # SQL 插入语句
+
+        print("sql执行后")
+        print(stu_dict)
         try:
             cursor.execute(sql)  # 执行sql语句
             db.commit()  # 提交到数据库执行
@@ -219,9 +222,6 @@ def sql_update_stu(stu_id, stu_dict):
         db.rollback()  # 发生错误时回滚
         # messagebox.showinfo('警告！', '更新失败，数据库连接失败！')
     db.close()  # 关闭数据库连
-
-
-
 
 
 def handle_client(connection, client_address):

@@ -8,11 +8,16 @@ import socket as sk
 from MsgFieldDef import *
 
 ID_C = 13  # !每个C的ID需不同
-C_IP = '192.128.137.60'  # !IP需提前声明
+# C_IP = '192.128.137.60'  # !IP需提前声明
+#
+# AS_IP, AS_PORT = '192.128.137.60', 8010
+# TGS_IP, TGS_PORT = '192.128.137.60', 8020
+# V_IP, V_PORT = '192.128.137.60', 8030
+C_IP = '127.0.0.1'  # !IP需提前声明
 
-AS_IP, AS_PORT = '192.128.137.60', 8010
-TGS_IP, TGS_PORT = '192.128.137.60', 8020
-V_IP, V_PORT = '192.128.137.60', 8030
+AS_IP, AS_PORT = '127.0.0.1', 8010
+TGS_IP, TGS_PORT = '127.0.0.1', 8020
+V_IP, V_PORT = '127.0.0.1', 8030
 MAX_SIZE = 2048
 
 
@@ -284,7 +289,18 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
     finally:
         sock.close()
 
-
+def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
+    # 连接到服务器并发送数据
+    try:
+        sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        sock.connect(server_address)
+        sock.sendall(bmsg)  # 发送
+        print("Sent message:", bmsg)
+    except Exception as e:
+        print("Error:", e)
+    finally:
+        sock.close()
 def admin_on_login(usr, pwd):  # 管理员登录消息
     atc_flag, k_cv = C_Kerberos()  # 获取共享密钥
     if atc_flag:  # 认证成功
@@ -359,6 +375,16 @@ def query_admin_stuscore(qry, k_cv):
     Radm_a_str_qry = Radm_a_byte_qry.decode()
     Radm_a_dict_qry = str2dict(Radm_a_str_qry)
     return Radm_a_dict_qry
+
+def add_admin_stuscore(stu_dict,k_cv):
+    Sadm_h_add=initHEAD(EX_DAT, IND_ADD, len(stu_dict))
+    Sadm_m_str_add= dict2str(stu_dict)
+    Sadm_h_str_add = dict2str(Sadm_h_add)
+    Sadm_h_byte_add = cbDES.DES_encry(Sadm_m_str_add, k_cv)
+    Sadm_a_str_add= Sadm_h_str_add + '|' + Sadm_h_byte_add
+    Sadm_a_byte_add = Sadm_a_str_add.encode()
+
+    Radm_a_byte_add = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
 
 
 if __name__ == '__main__':

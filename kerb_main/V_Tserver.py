@@ -76,6 +76,11 @@ def Dhangle_ADM_QRY(mt, k_cv):  # 处理管理员请求报文
     qry = adm_dict_qry['QRY']  # 获取请求讯号
     return qry
 
+def Dhangle_ADM_ADD(mt,k_cv):   #处理管理员添加学生的报文
+    adm_str_add= cbDES.DES_decry(mt, k_cv)
+    adm_dict_add= str2dict(adm_str_add)
+    return adm_dict_add
+
 
 def V_Recv(C_Socket: sk, cAddr):
     k_cv = None  # 在while外临时存储k_cv
@@ -135,6 +140,9 @@ def V_Recv(C_Socket: sk, cAddr):
                     qry = Dhangle_ADM_QRY(Rsm_msg, K_CV)
                     stu_all_dict = ss.sql_search_adm()
                     C_Socket.send(dict2str(stu_all_dict).encode())
+                elif msg_intp == IND_ADD:
+                    stu_add_dict=Dhangle_ADM_ADD(Rsm_msg,K_CV)
+                    ss.sql_add_stu(stu_add_dict)
 
         else:  # 收包非法
             print('illegal package!')

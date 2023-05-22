@@ -202,7 +202,15 @@ M_C2V_GRADE = {
     'MARK_M': int,  # 数学成绩
     'MARK_E': int  # 英语成绩
 }
-
+M_C2V_ADD = {
+    'ID': int,    #学号
+    'NAME': str,  # 姓名
+    'GEND': str,  # 性别
+    'AGE': int,
+    'MARK_C': int,  # 语文成绩
+    'MARK_M': int,  # 数学成绩
+    'MARK_E': int  # 英语成绩
+}
 # del msg
 M_C2V_DEL = {
     'SID': int  # 学号
@@ -420,7 +428,9 @@ def initM_C2V_ADMIN_QRY(qry): #请求查询全部学生信息的正文
     mmsg_eg['QRY'] =qry
     return mmsg_eg
 
-
+def initM_C2V_ADMIN_ADD(stu_dict):
+    mmsg_eg= M_C2V_ADD
+    mmsg_eg['ID']
 def initM_V2C_ACC(state):  # 确认状态正文
     mmsg_eg = M_V2C_ACC
     mmsg_eg['STAT'] = state
