@@ -381,7 +381,7 @@ class AdminManage:
             total = stu_all_dict[key]['c_grade'] + \
                 stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
-            ave = int(total / 3)
+            ave = (total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),

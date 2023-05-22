@@ -39,7 +39,7 @@ DEF_LT = 6000  # 默认有效期
 DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
-DEF_LEN_RSA_K = 150
+DEF_LEN_RSA_K = 256
 PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 

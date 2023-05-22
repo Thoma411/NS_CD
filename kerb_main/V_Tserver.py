@@ -13,7 +13,7 @@ V_PORT = 8030
 MAX_SIZE = 2048
 MAX_LISTEN = 16
 
-PRT_LOG = False  # 是否打印输出
+PRT_LOG = True  # 是否打印输出
 #K_CV = th.local()
 
 
@@ -114,8 +114,10 @@ def V_Recv(C_Socket: sk, cAddr):
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
         print('sign:', Rsc_msg)
-        verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
-        print('数字签名验证:', verFlag)
+        print('正文：',Rsm_msg)
+        if Rsc_msg!="":
+           verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
+           print('数字签名验证:', verFlag)
 
         # *匹配报文类型
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
