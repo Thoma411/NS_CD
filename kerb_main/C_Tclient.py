@@ -8,11 +8,11 @@ import socket as sk
 from MsgFieldDef import *
 
 ID_C = 13  # !每个C的ID需不同
-C_IP = '192.168.137.1'  # !IP需提前声明
+C_IP = '127.0.0.1'  # !IP需提前声明
 
-AS_IP, AS_PORT = '192.168.137.1', 8010
-TGS_IP, TGS_PORT = '192.168.137.1', 8020
-V_IP, V_PORT = '192.168.137.60', 8030
+AS_IP, AS_PORT = '127.0.0.1', 8010
+TGS_IP, TGS_PORT = '127.0.0.1', 8020
+V_IP, V_PORT = '127.0.0.1', 8030
 MAX_SIZE = 2048
 
 
@@ -104,14 +104,15 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     else:
         pass
 
-
-# def create_C2AS_CTF():  # 生成C2AS_CTF报文
+    # def create_C2AS_CTF():  # 生成C2AS_CTF报文
     '''
     变量说明:
     S/R - 发送/接收
     d/s/b/h - 字典/字符串/比特/16进制比特
     h/m/c/a - 首部/正文/签名/拼接整体
     '''
+
+
 #     Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
 #     Sdc_c2as_ctf = initSIGN(SKEY_C, ID_C, PKEY_C)  # 生成签名
 #     Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF,
@@ -157,6 +158,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
     Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v  # 拼接
     Sba_c2v = Ssa_c2v.encode()  # str->bytes
     return Sba_c2v
+
 
 # *------------生成数据报文------------
 
@@ -262,6 +264,7 @@ def C_Kerberos():
         print('[Kerberos] Authentication failed.')
         return False
 
+
 # *登录调用函数
 
 
@@ -340,6 +343,22 @@ def query_student_score(sid, k_cv):
     Rsa_log = Rba_log.decode()
     Rda_log = str2dict(Rsa_log)
     return Rda_log
+
+
+# 处理管理员发送过来的报文，返回查询结果。
+def query_admin_stuscore(qry, k_cv):
+    Sadm_m_qry = initM_C2V_ADMIN_QRY(qry)
+    Sadm_h_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sadm_m_qry))
+    Sadm_m_str_qry = dict2str(Sadm_m_qry)  # 正文dict->str
+    Sadm_h_str_qry = dict2str(Sadm_h_qry)  # 首部dict->str
+    Sadm_h_byte_qry = cbDES.DES_encry(Sadm_m_str_qry, k_cv)  # 已是str类型
+    Sadm_a_str_qry = Sadm_h_str_qry + '|' + Sadm_h_byte_qry  # 拼接
+    Sadm_a_byte_qry = Sadm_a_str_qry.encode()
+
+    Radm_a_byte_qry = send_message(V_IP, V_PORT, Sadm_a_byte_qry)
+    Radm_a_str_qry = Radm_a_byte_qry.decode()
+    Radm_a_dict_qry = str2dict(Radm_a_str_qry)
+    return Radm_a_dict_qry
 
 
 if __name__ == '__main__':

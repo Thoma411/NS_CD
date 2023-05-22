@@ -5,7 +5,7 @@ from MsgFieldDef import *
 
 
 SERVER_HOST = '0.0.0.0'
-DB_HOST = '192.168.137.60'
+DB_HOST = '127.0.0.1'
 SERVER_PORT = 10001
 BUFFER_SIZE = 1024
 MAX_LISTEN = 16
@@ -102,6 +102,126 @@ def sql_search_stu(student_id):
         connection.sendall(dict2str({"error": str(e)}).encode())
     finally:
         db.close()  # 关闭数据库连接
+
+
+# 管理员查询连接数据库
+def sql_search_adm():
+    db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+    cursor = db.cursor()  # 使用cursor()方法获取操作游标
+    sql = "SELECT * FROM student_k"  # SQL 查询语句
+
+    student_list = []  # 创建一个空列表用于存储学生信息的字典
+
+    try:
+        cursor.execute(sql)  # 执行SQL语句
+        results = cursor.fetchall()  # 获取所有记录列表
+
+        for row in results:
+            # 将每个学生信息存储到一个字典中
+            stu_dict = {
+                "id": row[0],
+                "name": row[1],
+                "gender": row[2],
+                "age": row[3],
+                "c_grade": row[4],
+                "m_grade": row[5],
+                "e_grade": row[6]
+            }
+
+            student_list.append(stu_dict) # 将学生信息的字典添加到列表中
+ # 将学生信息的字典添加到列表中
+        students_all_dict = {}  # 创建一个字典用于保存所有学生的信息， 其中键值是每个学生的id
+        for student in student_list:
+            id = student['id']
+            students_all_dict[id] = student
+        print('学生成绩的所有字典db：',students_all_dict)
+        return students_all_dict
+    except Exception as e:  # 捕获异常
+        print("查询学生成绩时发生错误。错误消息：", e)
+        # 数据库操作时发生错误，将错误信息发送给客户端
+        connection.sendall(dict2str({"error": str(e)}).encode())
+
+    db.close()  # 关闭数据库连接
+    return student_list  # 返回学生信息的列表
+
+
+# 管理员修改学生信息
+def sql_del_stu(stu_id):
+    # res = messagebox.askyesnocancel('警告！', '是否删除所选数据？')
+    # if res == True:
+    #     print(self.row_info[0])  # 鼠标选中的学号
+    #     print(self.tree.selection()[0])  # 行号
+    #     print(self.tree.get_children())  # 所有行
+    # 打开数据库连接
+    db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+    cursor = db.cursor()  # 使用cursor()方法获取操作游标
+    sql = "DELETE FROM student_k WHERE id = '%s'" % (stu_id)  # SQL 插入语句
+    try:
+        cursor.execute(sql)  # 执行sql语句
+        db.commit()  # 提交到数据库执行
+        # messagebox.showinfo('提示！', '删除成功！')
+        return 1
+    except:
+        db.rollback()  # 发生错误时回滚
+        # messagebox.showinfo('警告！', '删除失败，数据库连接失败！')
+        return 0
+    db.close()  # 关闭数据库连接
+
+
+# 管理员增加学生信息
+def sql_add_stu(stu_id, stu_dict):
+    # if str(self.var_id.get()) in self.id:
+    #     messagebox.showinfo('警告！', '该学生已存在！')
+    # else:
+    if stu_id != '' and stu_dict['NAME'] != '' and stu_dict['GENDER'] != '' and stu_dict['AGE'] != '' \
+            and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
+        # 打开数据库连接
+        db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+        cursor = db.cursor()  # 使用cursor()方法获取操作游标
+        sql = "INSERT INTO student_stu_dict['NAME']k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
+				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
+              (stu_id, stu_dict['NAME'], stu_dict['GENDER'], stu_dict['AGE'],
+               stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
+               float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']),
+               (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(
+                   stu_dict['MARK_E'])) / 3
+               )  # SQL 插入语句
+        try:
+            cursor.execute(sql)  # 执行sql语句
+            db.commit()  # 提交到数据库执行
+        except:
+            db.rollback()  # 发生错误时回滚
+            # messagebox.showinfo('警告！', '数据库连接失败！')
+        db.close()  # 关闭数据库连接
+
+
+# 管理员更新学生信息
+def sql_update_stu(stu_id, stu_dict):
+    # res = messagebox.askyesnocancel('警告！', '是否更新所填数据？')
+    # if res == True:
+    #     if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
+    #         # 打开数据库连接
+    db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+    cursor = db.cursor()  # 使用cursor()方法获取操作游标
+    sql = "UPDATE student_k SET name = '%s', gender = '%s', age = '%s',c_grade = '%s', m_grade = '%s', e_grade = '%s' , total = '%s', ave = '%s'  \
+				 WHERE id = '%s'" % (
+        stu_dict['NAME'], stu_dict['GENDER'], stu_dict['AGE'],
+        stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
+        float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']),
+        (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])) / 3,
+        stu_id)  # SQL 插入语句
+
+    try:
+        cursor.execute(sql)  # 执行sql语句
+        db.commit()  # 提交到数据库执行
+        # messagebox.showinfo('提示！', '更新成功！')
+    except:
+        db.rollback()  # 发生错误时回滚
+        # messagebox.showinfo('警告！', '更新失败，数据库连接失败！')
+    db.close()  # 关闭数据库连
+
+
+
 
 
 def handle_client(connection, client_address):

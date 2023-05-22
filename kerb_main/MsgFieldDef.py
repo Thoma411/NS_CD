@@ -29,6 +29,10 @@ INC_V2C = 60
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生
 IND_QRY = 12  # 请求/删除
+IND_QRY_ADM= 13 # 管理员请求
+IND_ADD = 14 # 管理员增加
+IND_DEL =15 # 管理员删除
+IND_UPD =16 # 管理员更新
 
 DEF_LT = 6000  # 默认有效期
 
@@ -207,6 +211,10 @@ M_C2V_DEL = {
 # OK msg
 M_V2C_ACC = {
     'STAT': int  # 确认状态
+}
+
+M_C2V_QRY ={
+    'QRY': int
 }
 
 # *-----------------share method-----------------
@@ -405,6 +413,11 @@ def initM_C2V_GRADE(name, gend, age, markc, markm, marke):  # 学生成绩管理
 def initM_C2V_DEL(sid):  # 删除正文
     mmsg_eg = M_C2V_DEL
     mmsg_eg['SID'] = sid
+    return mmsg_eg
+
+def initM_C2V_ADMIN_QRY(qry): #请求查询全部学生信息的正文
+    mmsg_eg = M_C2V_QRY
+    mmsg_eg['QRY'] =qry
     return mmsg_eg
 
 
