@@ -473,17 +473,17 @@ class AdminManage:
 
         self.tree.bind('<Button-1>', self.click)  # 左键获取位置
         self.right_top_button1 = ttk.Button(self.frame_right_top, text='新建学生信息', width=20, command=self.new_row)
-        # self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
+         # self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
         #                                     command=self.updata_row)
-        # self.right_top_button3 = ttk.Button(self.frame_right_top, text='删除选中学生信息', width=20,
-        #                                     command=self.del_row)
+        self.right_top_button3 = ttk.Button(self.frame_right_top, text='删除选中学生信息', width=20,
+                                             command=self.del_row)
         self.right_top_button4 = ttk.Button(self.frame_right_top, text='清空', width=20,
                                             command=self.clear)
         # 位置设置
         self.right_top_title.grid(row=0, column=0, pady=10)
         self.right_top_button1.grid(row=1, column=0, padx=20, pady=10)
         # self.right_top_button2.grid(row=2, column=0, padx=20, pady=10)
-        # self.right_top_button3.grid(row=3, column=0, padx=20, pady=10)
+        self.right_top_button3.grid(row=3, column=0, padx=20, pady=10)
         self.right_top_button4.grid(row=4, column=0, padx=20, pady=10)
         # 整体区域定位
         self.frame_left_top.grid(row=0, column=0, padx=2, pady=5)
@@ -587,3 +587,27 @@ class AdminManage:
                 messagebox.showinfo('提示！', '插入成功！')
             else:
                 messagebox.showinfo('警告！', '请填写学生数据')
+
+    def del_row(self):
+        res = messagebox.askyesnocancel('警告！', '是否删除所选数据？')
+        if res == True:
+            print(self.row_info[0])  # 鼠标选中的学号
+            print(self.tree.selection()[0])  # 行号
+            print(self.tree.get_children())  # 所有行
+
+            id_index = self.id.index(self.row_info[0])
+            cc.del_admin_stuscore(self.id[id_index],K_CV)
+            print(id_index)
+            del self.id[id_index]
+            del self.name[id_index]
+            del self.gender[id_index]
+            del self.age[id_index]
+            del self.c_grade[id_index]
+            del self.m_grade[id_index]
+            del self.e_grade[id_index]
+            del self.total[id_index]
+            del self.ave[id_index]
+
+            print(self.id)
+            self.tree.delete(self.tree.selection()[0])  # 删除所选行
+            print(self.tree.get_children())

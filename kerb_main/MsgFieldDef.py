@@ -431,6 +431,7 @@ def initM_C2V_ADMIN_QRY(qry): #请求查询全部学生信息的正文
 def initM_C2V_ADMIN_ADD(stu_dict):
     mmsg_eg= M_C2V_ADD
     mmsg_eg['ID']
+
 def initM_V2C_ACC(state):  # 确认状态正文
     mmsg_eg = M_V2C_ACC
     mmsg_eg['STAT'] = state

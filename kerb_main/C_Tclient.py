@@ -386,6 +386,15 @@ def add_admin_stuscore(stu_dict,k_cv):
 
     Radm_a_byte_add = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
 
+def del_admin_stuscore(stu_id,k_cv):
+    Sadm_m_del=initM_C2V_DEL(stu_id)
+    Sadm_h_del = initHEAD(EX_DAT, IND_DEL, len(Sadm_m_del))
+    Sadm_m_str_del = dict2str(Sadm_m_del)
+    Sadm_h_str_del = dict2str(Sadm_h_del)
+    Sadm_h_byte_del = cbDES.DES_encry(Sadm_m_str_del, k_cv)
+    Sadm_a_str_del = Sadm_h_str_del + '|' + Sadm_h_byte_del
+    Sadm_a_byte_del = Sadm_a_str_del.encode()
+    Radm_a_byte_del = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_del)
 
 if __name__ == '__main__':
     print(C_Kerberos())

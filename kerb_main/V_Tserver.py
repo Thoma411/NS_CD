@@ -81,6 +81,11 @@ def Dhangle_ADM_ADD(mt,k_cv):   #处理管理员添加学生的报文
     adm_dict_add= str2dict(adm_str_add)
     return adm_dict_add
 
+def Dhangle_ADM_DEL(mt,k_cv):
+    adm_str_del=cbDES.DES_decry(mt, k_cv)
+    adm_dict_del = str2dict(adm_str_del)
+    sid=adm_dict_del['SID']
+    return sid
 
 def V_Recv(C_Socket: sk, cAddr):
     k_cv = None  # 在while外临时存储k_cv
@@ -143,6 +148,10 @@ def V_Recv(C_Socket: sk, cAddr):
                 elif msg_intp == IND_ADD:
                     stu_add_dict=Dhangle_ADM_ADD(Rsm_msg,K_CV)
                     ss.sql_add_stu(stu_add_dict)
+                elif msg_intp==IND_DEL:
+                    stu_id=Dhangle_ADM_DEL(Rsm_msg,K_CV)
+                    ss.sql_del_stu(stu_id)
+
 
         else:  # 收包非法
             print('illegal package!')

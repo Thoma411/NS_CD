@@ -146,14 +146,10 @@ def sql_search_adm():
 
 # 管理员修改学生信息
 def sql_del_stu(stu_id):
-    # res = messagebox.askyesnocancel('警告！', '是否删除所选数据？')
-    # if res == True:
-    #     print(self.row_info[0])  # 鼠标选中的学号
-    #     print(self.tree.selection()[0])  # 行号
-    #     print(self.tree.get_children())  # 所有行
     # 打开数据库连接
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
+    print('打印学生id：',stu_id)
     sql = "DELETE FROM student_k WHERE id = '%s'" % (stu_id)  # SQL 插入语句
     try:
         cursor.execute(sql)  # 执行sql语句
