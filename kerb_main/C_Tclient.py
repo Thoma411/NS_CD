@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 18:54:44
+LastEditTime: 2023-05-22 20:04:30
 Description:
 '''
 import socket as sk
@@ -312,9 +312,9 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
         Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
         Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
-        print('[admin_on_login]:', Sbc_log,len(Sbc_log))
-        testRSA=cbRSA.RSA_verf(Sbm_log,Sbc_log,PKEY_C)
-        print('C自己解得摘要:',testRSA)
+        print('[admin_on_login]:', Sbc_log, len(Sbc_log))
+        testRSA = cbRSA.RSA_verf(Sbm_log, Sbc_log, PKEY_C)
+        print('C自己解得摘要:', testRSA)
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)

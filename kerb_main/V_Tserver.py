@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 18:49:22
+LastEditTime: 2023-05-22 20:08:01
 Description:
 '''
 import socket as sk
@@ -15,6 +15,7 @@ MAX_LISTEN = 16
 
 PRT_LOG = True  # 是否打印输出
 #K_CV = th.local()
+K_CV = DKEY_C
 
 
 def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
@@ -100,7 +101,7 @@ def Dhangle_ADM_DEL(mt, k_cv):
 
 def V_Recv(C_Socket: sk, cAddr):
     k_cv = None  # 在while外临时存储k_cv
-    global K_CV
+    # global K_CV
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -114,10 +115,10 @@ def V_Recv(C_Socket: sk, cAddr):
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
         print('sign:', Rsc_msg)
-        print('正文：',Rsm_msg)
-        if Rsc_msg!="":
-           verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
-           print('数字签名验证:', verFlag)
+        print('正文：', Rsm_msg)
+        if Rsc_msg != '':
+            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
+            print('数字签名验证:', verFlag)
 
         # *匹配报文类型
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
@@ -128,7 +129,7 @@ def V_Recv(C_Socket: sk, cAddr):
                 if msg_intp == INC_C2V:
                     Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
                     # K_CV.k_cv = k_cv  # 在当前线程中设置 K_CV 的值，只对当前线程可见
-                    K_CV = k_cv
+                    # K_CV = k_cv
                     # print('[ex_ctl] V got the K_cv:', K_CV.k_cv)
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数

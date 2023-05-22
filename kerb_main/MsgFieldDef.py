@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-22 18:07:29
+LastEditTime: 2023-05-22 20:08:14
 Description: 
 '''
 
@@ -49,7 +49,7 @@ PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
-DKEY_CV = '1hfAqdc9'
+DKEY_CV = '00000000'
 
 # 通用首部
 MSG_HEAD = {
