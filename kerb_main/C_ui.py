@@ -5,7 +5,7 @@ import tkinter.font as tkFont
 import C_Tclient as cc
 from tkinter import *
 
-K_CV = cc.DKEY_C
+# K_CV = cc.DKEY_C
 
 
 class StartPage:  # 主菜单
@@ -87,9 +87,9 @@ class AdminPage:  # 管理员登录界面
     def login(self):
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
-        # global K_CV  # *声明K_CV为共享密钥
+        global K_CV  # *声明K_CV为共享密钥
         tag, k_cv = cc.admin_on_login(username, password)
-        # K_CV = k_cv
+        K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
@@ -139,9 +139,9 @@ class StudentPage:  # 学生登陆界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        # global K_CV  # *声明K_CV为共享密钥
+        global K_CV  # *声明K_CV为共享密钥
         tag, k_cv = cc.stu_on_login(username, password)
-        # K_CV = k_cv
+        K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入学生操作界面
             StudentInfoManage(self.window, self.student_id.get())

@@ -355,7 +355,7 @@ def DES_decry(cmsg, key):  # 供调用的DES解密方法
 if __name__ == '__main__':
     # myDES = ArrangeSimpleDES()
     # myDES.modify_secretkey('1jC8wQ0c')
-    k = '1jC8wQ0p'
+    k = '00000000'
     mstr1 = '\{csascasdw\}'
     print(mstr1, type(mstr1))
     cstr1 = DES_encry(mstr1, k)
