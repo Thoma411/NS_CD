@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 17:22:11
+LastEditTime: 2023-05-22 17:28:54
 Description:
 '''
 import socket as sk
@@ -389,7 +389,6 @@ def query_admin_stuscore(qry, k_cv):
 
 
 def add_admin_stuscore(stu_dict, k_cv):
-<<<<<<< HEAD
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
@@ -413,27 +412,6 @@ def del_admin_stuscore(stu_id, k_cv):
     Ssa_del = Sdh_del + '|' + Sbm_del
     Sba_del = Ssa_del.encode()
     send_message_tmp(V_IP, V_PORT, Sba_del)
-=======
-    Sadm_h_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
-    Sadm_m_str_add = dict2str(stu_dict)
-    Sadm_h_str_add = dict2str(Sadm_h_add)
-    Sadm_h_byte_add = cbDES.DES_encry(Sadm_m_str_add, k_cv)
-    Sadm_a_str_add = Sadm_h_str_add + '|' + Sadm_h_byte_add
-    Sadm_a_byte_add = Sadm_a_str_add.encode()
-
-    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
-
-
-def del_admin_stuscore(stu_id, k_cv):
-    Sadm_m_del = initM_C2V_DEL(stu_id)
-    Sadm_h_del = initHEAD(EX_DAT, IND_DEL, len(Sadm_m_del))
-    Sadm_m_str_del = dict2str(Sadm_m_del)
-    Sadm_h_str_del = dict2str(Sadm_h_del)
-    Sadm_h_byte_del = cbDES.DES_encry(Sadm_m_str_del, k_cv)
-    Sadm_a_str_del = Sadm_h_str_del + '|' + Sadm_h_byte_del
-    Sadm_a_byte_del = Sadm_a_str_del.encode()
-    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_del)
->>>>>>> e4cfd5ec841a753ec45bcc18adcd4dc0b653ff51
 
 def update_admin_stuscore(stu_dict,k_cv):
     Sadm_h_update = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
