@@ -149,7 +149,7 @@ def sql_del_stu(stu_id):
     # 打开数据库连接
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    print('打印学生id：',stu_id)
+    print('打印学生id：', stu_id)
     sql = "DELETE FROM student_k WHERE id = '%s'" % (stu_id)  # SQL 插入语句
     try:
         cursor.execute(sql)  # 执行sql语句
@@ -172,11 +172,14 @@ def sql_add_stu(stu_dict):
     if stu_dict['ID'] != '' and stu_dict['NAME'] != '' and stu_dict['GEND'] != '' and stu_dict['AGE'] != '' \
             and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
         # 打开数据库连接
-        db = pymysql.connect(host='127.0.0.1', user="root", passwd="", db="student")
+        db = pymysql.connect(host='127.0.0.1', user="root",
+                             passwd="", db="student")
         cursor = db.cursor()  # 使用cursor()方法获取操作游标
         print("sql执行前")
-        total = float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])
-        ave = (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']))/3
+        total = float(stu_dict['MARK_C']) + \
+            float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])
+        ave = (float(stu_dict['MARK_C']) +
+               float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']))/3
         sql = "INSERT INTO student_k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
               (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
@@ -206,8 +209,10 @@ def sql_update_stu(stu_id, stu_dict):
 				 WHERE id = '%s'" % (
         stu_dict['NAME'], stu_dict['GENDER'], stu_dict['AGE'],
         stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
-        float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']),
-        (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])) / 3,
+        float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) +
+        float(stu_dict['MARK_E']),
+        (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']
+                                           ) + float(stu_dict['MARK_E'])) / 3,
         stu_id)  # SQL 插入语句
 
     try:

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 15:15:28
+LastEditTime: 2023-05-22 16:59:06
 Description:
 '''
 import socket as sk
@@ -289,6 +289,7 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
     finally:
         sock.close()
 
+
 def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
     # 连接到服务器并发送数据
     try:
@@ -301,6 +302,8 @@ def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
         print("Error:", e)
     finally:
         sock.close()
+
+
 def admin_on_login(usr, pwd):  # 管理员登录消息
     atc_flag, k_cv = C_Kerberos()  # 获取共享密钥
     if atc_flag:  # 认证成功
@@ -376,18 +379,20 @@ def query_admin_stuscore(qry, k_cv):
     Radm_a_dict_qry = str2dict(Radm_a_str_qry)
     return Radm_a_dict_qry
 
-def add_admin_stuscore(stu_dict,k_cv):
-    Sadm_h_add=initHEAD(EX_DAT, IND_ADD, len(stu_dict))
-    Sadm_m_str_add= dict2str(stu_dict)
+
+def add_admin_stuscore(stu_dict, k_cv):
+    Sadm_h_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
+    Sadm_m_str_add = dict2str(stu_dict)
     Sadm_h_str_add = dict2str(Sadm_h_add)
     Sadm_h_byte_add = cbDES.DES_encry(Sadm_m_str_add, k_cv)
-    Sadm_a_str_add= Sadm_h_str_add + '|' + Sadm_h_byte_add
+    Sadm_a_str_add = Sadm_h_str_add + '|' + Sadm_h_byte_add
     Sadm_a_byte_add = Sadm_a_str_add.encode()
 
     Radm_a_byte_add = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_add)
 
-def del_admin_stuscore(stu_id,k_cv):
-    Sadm_m_del=initM_C2V_DEL(stu_id)
+
+def del_admin_stuscore(stu_id, k_cv):
+    Sadm_m_del = initM_C2V_DEL(stu_id)
     Sadm_h_del = initHEAD(EX_DAT, IND_DEL, len(Sadm_m_del))
     Sadm_m_str_del = dict2str(Sadm_m_del)
     Sadm_h_str_del = dict2str(Sadm_h_del)
@@ -395,6 +400,7 @@ def del_admin_stuscore(stu_id,k_cv):
     Sadm_a_str_del = Sadm_h_str_del + '|' + Sadm_h_byte_del
     Sadm_a_byte_del = Sadm_a_str_del.encode()
     Radm_a_byte_del = send_message_tmp(V_IP, V_PORT, Sadm_a_byte_del)
+
 
 if __name__ == '__main__':
     print(C_Kerberos())

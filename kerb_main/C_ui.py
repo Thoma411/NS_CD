@@ -276,7 +276,7 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.m_grade.append(stu_dict['MARK_M'])
         self.e_grade.append(stu_dict['MARK_E'])
         grade_total = stu_dict['MARK_C'] + \
-                      stu_dict['MARK_M'] + stu_dict['MARK_E']
+            stu_dict['MARK_M'] + stu_dict['MARK_E']
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
@@ -288,8 +288,8 @@ class StudentGradeView:  # 学生成绩信息查看界面
         print("test***********************")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-                    self.e_grade), len(self.total), len(self.ave)
-                           )):  # 写入数据
+            self.e_grade), len(self.total), len(self.ave)
+        )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
@@ -379,15 +379,15 @@ class AdminManage:
             self.m_grade.append(stu_all_dict[key]['m_grade'])
             self.e_grade.append(stu_all_dict[key]['e_grade'])
             total = stu_all_dict[key]['c_grade'] + \
-                    stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
+                stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
             ave = (float)(total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-                    self.e_grade), len(self.total), len(self.ave)
-                           )):  # 写入数据
+            self.e_grade), len(self.total), len(self.ave)
+        )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
                                             self.ave[i]
@@ -472,11 +472,12 @@ class AdminManage:
             self.frame_right_top, text="操作：", font=('Verdana', 20))
 
         self.tree.bind('<Button-1>', self.click)  # 左键获取位置
-        self.right_top_button1 = ttk.Button(self.frame_right_top, text='新建学生信息', width=20, command=self.new_row)
-         # self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
+        self.right_top_button1 = ttk.Button(
+            self.frame_right_top, text='新建学生信息', width=20, command=self.new_row)
+        # self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
         #                                     command=self.updata_row)
         self.right_top_button3 = ttk.Button(self.frame_right_top, text='删除选中学生信息', width=20,
-                                             command=self.del_row)
+                                            command=self.del_row)
         self.right_top_button4 = ttk.Button(self.frame_right_top, text='清空', width=20,
                                             command=self.clear)
         # 位置设置
@@ -580,8 +581,10 @@ class AdminManage:
                 self.total.append(self.var_total.get())
                 self.ave.append(self.var_ave.get())
                 self.tree.insert('', len(self.id) - 1, values=(
-                    self.id[len(self.id) - 1], self.name[len(self.id) - 1], self.gender[len(self.id) - 1],
-                    self.age[len(self.id) - 1], self.c_grade[len(self.id) - 1], self.m_grade[len(self.id) - 1],
+                    self.id[len(self.id) - 1], self.name[len(self.id) -
+                                                         1], self.gender[len(self.id) - 1],
+                    self.age[len(self.id) - 1], self.c_grade[len(self.id) -
+                                                             1], self.m_grade[len(self.id) - 1],
                     self.e_grade[len(self.id) - 1], self.total[len(self.id) - 1], self.ave[len(self.id) - 1],))
                 self.tree.update()
                 messagebox.showinfo('提示！', '插入成功！')
@@ -596,7 +599,7 @@ class AdminManage:
             print(self.tree.get_children())  # 所有行
 
             id_index = self.id.index(self.row_info[0])
-            cc.del_admin_stuscore(self.id[id_index],K_CV)
+            cc.del_admin_stuscore(self.id[id_index], K_CV)
             print(id_index)
             del self.id[id_index]
             del self.name[id_index]

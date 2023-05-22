@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 15:09:09
+LastEditTime: 2023-05-22 16:59:51
 Description:
 '''
 import socket as sk
@@ -76,16 +76,19 @@ def Dhangle_ADM_QRY(mt, k_cv):  # 处理管理员请求报文
     qry = adm_dict_qry['QRY']  # 获取请求讯号
     return qry
 
-def Dhangle_ADM_ADD(mt,k_cv):   #处理管理员添加学生的报文
-    adm_str_add= cbDES.DES_decry(mt, k_cv)
-    adm_dict_add= str2dict(adm_str_add)
+
+def Dhangle_ADM_ADD(mt, k_cv):  # 处理管理员添加学生的报文
+    adm_str_add = cbDES.DES_decry(mt, k_cv)
+    adm_dict_add = str2dict(adm_str_add)
     return adm_dict_add
 
-def Dhangle_ADM_DEL(mt,k_cv):
-    adm_str_del=cbDES.DES_decry(mt, k_cv)
+
+def Dhangle_ADM_DEL(mt, k_cv):
+    adm_str_del = cbDES.DES_decry(mt, k_cv)
     adm_dict_del = str2dict(adm_str_del)
-    sid=adm_dict_del['SID']
+    sid = adm_dict_del['SID']
     return sid
+
 
 def V_Recv(C_Socket: sk, cAddr):
     k_cv = None  # 在while外临时存储k_cv
@@ -146,12 +149,11 @@ def V_Recv(C_Socket: sk, cAddr):
                     stu_all_dict = ss.sql_search_adm()
                     C_Socket.send(dict2str(stu_all_dict).encode())
                 elif msg_intp == IND_ADD:
-                    stu_add_dict=Dhangle_ADM_ADD(Rsm_msg,K_CV)
+                    stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, K_CV)
                     ss.sql_add_stu(stu_add_dict)
-                elif msg_intp==IND_DEL:
-                    stu_id=Dhangle_ADM_DEL(Rsm_msg,K_CV)
+                elif msg_intp == IND_DEL:
+                    stu_id = Dhangle_ADM_DEL(Rsm_msg, K_CV)
                     ss.sql_del_stu(stu_id)
-
 
         else:  # 收包非法
             print('illegal package!')

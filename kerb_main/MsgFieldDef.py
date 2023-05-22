@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-21 16:15:31
+LastEditTime: 2023-05-22 16:59:42
 Description: 
 '''
 
@@ -29,18 +29,19 @@ INC_V2C = 60
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生
 IND_QRY = 12  # 请求/删除
-IND_QRY_ADM= 13 # 管理员请求
-IND_ADD = 14 # 管理员增加
-IND_DEL =15 # 管理员删除
-IND_UPD =16 # 管理员更新
+IND_QRY_ADM = 13  # 管理员请求
+IND_ADD = 14  # 管理员增加
+IND_DEL = 15  # 管理员删除
+IND_UPD = 16  # 管理员更新
 
 DEF_LT = 6000  # 默认有效期
 
 DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
-PKEY_C, SKEY_C = cbRSA.RSA_initKey(typeK='a')
-PKEY_V, SKEY_V = cbRSA.RSA_initKey(typeK='a')
+DEF_LEN_RSA_K = 150
+PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
+PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 
 # PKEY_AS = '00000000'  # AS的公钥
 # SKEY_AS = '00000000'  # AS的私钥
@@ -203,7 +204,7 @@ M_C2V_GRADE = {
     'MARK_E': int  # 英语成绩
 }
 M_C2V_ADD = {
-    'ID': int,    #学号
+    'ID': int,  # 学号
     'NAME': str,  # 姓名
     'GEND': str,  # 性别
     'AGE': int,
@@ -221,7 +222,7 @@ M_V2C_ACC = {
     'STAT': int  # 确认状态
 }
 
-M_C2V_QRY ={
+M_C2V_QRY = {
     'QRY': int
 }
 
@@ -423,14 +424,17 @@ def initM_C2V_DEL(sid):  # 删除正文
     mmsg_eg['SID'] = sid
     return mmsg_eg
 
-def initM_C2V_ADMIN_QRY(qry): #请求查询全部学生信息的正文
+
+def initM_C2V_ADMIN_QRY(qry):  # 请求查询全部学生信息的正文
     mmsg_eg = M_C2V_QRY
-    mmsg_eg['QRY'] =qry
+    mmsg_eg['QRY'] = qry
     return mmsg_eg
 
+
 def initM_C2V_ADMIN_ADD(stu_dict):
-    mmsg_eg= M_C2V_ADD
+    mmsg_eg = M_C2V_ADD
     mmsg_eg['ID']
+
 
 def initM_V2C_ACC(state):  # 确认状态正文
     mmsg_eg = M_V2C_ACC
