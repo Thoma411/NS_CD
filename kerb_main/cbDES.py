@@ -1,7 +1,7 @@
-import binascii
+import binascii as ba
 
 
-class ArrangeSimpleDES():
+class mysimDES():
     def __init__(self):
         # 出初始化DES加密的参数
         self.ip = [
@@ -298,7 +298,7 @@ class ArrangeSimpleDES():
         :param ciphertext: 密文字符串
         :return: 明文字符串
         '''
-        b_ciphertext = binascii.a2b_hex(ciphertext)
+        b_ciphertext = ba.a2b_hex(ciphertext)
         bin_ciphertext = self.__int2bin(list(b_ciphertext))
         bin_plaintext_list = []
         key_list = self.__get_key_list()
@@ -339,14 +339,14 @@ class ArrangeSimpleDES():
 
 
 def DES_encry(msg, key):  # 供调用的DES加密方法
-    myDES = ArrangeSimpleDES()
+    myDES = mysimDES()
     myDES.modify_secretkey(key)
     cmsg = myDES.encrypt(msg)
     return cmsg
 
 
 def DES_decry(cmsg, key):  # 供调用的DES解密方法
-    myDES = ArrangeSimpleDES()
+    myDES = mysimDES()
     myDES.modify_secretkey(key)
     dmsg = myDES.decrypt(cmsg)
     return dmsg

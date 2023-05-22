@@ -7,7 +7,7 @@ from MsgFieldDef import *
 SERVER_HOST = '0.0.0.0'
 DB_HOST = '127.0.0.1'
 SERVER_PORT = 10001
-BUFFER_SIZE = 1024
+MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 
@@ -106,7 +106,7 @@ def sql_search_stu(student_id):
 
 # 管理员查询连接数据库
 def sql_search_adm():
-    db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+    db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT * FROM student_k"  # SQL 查询语句
 
@@ -134,7 +134,7 @@ def sql_search_adm():
         for student in student_list:
             id = student['id']
             students_all_dict[id] = student
-        print('学生成绩的所有字典db：',students_all_dict)
+        print('学生成绩的所有字典db:',students_all_dict)
         return students_all_dict
     except Exception as e:  # 捕获异常
         print("查询学生成绩时发生错误。错误消息：", e)
@@ -153,7 +153,7 @@ def sql_del_stu(stu_id):
     #     print(self.tree.selection()[0])  # 行号
     #     print(self.tree.get_children())  # 所有行
     # 打开数据库连接
-    db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+    db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "DELETE FROM student_k WHERE id = '%s'" % (stu_id)  # SQL 插入语句
     try:
@@ -176,7 +176,7 @@ def sql_add_stu(stu_id, stu_dict):
     if stu_id != '' and stu_dict['NAME'] != '' and stu_dict['GENDER'] != '' and stu_dict['AGE'] != '' \
             and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
         # 打开数据库连接
-        db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+        db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
         cursor = db.cursor()  # 使用cursor()方法获取操作游标
         sql = "INSERT INTO student_stu_dict['NAME']k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
@@ -201,7 +201,7 @@ def sql_update_stu(stu_id, stu_dict):
     # if res == True:
     #     if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
     #         # 打开数据库连接
-    db = pymysql.connect(host="127.0.0.1", user="root", passwd="", db="student")
+    db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "UPDATE student_k SET name = '%s', gender = '%s', age = '%s',c_grade = '%s', m_grade = '%s', e_grade = '%s' , total = '%s', ave = '%s'  \
 				 WHERE id = '%s'" % (
@@ -229,7 +229,7 @@ def handle_client(connection, client_address):
         print("Connection from", client_address)
 
         # 接收数据
-        data = connection.recv(1024)
+        data = connection.recv(MAX_SIZE)
         print("Received:", repr(data), type(data))
 
         # 解析数据
@@ -258,7 +258,7 @@ def handle_client(connection, client_address):
                 if message["password"] == stu_pass:
                     print(stu_pass)
                     connection.sendall("01".encode())  # 进入学生信息查看界面
-                    data = connection.recv(1024)
+                    data = connection.recv(MAX_SIZE)
                     # 解析数据
                     message = str2dict(data.decode('utf-8'))
 

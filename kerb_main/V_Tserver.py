@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 14:14:14
+LastEditTime: 2023-05-22 15:09:09
 Description:
 '''
 import socket as sk
@@ -70,10 +70,10 @@ def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
     return sid
 
 
-def Dhangle_ADM_QRY(mt,k_cv):  # 处理管理员请求报文
-    adm_str_qry=cbDES.DES_decry(mt,k_cv)
-    adm_dict_qry=str2dict(adm_str_qry)
-    qry=adm_dict_qry['QRY'] # 获取请求讯号
+def Dhangle_ADM_QRY(mt, k_cv):  # 处理管理员请求报文
+    adm_str_qry = cbDES.DES_decry(mt, k_cv)
+    adm_dict_qry = str2dict(adm_str_qry)
+    qry = adm_dict_qry['QRY']  # 获取请求讯号
     return qry
 
 
@@ -132,8 +132,8 @@ def V_Recv(C_Socket: sk, cAddr):
 
                 elif msg_intp == IND_QRY_ADM:  # 管理员查询请求
                     # Dq_adm_k_cv = local_data.K_CV
-                    qry= Dhangle_ADM_QRY(Rsm_msg,K_CV)
-                    stu_all_dict=ss.sql_search_adm()
+                    qry = Dhangle_ADM_QRY(Rsm_msg, K_CV)
+                    stu_all_dict = ss.sql_search_adm()
                     C_Socket.send(dict2str(stu_all_dict).encode())
 
         else:  # 收包非法

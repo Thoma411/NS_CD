@@ -160,8 +160,10 @@ class InfoManage:  # 信息管理界面
         self.window.title('信息管理')
         self.window.geometry('900x600')  # 这里的乘是小x
 
-        label = tk.Label(self.window, text='信息管理', width=24, height=1, font=('Verdana', 20))
-        label.grid(row=1, column=5, columnspan=3, padx=80, pady=30)  # pady=20 界面的长度
+        label = tk.Label(self.window, text='信息管理', width=24,
+                         height=1, font=('Verdana', 20))
+        label.grid(row=1, column=5, columnspan=3,
+                   padx=80, pady=30)  # pady=20 界面的长度
 
         btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised', font=('Verdana', 20),
                       command=lambda: AdminManage(self.window),
@@ -331,9 +333,12 @@ class AdminManage:
         self.frame_bottom = tk.Frame(width=650, height=50)
 
         # 定义下方中心列表区域
-        self.columns = ("学号", "姓名", "性别", "年龄", "语文成绩", "数学成绩", "英语成绩", "总分", "平均分")
-        self.tree = ttk.Treeview(self.frame_center, show="headings", height=18, columns=self.columns)
-        self.vbar = ttk.Scrollbar(self.frame_center, orient=VERTICAL, command=self.tree.yview)
+        self.columns = ("学号", "姓名", "性别", "年龄", "语文成绩",
+                        "数学成绩", "英语成绩", "总分", "平均分")
+        self.tree = ttk.Treeview(
+            self.frame_center, show="headings", height=18, columns=self.columns)
+        self.vbar = ttk.Scrollbar(
+            self.frame_center, orient=VERTICAL, command=self.tree.yview)
         # 定义树形结构与滚动条
         self.tree.configure(yscrollcommand=self.vbar.set)
 
@@ -361,10 +366,10 @@ class AdminManage:
         self.total = []
         self.ave = []
         #global K_CV
-        qry=1
+        qry = 1
 
-        stu_all_dict = cc.query_admin_stuscore(qry,K_CV)
-        print('abcccc',stu_all_dict)
+        stu_all_dict = cc.query_admin_stuscore(qry, K_CV)
+        print('abcccc', stu_all_dict)
         for key in stu_all_dict.keys():
             self.id.append(stu_all_dict[key]['id'])
             self.name.append(stu_all_dict[key]['name'])
@@ -373,13 +378,15 @@ class AdminManage:
             self.c_grade.append(stu_all_dict[key]['c_grade'])
             self.m_grade.append(stu_all_dict[key]['m_grade'])
             self.e_grade.append(stu_all_dict[key]['e_grade'])
-            total = stu_all_dict[key]['c_grade'] + stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
+            total = stu_all_dict[key]['c_grade'] + \
+                stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
             ave = (float)(total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
-                           len(self.c_grade), len(self.m_grade), len(self.e_grade), len(self.total), len(self.ave)
+                           len(self.c_grade), len(self.m_grade), len(
+                               self.e_grade), len(self.total), len(self.ave)
                            )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
@@ -392,8 +399,10 @@ class AdminManage:
 
         # 定义顶部区域
         # 定义左上方区域
-        self.top_title = Label(self.frame_left_top, text="学生信息:", font=('Verdana', 20))
-        self.top_title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=50, pady=10)
+        self.top_title = Label(self.frame_left_top,
+                               text="学生信息:", font=('Verdana', 20))
+        self.top_title.grid(row=0, column=0, columnspan=2,
+                            sticky=NSEW, padx=50, pady=10)
 
         self.left_top_frame = tk.Frame(self.frame_left_top)
         self.var_id = StringVar()  # 声明学号
@@ -406,51 +415,61 @@ class AdminManage:
         self.var_total = StringVar()  # 声明总分
         self.var_ave = StringVar()  # 声明平均分
         # 学号
-        self.right_top_id_label = Label(self.frame_left_top, text="学号：", font=('Verdana', 15))
-        self.right_top_id_entry = Entry(self.frame_left_top, textvariable=self.var_id, font=('Verdana', 15))
+        self.right_top_id_label = Label(
+            self.frame_left_top, text="学号：", font=('Verdana', 15))
+        self.right_top_id_entry = Entry(
+            self.frame_left_top, textvariable=self.var_id, font=('Verdana', 15))
         self.right_top_id_label.grid(row=1, column=0)  # 位置设置
         self.right_top_id_entry.grid(row=1, column=1)
         # 姓名
-        self.right_top_name_label = Label(self.frame_left_top, text="姓名：", font=('Verdana', 15))
-        self.right_top_name_entry = Entry(self.frame_left_top, textvariable=self.var_name, font=('Verdana', 15))
+        self.right_top_name_label = Label(
+            self.frame_left_top, text="姓名：", font=('Verdana', 15))
+        self.right_top_name_entry = Entry(
+            self.frame_left_top, textvariable=self.var_name, font=('Verdana', 15))
         self.right_top_name_label.grid(row=2, column=0)  # 位置设置
         self.right_top_name_entry.grid(row=2, column=1)
         # 性别
-        self.right_top_gender_label = Label(self.frame_left_top, text="性别：", font=('Verdana', 15))
+        self.right_top_gender_label = Label(
+            self.frame_left_top, text="性别：", font=('Verdana', 15))
         self.right_top_gender_entry = Entry(self.frame_left_top, textvariable=self.var_gender,
                                             font=('Verdana', 15))
         self.right_top_gender_label.grid(row=3, column=0)  # 位置设置
         self.right_top_gender_entry.grid(row=3, column=1)
         # 年龄
-        self.right_top_gender_label = Label(self.frame_left_top, text="年龄：", font=('Verdana', 15))
+        self.right_top_gender_label = Label(
+            self.frame_left_top, text="年龄：", font=('Verdana', 15))
         self.right_top_gender_entry = Entry(self.frame_left_top, textvariable=self.var_age,
                                             font=('Verdana', 15))
         self.right_top_gender_label.grid(row=4, column=0)  # 位置设置
         self.right_top_gender_entry.grid(row=4, column=1)
 
         # 语文成绩
-        self.right_top_c_grade_label = Label(self.frame_left_top, text="语文成绩：", font=('Verdana', 15))
+        self.right_top_c_grade_label = Label(
+            self.frame_left_top, text="语文成绩：", font=('Verdana', 15))
         self.right_top_c_grade_entry = Entry(self.frame_left_top, textvariable=self.var_c_grade,
                                              font=('Verdana', 15))
         self.right_top_c_grade_label.grid(row=5, column=0)  # 位置设置
         self.right_top_c_grade_entry.grid(row=5, column=1)
 
         # 数学成绩
-        self.right_top_m_grade_label = Label(self.frame_left_top, text="数学成绩：", font=('Verdana', 15))
+        self.right_top_m_grade_label = Label(
+            self.frame_left_top, text="数学成绩：", font=('Verdana', 15))
         self.right_top_m_grade_entry = Entry(self.frame_left_top, textvariable=self.var_m_grade,
                                              font=('Verdana', 15))
         self.right_top_m_grade_label.grid(row=6, column=0)  # 位置设置
         self.right_top_m_grade_entry.grid(row=6, column=1)
 
         # 英语成绩
-        self.right_top_e_grade_label = Label(self.frame_left_top, text="英语成绩：", font=('Verdana', 15))
+        self.right_top_e_grade_label = Label(
+            self.frame_left_top, text="英语成绩：", font=('Verdana', 15))
         self.right_top_e_grade_entry = Entry(self.frame_left_top, textvariable=self.var_e_grade,
                                              font=('Verdana', 15))
         self.right_top_e_grade_label.grid(row=7, column=0)  # 位置设置
         self.right_top_e_grade_entry.grid(row=7, column=1)
 
         # 定义右上方区域
-        self.right_top_title = Label(self.frame_right_top, text="操作：", font=('Verdana', 20))
+        self.right_top_title = Label(
+            self.frame_right_top, text="操作：", font=('Verdana', 20))
 
         self.tree.bind('<Button-1>', self.click)  # 左键获取位置
         # self.right_top_button1 = ttk.Button(self.frame_right_top, text='新建学生信息', width=20, command=self.new_row)
@@ -516,7 +535,8 @@ class AdminManage:
         # rearrange items in sorted positions
         for index, (val, k) in enumerate(l):  # 根据排序后索引移动
             tv.move(k, '', index)
-        tv.heading(col, command=lambda: self.tree_sort_column(tv, col, not reverse))  # 重写标题，使之成为再点倒序的标题
+        tv.heading(col, command=lambda: self.tree_sort_column(
+            tv, col, not reverse))  # 重写标题，使之成为再点倒序的标题
 
     def clear(self):
         self.var_id.set('')
@@ -528,4 +548,3 @@ class AdminManage:
         self.var_e_grade.set('')
         self.var_total.set('')
         self.var_ave.set('')
-
