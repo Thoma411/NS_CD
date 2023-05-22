@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 18:38:34
+LastEditTime: 2023-05-22 18:49:22
 Description:
 '''
 import socket as sk
@@ -115,7 +115,7 @@ def V_Recv(C_Socket: sk, cAddr):
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
         print('sign:', Rsc_msg)
         verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
-        print('数字签名验证:',verFlag)
+        print('数字签名验证:', verFlag)
 
         # *匹配报文类型
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
