@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 17:28:54
+LastEditTime: 2023-05-22 17:36:15
 Description:
 '''
 import socket as sk
@@ -313,8 +313,8 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
         Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
-        # Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
-        Ssa_log = Ssh_log + '|' + Sbm_log
+        Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        # Ssa_log = Ssh_log + '|' + Sbm_log
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)
@@ -337,8 +337,8 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
         Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
-        # Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
-        Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+        Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        # Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)
@@ -360,8 +360,8 @@ def query_student_score(sid, k_cv):
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
     Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
     Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
-    Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    # Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
     Sba_qry = Ssa_qry.encode()
 
     Rba_log = send_message(V_IP, V_PORT, Sba_qry)
@@ -378,8 +378,8 @@ def query_admin_stuscore(qry, k_cv):
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
     Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
     Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
-    Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    # Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
     Sba_qry = Ssa_qry.encode()
 
     Rba_qry = send_message(V_IP, V_PORT, Sba_qry)  # 发送接收
@@ -394,8 +394,8 @@ def add_admin_stuscore(stu_dict, k_cv):
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
     Sbm_add = cbDES.DES_encry(Ssm_add, k_cv)
     Sbc_add = cbRSA.RSA_sign(Sbm_add, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
-    Ssa_add = Ssh_add + '|' + Sbm_add
+    Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
+    # Ssa_add = Ssh_add + '|' + Sbm_add
     Sba_add = Ssa_add.encode()
     send_message_tmp(V_IP, V_PORT, Sba_add)
     pass
@@ -408,19 +408,23 @@ def del_admin_stuscore(stu_id, k_cv):
     Ssh_del = dict2str(Sdh_del)  # 首部dict->str
     Sbm_del = cbDES.DES_encry(Ssm_del, k_cv)
     Sbc_del = cbRSA.RSA_sign(Sbm_del, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
-    Ssa_del = Sdh_del + '|' + Sbm_del
+    Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
+    # Ssa_del = Ssh_del + '|' + Sbm_del
     Sba_del = Ssa_del.encode()
     send_message_tmp(V_IP, V_PORT, Sba_del)
 
-def update_admin_stuscore(stu_dict,k_cv):
-    Sadm_h_update = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
-    Sadm_m_str_update = dict2str(stu_dict)
-    Sadm_h_str_update = dict2str(Sadm_h_update)
-    Sadm_h_byte_update = cbDES.DES_encry(Sadm_m_str_update, k_cv)
-    Sadm_a_str_update = Sadm_h_str_update + '|' + Sadm_h_byte_update
-    Sadm_a_byte_update = Sadm_a_str_update.encode()
-    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_update)
+
+def update_admin_stuscore(stu_dict, k_cv):
+    Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
+    Ssm_upd = dict2str(stu_dict)
+    Ssh_upd = dict2str(Sdh_upd)
+    Sbm_upd = cbDES.DES_encry(Ssm_upd, k_cv)
+    Sbc_upd = cbRSA.RSA_sign(Sbm_upd, SKEY_C)  # *加密正文生成数字签名
+    Ssa_upd = Ssh_upd + '|' + Sbm_upd + '|' + Sbc_upd  # *拼接含数字签名
+    # Ssa_upd = Ssh_upd + '|' + Sbm_upd
+    Sba_upd = Ssa_upd.encode()
+    send_message_tmp(V_IP, V_PORT, Sba_upd)
+
 
 if __name__ == '__main__':
     print(C_Kerberos())
