@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 20:04:30
+LastEditTime: 2023-05-22 21:32:51
 Description:
 '''
 import socket as sk
@@ -158,7 +158,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
     Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
     Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
     Ssh_c2v = dict2str(Sdh_c2v)  # 首部dict->str
-    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|'  # 拼接
+    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|'  # TODO:拼接 加上PK_C
     Sba_c2v = Ssa_c2v.encode()  # str->bytes
     return Sba_c2v
 
@@ -174,7 +174,6 @@ def create_D_ADMLOG(user, pswd, k_cv):
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
     Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
     Sba_log = Ssa_log.encode()
-    # TODO:数字签名
     return Sba_log
 
 
@@ -186,7 +185,6 @@ def create_D_STULOG(user, pswd, k_cv):
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
     Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
     Sba_log = Ssa_log.encode()
-    # TODO:数字签名
     print(Ssa_log)
     return Sba_log
 
@@ -259,10 +257,11 @@ def C_Kerberos():
 
     # *接收mdTS_5
     recv_ts_5 = C_Recv(Vsock, k_cv)
+    # TODO:接收PK_V
     # print(recv_ts_5, type(recv_ts_5))
     if send_ts_5 == recv_ts_5:
         print('[Kerberos] Authentication success.')
-        return True, k_cv  # 返回业务逻辑所需的对称钥
+        return True, k_cv  # TODO: 返回业务逻辑所需的对称钥和PK_V
     else:
         print('[Kerberos] Authentication failed.')
         return False
@@ -303,7 +302,7 @@ def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
 
 
 def admin_on_login(usr, pwd):  # 管理员登录消息
-    atc_flag, k_cv = C_Kerberos()  # 获取共享密钥
+    atc_flag, k_cv = C_Kerberos()  # TODO 获取共享密钥和PK_V
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
@@ -321,7 +320,7 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Rsa_log = Rba_log.decode()
         print("[C] admin login response")
         if Rsa_log == "adm login":
-            return 1, k_cv
+            return 1, k_cv  # TODO:返回PK_V
         else:
             pass
     else:

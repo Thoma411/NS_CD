@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 20:16:23
+LastEditTime: 2023-05-22 21:31:16
 Description:
 '''
 import socket as sk
@@ -43,6 +43,7 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Ssh_v2c = dict2str(Sdh_v2c)  # 首部dict->str
     Sbm_v2c = cbDES.DES_encry(Ssm_v2c, k_cv)  # *加密正文
     Ssa_v2c = Ssh_v2c + '|' + str(Sbm_v2c)  # 拼接str(Sbm_v2c已是str)
+    # TODO:后跟PK_V
     if PRT_LOG:
         print('V->C:\n', Ssa_v2c)
     return Ssa_v2c, k_cv  # str+str(bytes)
@@ -116,7 +117,7 @@ def V_Recv(C_Socket: sk, cAddr):
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
         print('sign:', Rsc_msg)
         print('正文：', Rsm_msg)
-        if Rsc_msg != '':
+        if Rsc_msg != '':  # TODO:控制报文Rsc_msg为PK_C
             verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
             print('数字签名验证:', verFlag)
 
