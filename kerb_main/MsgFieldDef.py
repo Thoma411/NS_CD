@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-23 09:58:01
+LastEditTime: 2023-05-23 11:32:08
 Description: 
 '''
 
@@ -50,6 +50,8 @@ DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
 DKEY_CV = '00000000'
+
+PK_SUFFIX = 'x'  # PK字符串后缀
 
 # 通用首部
 MSG_HEAD = {
@@ -277,7 +279,28 @@ def msg_rndKey(dgt: int = 8, retType: str = 's'):  # 生成定长随机字符串
         return rnd_str.encode()
 
 
+def PK2str(PK: tuple):  # 将PK由tuple转成拼接str
+    n, e = PK
+    SRsc_msg = str(n) + '+' + str(e) + PK_SUFFIX  # 添加识别后缀
+    return SRsc_msg
+
+
+def str2PK(str_msg: str):  # 将PK由拼接str转成tuple
+    str_msg = str_msg.rstrip(PK_SUFFIX)
+    n, e = str_msg.split('+')
+    PK = int(n), int(e)
+    return PK
+
+
+def findstrX(Rsc_msg: str, tgt: str):  # 查找收到字符串中的指定元素
+    findIdx = Rsc_msg.find(tgt)
+    if findIdx == -1:
+        return False
+    else:
+        return True
+
 # *-----------------init method-----------------
+
 
 def initHEAD(extp, intp, lmt):  # 装载首部
     hmsg_eg = MSG_HEAD
@@ -442,8 +465,14 @@ def initM_V2C_ACC(state):  # 确认状态正文
 
 if __name__ == '__main__':
     atc1 = initATC(1, '137001', 1)
-    print(atc1)
-    ds_atc1 = cbDES.DES_encry(str(atc1), msg_rndKey())
-    print(ds_atc1)
+    # print(atc1)
+    # ds_atc1 = cbDES.DES_encry(str(atc1), msg_rndKey())
+    # print(ds_atc1)
     # s1 = initSIGN('fw7qw', SKEY_C)
     # print(s1)
+    pk1, sk1 = cbRSA.RSA_initKey('a', 40)
+    spk1 = PK2str(pk1)
+    print(pk1, '\nspk1:', spk1, len(spk1))
+    print(findstrX(spk1, PK_SUFFIX))
+    dspk1 = str2PK(spk1)
+    print(dspk1)

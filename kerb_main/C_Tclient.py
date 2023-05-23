@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-23 10:30:11
+LastEditTime: 2023-05-23 11:33:45
 Description:
 '''
 import socket as sk
@@ -55,15 +55,15 @@ Dmsg_handles = {  # 数据报文处理函数字典
 def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     '''报文在此分割为首部+正文, 正文在函数字典对应的方法处理'''
     Rba_msg = Dst_socket.recv(MAX_SIZE)  # 收
-    C_PKEY_V = 0
+    C_PKEY_V = None  # tuple
     # *初步分割
     Rsa_msg = Rba_msg.decode()  # bytes->str
     if Rsa_msg.count('|') == 1:  # 按分隔符数量划分
         Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
     elif Rsa_msg.count('|') == 2:  # !此处要求V统一报文后C收到的msg为三段
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+Rsc
-        if len(Rsc_msg) == DEF_LEN_RSA_K:
-            C_PKEY_V = int(Rsc_msg)  # *得到PK_V
+        if findstrX(Rsc_msg, PK_SUFFIX):
+            C_PKEY_V = str2PK(Rsc_msg)  # *得到PK_V
 
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
@@ -166,7 +166,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
     Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
     Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
     Ssh_c2v = dict2str(Sdh_c2v)  # 首部dict->str
-    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|' + str(PKEY_C)  # 拼接并加上PK_C
+    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|' + PK2str(PKEY_C)  # 拼接并加上PK_C
     Sba_c2v = Ssa_c2v.encode()  # str->bytes
     return Sba_c2v
 
