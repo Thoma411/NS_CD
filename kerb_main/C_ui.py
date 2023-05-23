@@ -87,9 +87,9 @@ class AdminPage:  # 管理员登录界面
     def login(self):
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
-        global K_CV  # *声明K_CV为共享密钥
-        tag, k_cv = cc.admin_on_login(
-            username, password)  # TODO 返回PK_V 保存为全局变量供后续验证
+        global K_CV, C_PKEY_V  # *声明K_CV为共享密钥
+        tag, k_cv, C_PKEY_V = cc.admin_on_login(
+            username, password)  # *返回PK_V 保存为全局变量供后续验证
         K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
@@ -140,8 +140,8 @@ class StudentPage:  # 学生登陆界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        global K_CV  # *声明K_CV为共享密钥
-        tag, k_cv = cc.stu_on_login(username, password)
+        global K_CV, C_PKEY_V  # *声明K_CV为共享密钥
+        tag, k_cv, C_PKEY_V = cc.stu_on_login(username, password)
         K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入学生操作界面

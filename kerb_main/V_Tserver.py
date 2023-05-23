@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 21:31:16
+LastEditTime: 2023-05-23 10:08:11
 Description:
 '''
 import socket as sk
@@ -16,6 +16,7 @@ MAX_LISTEN = 16
 PRT_LOG = True  # 是否打印输出
 # K_CV = th.local()
 # K_CV = DKEY_C
+PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成V的公私钥
 
 
 def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
@@ -42,8 +43,8 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Ssm_v2c = dict2str(Sdm_v2c)  # 正文dict->str
     Ssh_v2c = dict2str(Sdh_v2c)  # 首部dict->str
     Sbm_v2c = cbDES.DES_encry(Ssm_v2c, k_cv)  # *加密正文
-    Ssa_v2c = Ssh_v2c + '|' + str(Sbm_v2c)  # 拼接str(Sbm_v2c已是str)
-    # TODO:后跟PK_V
+    Ssa_v2c = Ssh_v2c + '|' + str(Sbm_v2c) + '|' + \
+        PKEY_V  # 拼接str(Sbm_v2c已是str)
     if PRT_LOG:
         print('V->C:\n', Ssa_v2c)
     return Ssa_v2c, k_cv  # str+str(bytes)
@@ -117,8 +118,11 @@ def V_Recv(C_Socket: sk, cAddr):
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
         print('sign:', Rsc_msg)
         print('正文：', Rsm_msg)
-        if Rsc_msg != '':  # TODO:控制报文Rsc_msg为PK_C
-            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
+        if len(Rsc_msg) == DEF_LEN_RSA_K:  # 控制报文Rsc_msg长度与PK_C相等
+            V_PKEY_C = int(Rsc_msg)  # str->int
+            pass
+        else:
+            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, V_PKEY_C)
             print('数字签名验证:', verFlag)
 
         # *匹配报文类型

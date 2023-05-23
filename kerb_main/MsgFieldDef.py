@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-22 20:39:16
+LastEditTime: 2023-05-23 09:58:01
 Description: 
 '''
 
@@ -40,8 +40,8 @@ DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
 DEF_LEN_RSA_K = 256
-PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
-PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
+# PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
+# PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 
 # PKEY_AS = '00000000'  # AS的公钥
 # SKEY_AS = '00000000'  # AS的私钥
@@ -445,5 +445,5 @@ if __name__ == '__main__':
     print(atc1)
     ds_atc1 = cbDES.DES_encry(str(atc1), msg_rndKey())
     print(ds_atc1)
-    s1 = initSIGN('fw7qw', SKEY_C)
-    print(s1)
+    # s1 = initSIGN('fw7qw', SKEY_C)
+    # print(s1)

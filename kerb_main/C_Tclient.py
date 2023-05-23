@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 21:32:51
+LastEditTime: 2023-05-23 10:30:11
 Description:
 '''
 import socket as sk
@@ -19,6 +19,8 @@ AS_IP, AS_PORT = '127.0.0.1', 8010
 TGS_IP, TGS_PORT = '127.0.0.1', 8020
 V_IP, V_PORT = '127.0.0.1', 8030
 MAX_SIZE = 2048
+
+PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
 
 
 def Chandle_AS2C(mt):  # 处理AS2C控制报文
@@ -53,10 +55,16 @@ Dmsg_handles = {  # 数据报文处理函数字典
 def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     '''报文在此分割为首部+正文, 正文在函数字典对应的方法处理'''
     Rba_msg = Dst_socket.recv(MAX_SIZE)  # 收
-
+    C_PKEY_V = 0
     # *初步分割
     Rsa_msg = Rba_msg.decode()  # bytes->str
-    Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
+    if Rsa_msg.count('|') == 1:  # 按分隔符数量划分
+        Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
+    elif Rsa_msg.count('|') == 2:  # !此处要求V统一报文后C收到的msg为三段
+        Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+Rsc
+        if len(Rsc_msg) == DEF_LEN_RSA_K:
+            C_PKEY_V = int(Rsc_msg)  # *得到PK_V
+
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
     # *匹配报文类型
@@ -104,8 +112,8 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         return TMP_KEY, TMP_TKT
     elif retFlag == 4:  # 返回step4的共享密钥/票据
         return TMP_KEY, TMP_TKT
-    elif retFlag == 6:  # 返回step6 V生成的时间戳
-        return TMP_TS
+    elif retFlag == 6:  # *返回step6 V生成的时间戳和PK_V
+        return TMP_TS, C_PKEY_V
     else:
         pass
 
@@ -158,7 +166,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
     Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
     Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
     Ssh_c2v = dict2str(Sdh_c2v)  # 首部dict->str
-    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|'  # TODO:拼接 加上PK_C
+    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|' + str(PKEY_C)  # 拼接并加上PK_C
     Sba_c2v = Ssa_c2v.encode()  # str->bytes
     return Sba_c2v
 
@@ -255,13 +263,12 @@ def C_Kerberos():
     # print(send_ts_5, type(send_ts_5))
     C_C_Send(Vsock, INC_C2V, client_ip, tkt_v, k_cv, send_ts_5)
 
-    # *接收mdTS_5
-    recv_ts_5 = C_Recv(Vsock, k_cv)
-    # TODO:接收PK_V
+    # *接收mdTS_5和PK_V
+    recv_ts_5, C_PKEY_V = C_Recv(Vsock, k_cv)
     # print(recv_ts_5, type(recv_ts_5))
     if send_ts_5 == recv_ts_5:
         print('[Kerberos] Authentication success.')
-        return True, k_cv  # TODO: 返回业务逻辑所需的对称钥和PK_V
+        return True, k_cv, C_PKEY_V  # *返回业务逻辑所需的对称钥和PK_V
     else:
         print('[Kerberos] Authentication failed.')
         return False
@@ -302,7 +309,7 @@ def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
 
 
 def admin_on_login(usr, pwd):  # 管理员登录消息
-    atc_flag, k_cv = C_Kerberos()  # TODO 获取共享密钥和PK_V
+    atc_flag, k_cv, C_PKEY_V = C_Kerberos()  # *获取共享密钥和PK_V
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
@@ -312,15 +319,15 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
         Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
         print('[admin_on_login]:', Sbc_log, len(Sbc_log))
-        testRSA = cbRSA.RSA_verf(Sbm_log, Sbc_log, PKEY_C)
-        print('C自己解得摘要:', testRSA)
+        # testRSA = cbRSA.RSA_verf(Sbm_log, Sbc_log, PKEY_C)
+        # print('C自己解得摘要:', testRSA)
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)
         Rsa_log = Rba_log.decode()
         print("[C] admin login response")
         if Rsa_log == "adm login":
-            return 1, k_cv  # TODO:返回PK_V
+            return 1, k_cv, C_PKEY_V  # *返回PK_V
         else:
             pass
     else:
@@ -328,7 +335,7 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
 
 
 def stu_on_login(usr, pwd):  # 学生登陆消息
-    atc_flag, k_cv = C_Kerberos()
+    atc_flag, k_cv, C_PKEY_V = C_Kerberos()
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
@@ -344,7 +351,7 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         Rsa_log = Rba_log.decode()
         print("[C] stu login response")
         if Rsa_log == "stu login":
-            return 1, k_cv
+            return 1, k_cv, C_PKEY_V  # *返回PK_V
         else:
             pass
     else:
