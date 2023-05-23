@@ -5,7 +5,7 @@ import tkinter.font as tkFont
 import C_Tclient as cc
 from tkinter import *
 
-K_CV = None
+# K_CV = cc.DKEY_C
 
 
 class StartPage:  # 主菜单
@@ -88,7 +88,8 @@ class AdminPage:  # 管理员登录界面
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
         global K_CV  # *声明K_CV为共享密钥
-        tag, k_cv = cc.admin_on_login(username, password)
+        tag, k_cv = cc.admin_on_login(
+            username, password)  # TODO 返回PK_V 保存为全局变量供后续验证
         K_CV = k_cv
         if tag == 1:
             # AdminManage(self.window)  # 进入管理员操作界面
@@ -381,7 +382,7 @@ class AdminManage:
             total = stu_all_dict[key]['c_grade'] + \
                 stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
-            ave = int(total / 3)
+            ave = (total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
@@ -630,7 +631,7 @@ class AdminManage:
                     'MARK_E': self.var_e_grade.get()  # 英语成绩
                 }
                 id_index = self.id.index(self.row_info[0])
-                cc.update_admin_stuscore(stu_dict,K_CV)
+                cc.update_admin_stuscore(stu_dict, K_CV)
                 self.name[id_index] = self.var_name.get()
                 self.gender[id_index] = self.var_gender.get()
                 self.age[id_index] = self.var_age.get()
@@ -642,9 +643,12 @@ class AdminManage:
 
                 self.tree.item(self.tree.selection()[0], values=(
                     self.var_id.get(), self.var_name.get(), self.var_gender.get(),
-                    self.var_age.get(), self.var_c_grade.get(), self.var_m_grade.get(), self.var_e_grade.get(),
-                    float(self.var_c_grade.get()) + float(self.var_m_grade.get()) + float(self.var_e_grade.get()),
-                    (float(self.var_c_grade.get()) + float(self.var_m_grade.get()) + float(self.var_e_grade.get())) / 3
+                    self.var_age.get(), self.var_c_grade.get(
+                    ), self.var_m_grade.get(), self.var_e_grade.get(),
+                    float(self.var_c_grade.get()) + float(self.var_m_grade.get()
+                                                          ) + float(self.var_e_grade.get()),
+                    (float(self.var_c_grade.get()) + float(self.var_m_grade.get()
+                                                           ) + float(self.var_e_grade.get())) / 3
                 ))  # 修改对于行信息
             else:
                 messagebox.showinfo('警告！', '不能修改学生学号！')

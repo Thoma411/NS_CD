@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-22 17:23:28
+LastEditTime: 2023-05-22 21:31:16
 Description:
 '''
 import socket as sk
@@ -13,8 +13,9 @@ V_PORT = 8030
 MAX_SIZE = 2048
 MAX_LISTEN = 16
 
-PRT_LOG = False  # 是否打印输出
-#K_CV = th.local()
+PRT_LOG = True  # 是否打印输出
+# K_CV = th.local()
+# K_CV = DKEY_C
 
 
 def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
@@ -42,9 +43,12 @@ def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
     Ssh_v2c = dict2str(Sdh_v2c)  # 首部dict->str
     Sbm_v2c = cbDES.DES_encry(Ssm_v2c, k_cv)  # *加密正文
     Ssa_v2c = Ssh_v2c + '|' + str(Sbm_v2c)  # 拼接str(Sbm_v2c已是str)
+    # TODO:后跟PK_V
     if PRT_LOG:
         print('V->C:\n', Ssa_v2c)
     return Ssa_v2c, k_cv  # str+str(bytes)
+
+# *------------处理数据报文------------
 
 
 def Dhangle_ADM_LOG(mt, k_cv):  # 处理管理员LOG报文 mt:str
@@ -82,10 +86,12 @@ def Dhangle_ADM_ADD(mt, k_cv):  # 处理管理员添加学生的报文
     adm_dict_add = str2dict(adm_str_add)
     return adm_dict_add
 
-def Dhangle_ADM_UPD(mt,k_cv): #处理管理员更新学生信息的报文
-    adm_str_update =cbDES.DES_decry(mt, k_cv)
+
+def Dhangle_ADM_UPD(mt, k_cv):  # 处理管理员更新学生信息的报文
+    adm_str_update = cbDES.DES_decry(mt, k_cv)
     adm_dict_update = str2dict(adm_str_update)
     return adm_dict_update
+
 
 def Dhangle_ADM_DEL(mt, k_cv):
     adm_str_del = cbDES.DES_decry(mt, k_cv)
@@ -107,8 +113,13 @@ def V_Recv(C_Socket: sk, cAddr):
         Rsa_msg = Rba_msg.decode()  # bytes->str
         if PRT_LOG:
             print('C->V:\n', Rsa_msg)
-        Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
+        Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
+        print('sign:', Rsc_msg)
+        print('正文：', Rsm_msg)
+        if Rsc_msg != '':  # TODO:控制报文Rsc_msg为PK_C
+            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, PKEY_C)
+            print('数字签名验证:', verFlag)
 
         # *匹配报文类型
         if Rdh_msg['LIGAL'] == H_LIGAL:  # 收包合法
@@ -128,16 +139,14 @@ def V_Recv(C_Socket: sk, cAddr):
             elif msg_extp == EX_DAT:  # *数据报文
                 if msg_intp == IND_ADM:  # 管理员登录
                     print('[ex_dat] K_cv:', K_CV)
-                    user_adm, pswd_adm = Dhangle_ADM_LOG(
-                        Rsm_msg, K_CV)
+                    user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, K_CV)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
 
                 elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', K_CV)
-                    user_stu, pswd_stu = Dhangle_STU_LOG(
-                        Rsm_msg, K_CV)
+                    user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, K_CV)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
@@ -161,7 +170,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     stu_id = Dhangle_ADM_DEL(Rsm_msg, K_CV)
                     ss.sql_del_stu(stu_id)
                 elif msg_intp == IND_UPD:
-                    stu_update_dict=Dhangle_ADM_UPD(Rsm_msg,K_CV)
+                    stu_update_dict = Dhangle_ADM_UPD(Rsm_msg, K_CV)
                     ss.sql_update_stu(stu_update_dict)
 
         else:  # 收包非法

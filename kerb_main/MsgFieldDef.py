@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-22 17:10:07
+LastEditTime: 2023-05-22 20:39:16
 Description: 
 '''
 
@@ -39,7 +39,7 @@ DEF_LT = 6000  # 默认有效期
 DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
-DEF_LEN_RSA_K = 150
+DEF_LEN_RSA_K = 256
 PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 
@@ -49,6 +49,7 @@ PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
+DKEY_CV = '00000000'
 
 # 通用首部
 MSG_HEAD = {
@@ -431,11 +432,6 @@ def initM_C2V_ADMIN_QRY(qry):  # 请求查询全部学生信息的正文
     mmsg_eg = M_C2V_QRY
     mmsg_eg['QRY'] = qry
     return mmsg_eg
-
-
-def initM_C2V_ADMIN_ADD(stu_dict):
-    mmsg_eg = M_C2V_ADD
-    mmsg_eg['ID']
 
 
 def initM_V2C_ACC(state):  # 确认状态正文

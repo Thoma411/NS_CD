@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-22 17:28:54
+LastEditTime: 2023-05-22 21:32:51
 Description:
 '''
 import socket as sk
@@ -116,8 +116,6 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     d/s/b/h - 字典/字符串/比特/16进制比特
     h/m/c/a - 首部/正文/签名/拼接整体
     '''
-
-
 #     Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
 #     Sdc_c2as_ctf = initSIGN(SKEY_C, ID_C, PKEY_C)  # 生成签名
 #     Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF,
@@ -160,7 +158,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
     Sdh_c2v = initHEAD(EX_CTL, INC_C2V, len(Sdm_c2v))  # 生成首部
     Ssm_c2v = dict2str(Sdm_c2v)  # 正文dict->str
     Ssh_c2v = dict2str(Sdh_c2v)  # 首部dict->str
-    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v  # 拼接
+    Ssa_c2v = Ssh_c2v + '|' + Ssm_c2v + '|'  # TODO:拼接 加上PK_C
     Sba_c2v = Ssa_c2v.encode()  # str->bytes
     return Sba_c2v
 
@@ -174,9 +172,8 @@ def create_D_ADMLOG(user, pswd, k_cv):
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
     Sba_log = Ssa_log.encode()
-    # TODO:数字签名
     return Sba_log
 
 
@@ -186,9 +183,8 @@ def create_D_STULOG(user, pswd, k_cv):
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
     Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+    Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
     Sba_log = Ssa_log.encode()
-    # TODO:数字签名
     print(Ssa_log)
     return Sba_log
 
@@ -261,10 +257,11 @@ def C_Kerberos():
 
     # *接收mdTS_5
     recv_ts_5 = C_Recv(Vsock, k_cv)
+    # TODO:接收PK_V
     # print(recv_ts_5, type(recv_ts_5))
     if send_ts_5 == recv_ts_5:
         print('[Kerberos] Authentication success.')
-        return True, k_cv  # 返回业务逻辑所需的对称钥
+        return True, k_cv  # TODO: 返回业务逻辑所需的对称钥和PK_V
     else:
         print('[Kerberos] Authentication failed.')
         return False
@@ -281,7 +278,7 @@ def send_message(host, port, bmsg):  # 消息的发送与接收
         sock.connect(server_address)
         sock.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        response = sock.recv(1024)
+        response = sock.recv(MAX_SIZE)
         print("Received response:", response)
         return response
     except Exception as e:
@@ -305,7 +302,7 @@ def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
 
 
 def admin_on_login(usr, pwd):  # 管理员登录消息
-    atc_flag, k_cv = C_Kerberos()  # 获取共享密钥
+    atc_flag, k_cv = C_Kerberos()  # TODO 获取共享密钥和PK_V
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
@@ -313,15 +310,17 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
         Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
-        # Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
-        Ssa_log = Ssh_log + '|' + Sbm_log
+        Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        print('[admin_on_login]:', Sbc_log, len(Sbc_log))
+        testRSA = cbRSA.RSA_verf(Sbm_log, Sbc_log, PKEY_C)
+        print('C自己解得摘要:', testRSA)
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)
         Rsa_log = Rba_log.decode()
         print("[C] admin login response")
         if Rsa_log == "adm login":
-            return 1, k_cv
+            return 1, k_cv  # TODO:返回PK_V
         else:
             pass
     else:
@@ -337,8 +336,8 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         Ssh_log = dict2str(Sdh_log)  # 首部dict->str
         Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
         Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
-        # Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
-        Ssa_log = Ssh_log + '|' + Sbm_log  # 拼接
+        Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        print('[stu_on_login]:', Sbc_log)
         Sba_log = Ssa_log.encode()
         # 发送消息
         Rba_log = send_message(V_IP, V_PORT, Sba_log)
@@ -352,7 +351,7 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         print('[stu_on_login] fatal.')
 
 
-# 解析响应消息并返回查询结果
+# 学生查询学生成绩
 def query_student_score(sid, k_cv):
     Sdm_qry = initM_C2V_DEL(sid)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
@@ -360,8 +359,8 @@ def query_student_score(sid, k_cv):
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
     Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
     Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
-    Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    print('[query_student_score]:', Sbc_qry)
     Sba_qry = Ssa_qry.encode()
 
     Rba_log = send_message(V_IP, V_PORT, Sba_qry)
@@ -370,7 +369,7 @@ def query_student_score(sid, k_cv):
     return Rda_log
 
 
-# 处理管理员发送过来的报文 返回查询结果
+# 管理员查询学生成绩
 def query_admin_stuscore(qry, k_cv):
     Sdm_qry = initM_C2V_ADMIN_QRY(qry)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
@@ -378,24 +377,25 @@ def query_admin_stuscore(qry, k_cv):
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
     Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
     Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
-    Ssa_qry = Ssh_qry + '|' + Sbm_qry  # 拼接
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    print('[query_admin_stuscore]:', Sbc_qry)
     Sba_qry = Ssa_qry.encode()
-
+    # print('[query_admin_stuscore] encode')
     Rba_qry = send_message(V_IP, V_PORT, Sba_qry)  # 发送接收
     Rsa_qry = Rba_qry.decode()
     Rda_qry = str2dict(Rsa_qry)
     return Rda_qry
 
 
+# 管理员添加学生信息
 def add_admin_stuscore(stu_dict, k_cv):
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
     Sbm_add = cbDES.DES_encry(Ssm_add, k_cv)
     Sbc_add = cbRSA.RSA_sign(Sbm_add, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
-    Ssa_add = Ssh_add + '|' + Sbm_add
+    Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
+    print('[add_admin_stuscore]:', Sbc_add)
     Sba_add = Ssa_add.encode()
     send_message_tmp(V_IP, V_PORT, Sba_add)
     pass
@@ -408,19 +408,23 @@ def del_admin_stuscore(stu_id, k_cv):
     Ssh_del = dict2str(Sdh_del)  # 首部dict->str
     Sbm_del = cbDES.DES_encry(Ssm_del, k_cv)
     Sbc_del = cbRSA.RSA_sign(Sbm_del, SKEY_C)  # *加密正文生成数字签名
-    # Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
-    Ssa_del = Sdh_del + '|' + Sbm_del
+    Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
+    print('[del_admin_stuscore]:', Sbc_del)
     Sba_del = Ssa_del.encode()
     send_message_tmp(V_IP, V_PORT, Sba_del)
 
-def update_admin_stuscore(stu_dict,k_cv):
-    Sadm_h_update = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
-    Sadm_m_str_update = dict2str(stu_dict)
-    Sadm_h_str_update = dict2str(Sadm_h_update)
-    Sadm_h_byte_update = cbDES.DES_encry(Sadm_m_str_update, k_cv)
-    Sadm_a_str_update = Sadm_h_str_update + '|' + Sadm_h_byte_update
-    Sadm_a_byte_update = Sadm_a_str_update.encode()
-    send_message_tmp(V_IP, V_PORT, Sadm_a_byte_update)
+
+def update_admin_stuscore(stu_dict, k_cv):
+    Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
+    Ssm_upd = dict2str(stu_dict)
+    Ssh_upd = dict2str(Sdh_upd)
+    Sbm_upd = cbDES.DES_encry(Ssm_upd, k_cv)
+    Sbc_upd = cbRSA.RSA_sign(Sbm_upd, SKEY_C)  # *加密正文生成数字签名
+    Ssa_upd = Ssh_upd + '|' + Sbm_upd + '|' + Sbc_upd  # *拼接含数字签名
+    print('[query_student_score]:', Sbc_upd)
+    Sba_upd = Ssa_upd.encode()
+    send_message_tmp(V_IP, V_PORT, Sba_upd)
+
 
 if __name__ == '__main__':
     print(C_Kerberos())

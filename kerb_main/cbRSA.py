@@ -124,19 +124,31 @@ def RSA_initKey(typeK: str = None, lenK: int = LEN_RKEY):  # 生成PK/SK
         return n, e, d
 
 
-def RSA_sign(msg: str, skey) -> int:
+def RSA_sign(msg: str, skey, retType='s'):
     '''msg: input_text\nd&n: SK'''
     n, d = skey
     x = hash_string(msg)
     Signature = power(x, d, n)
-    return Signature
+    print('生成的密文：', msg)
+    print('x:', x)
+    if retType == 's':
+        return str(Signature)  # str
+    else:
+        return Signature  # int
 
 
-def RSA_verf(msg: str, sig: int, pkey) -> bool:
+def RSA_verf(msg, sig, pkey):
     '''msg: input_text\nsig: signature\ne&n: PK'''
+    print('rsa中的签名0：', sig, len(sig))
+    print('传入的密文', msg)
+    if type(sig) == str:
+        sig = int(sig)
+        # print('rsa中的签名1：', sig, len(str(sig)))
     n, e = pkey
     x_ = hash_string(msg)
+    print("x_:", x_, len(str(x_)))
     x_verified = power(sig, e, n)
+    print("x_verified:", x_verified, len(str(x_verified)))
     return x_ == x_verified
 
 
