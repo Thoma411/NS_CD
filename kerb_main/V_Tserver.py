@@ -127,7 +127,7 @@ def create_D_STUQRY(stu_dict, k_cv):  # 生成学生查询报文
 
 
 def create_D_ADMQRY(stu_all_dict, k_cv):  # 生成管理员查询报文
-    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(stu_all_dict))
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(stu_all_dict))
     Ssm_qry = dict2str(stu_all_dict)
     Ssh_qry = dict2str(Sdh_qry)
     Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)
@@ -179,14 +179,14 @@ def V_Recv(C_Socket: sk):
                     user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, k_cv)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
-                        C_Socket.send(create_D_ACC(IND_ADM, k_cv))
+                        C_Socket.send(create_D_ACC(IND_ADM,k_cv))
 
                 elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', k_cv)
                     user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, k_cv)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
-                        C_Socket.send(create_D_ACC(IND_STU, k_cv))
+                        C_Socket.send(create_D_ACC(IND_STU,k_cv))
 
                 elif msg_intp == IND_QRY:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
@@ -196,7 +196,7 @@ def V_Recv(C_Socket: sk):
                 elif msg_intp == IND_QRY_ADM:  # 管理员查询请求
                     qry = Dhangle_ADM_QRY(Rsm_msg, k_cv)
                     stu_all_dict = ss.sql_search_adm()
-                    C_Socket.send(create_D_STUQRY(stu_all_dict, k_cv))
+                    C_Socket.send(create_D_ADMQRY(stu_all_dict, k_cv))
 
                 elif msg_intp == IND_ADD:  # 管理员添加
                     stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, k_cv)

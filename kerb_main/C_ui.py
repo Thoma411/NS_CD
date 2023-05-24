@@ -660,8 +660,14 @@ class TextFileReader():
         self.window = tk.Tk()
         self.window.title('实时文本阅读器')
         self.text1 = tk.Text(self.window, wrap=tk.WORD)
+        self.scrollbar1 = ttk.Scrollbar(self.window, command=self.text1.yview)
+        self.text1.config(yscrollcommand=self.scrollbar1.set)
+        self.scrollbar1.pack(side=tk.RIGHT, fill=tk.Y)
         self.text1.pack(expand=True, fill=tk.BOTH)
         self.text2 = tk.Text(self.window, wrap=tk.WORD)
+        self.scrollbar2 = ttk.Scrollbar(self.window, command=self.text2.yview)
+        self.text2.config(yscrollcommand=self.scrollbar2.set)
+        self.scrollbar2.pack(side=tk.RIGHT, fill=tk.Y)
         self.text2.pack(expand=True, fill=tk.BOTH)
         self.file_path_1 = None
         self.file_path_2 = None
@@ -672,7 +678,7 @@ class TextFileReader():
         self.poll_file_changes()
 
     def load_text(self, file_path, text_widget):
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r', encoding='gbk') as file:
             content = file.read()
         text_widget.delete(1.0, tk.END)
         text_widget.insert(tk.END, content)
