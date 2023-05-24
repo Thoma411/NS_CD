@@ -1,17 +1,17 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 16:51:52
+LastEditTime: 2023-05-24 17:05:48
 Description:
 '''
 import socket as sk
 from MsgFieldDef import *
 
 ID_C = 13  # !每个C的ID需不同
-C_IP = '192.128.137.60'  # !IP需提前声明
-AS_IP, AS_PORT = '192.128.137.60', 8010
-TGS_IP, TGS_PORT = '192.128.137.60', 8020
-V_IP, V_PORT = '192.128.137.60', 8030
+C_IP = '192.168.137.60'  # !IP需提前声明
+AS_IP, AS_PORT = '192.168.137.60', 8010
+TGS_IP, TGS_PORT = '192.168.137.60', 8020
+V_IP, V_PORT = '192.168.137.60', 8030
 
 MAX_SIZE = 2048
 PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
@@ -389,7 +389,7 @@ def Snd_msg(Dst_socket: sk, bmsg):  # !待删除 发消息(无返回值)
 def admin_on_login(usr, pwd):  # 管理员登录消息
     atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()  # *获取共享密钥和PK_V
     if atc_flag:  # 认证成功
-        Sba_log = create_D_ADMLOG(usr, pwd)
+        Sba_log = create_D_ADMLOG(usr, pwd, k_cv)
         Rsa_log = SndRcv_msg(Vsock, Sba_log)  # 收发消息
         print("[C] admin login response")
         if Rsa_log == "adm login":
@@ -416,16 +416,14 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
 
 def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
     Sba_qry = create_D_STUQRY(sid, k_cv)
-    Rba_qry = SndRcv_msg(Dst_socket, Sba_qry)
-    Rsa_qry = Rba_qry.decode()
+    Rsa_qry = SndRcv_msg(Dst_socket, Sba_qry)
     Rda_qry = str2dict(Rsa_qry)
     return Rda_qry
 
 
 def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成绩
     Sba_qry = create_D_ADMQRY(qry, k_cv)
-    Rba_qry = SndRcv_msg(Dst_socket, Sba_qry)  # 发送接收
-    Rsa_qry = Rba_qry.decode()
+    Rsa_qry = SndRcv_msg(Dst_socket, Sba_qry)  # 发送接收
     Rda_qry = str2dict(Rsa_qry)
     return Rda_qry
 
