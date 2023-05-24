@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-04 21:04:42
-LastEditTime: 2023-05-24 21:35:11
+LastEditTime: 2023-05-24 23:11:10
 Description: 
 '''
 import tkinter as tk
@@ -30,27 +30,22 @@ class StartPage:  # 主菜单
                          height=2, fg='blue', font=("Verdana", 40))
         label.grid(row=0, column=2, columnspan=3, pady=50)  # pady=50 界面的长度
 
-        btn1 = tk.Button(self.window, text="管理员登陆", font=tkFont.Font(size=24),
-                         command=lambda: AdminPage(self.window),
-                         width=30,
-                         height=2,
+        btn1 = tk.Button(self.window, text="管理员登录", font=tkFont.Font(size=24),
+                         command=lambda: AdminPage(self.window), width=30, height=2,
                          fg='blue', bg='green', activebackground='black',
                          activeforeground='white')  # .pack(padx=35,pady=2,side=LEFT,anchor=N)
         btn1.grid(row=1, column=2, columnspan=3, pady=20)
-        btn2 = tk.Button(self.window, text="学生登陆", font=tkFont.Font(size=24),
-                         command=lambda: StudentPage(self.window),
-                         width=30,
-                         height=2, fg='blue', bg='green', activebackground='black',
+        btn2 = tk.Button(self.window, text="学生登录", font=tkFont.Font(size=24),
+                         command=lambda: StudentPage(self.window), width=30, height=2,
+                         fg='blue', bg='green', activebackground='black',
                          activeforeground='white')  # .grid(row = 1,column = 2) #.pack(padx=10,pady=2,side=TOP)
         btn2.grid(row=2, column=2, columnspan=3, pady=20)
         # btn3 = Button(self.window, text="关于", font=tkFont.Font(size=10), command=lambda: AboutPage(self.window),
-        #               width=15,
-        #               height=2,
+        #               width=15, height=2,
         #               fg='white', bg='green', activebackground='black', activeforeground='white')
         # btn3.grid(row=3, column=1, columnspan=3, pady=20)
         btn4 = tk.Button(self.window, text='退出系统', height=2, font=tkFont.Font(size=10), width=15,
-                         command=self.window.destroy,
-                         fg='black', bg='red', activebackground='black', activeforeground='white')
+                         command=self.window.destroy, fg='black', bg='red', activebackground='black', activeforeground='white')
         btn4.grid(row=3, column=3, columnspan=3, pady=20)
         # self.window.mainloop()  # 主消息循环
 
@@ -164,8 +159,7 @@ class InfoManage:  # 信息管理界面
                    padx=80, pady=30)  # pady=20 界面的长度
         btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised',
                       font=('Verdana', 20), command=lambda: AdminManage(self.window),
-                      fg='white', bg='green', activebackground='black',
-                      activeforeground='blue')
+                      fg='white', bg='green', activebackground='black', activeforeground='blue')
         btn1.grid(row=2, column=5, columnspan=3, padx=80, pady=30)
         # btn2 = Button(self.window, text="用户信息管理", width=30, height=1, relief='raised', font=('Verdana', 20),
         #               command=lambda: UserInfoManage(self.window),
@@ -175,8 +169,7 @@ class InfoManage:  # 信息管理界面
         #
         # btn3 = Button(self.window, text="考勤信息管理", width=36, height=1, relief='raised', font=('Verdana', 20),
         #               command=lambda: AttendanceInfoManage(self.window),
-        #               fg='white', bg='green', activebackground='red',
-        #               activeforeground='blue')
+        #               fg='white', bg='green', activebackground='red', activeforeground='blue')
         # btn3.grid(row=8, column=5, columnspan=3, padx=80, pady=30)
         self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
         self.window.mainloop()  # 进入消息循环
@@ -409,6 +402,7 @@ class AdminManage:
             self.frame_left_top, textvariable=self.var_name, font=('Verdana', 15))
         self.right_top_name_label.grid(row=2, column=0)  # 位置设置
         self.right_top_name_entry.grid(row=2, column=1)
+
         # 性别
         self.right_top_gender_label = Label(
             self.frame_left_top, text="性别:", font=('Verdana', 15))
@@ -416,6 +410,7 @@ class AdminManage:
                                             textvariable=self.var_gender, font=('Verdana', 15))
         self.right_top_gender_label.grid(row=3, column=0)  # 位置设置
         self.right_top_gender_entry.grid(row=3, column=1)
+
         # 年龄
         self.right_top_gender_label = Label(
             self.frame_left_top, text="年龄:", font=('Verdana', 15))
@@ -461,12 +456,14 @@ class AdminManage:
                                             width=20, command=self.del_row)
         self.right_top_button4 = ttk.Button(self.frame_right_top, text='清空',
                                             width=20, command=self.clear)
+
         # 位置设置
         self.right_top_title.grid(row=0, column=0, pady=10)
         self.right_top_button1.grid(row=1, column=0, padx=20, pady=10)
         self.right_top_button2.grid(row=2, column=0, padx=20, pady=10)
         self.right_top_button3.grid(row=3, column=0, padx=20, pady=10)
         self.right_top_button4.grid(row=4, column=0, padx=20, pady=10)
+
         # 整体区域定位
         self.frame_left_top.grid(row=0, column=0, padx=2, pady=5)
         self.frame_right_top.grid(row=0, column=1, padx=30, pady=40)
