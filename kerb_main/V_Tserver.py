@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 19:36:49
+LastEditTime: 2023-05-24 19:50:22
 Description:
 '''
 import socket as sk
@@ -224,7 +224,7 @@ def V_Main():
     while True:
         cSocket, cAddr = Vsock.accept()
         print('conn:', cAddr)
-        thr = th.Thread(target=V_Recv, args=(cSocket, cAddr))
+        thr = th.Thread(target=V_Recv, args=(cSocket,))
         thr.start()
         thread_num = len(th.enumerate())
         print("线程数量(连接后): %d" % thread_num)
