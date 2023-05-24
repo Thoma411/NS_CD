@@ -1,7 +1,7 @@
 <!--
  * @Author: Thoma411
  * @Date: 2023-04-26 18:12:31
- * @LastEditTime: 2023-04-26 18:13:05
+ * @LastEditTime: 2023-05-24 19:26:24
  * @Description: 
 -->
 # NS_CD
@@ -10,6 +10,6 @@
 
 Python version: 3.7.9
 
-backup
-
 open hotspot
+
+use TCP, multithreading
