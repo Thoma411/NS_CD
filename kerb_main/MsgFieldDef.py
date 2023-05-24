@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-24 20:39:57
+LastEditTime: 2023-05-24 23:12:36
 Description: 
 '''
 import datetime as dt
@@ -48,7 +48,6 @@ DEF_LEN_RSA_K = 256
 DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
-DKEY_CV = '00000000'
 
 PK_SUFFIX = 'x'  # PK字符串后缀
 
