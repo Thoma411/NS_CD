@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 17:05:48
+LastEditTime: 2023-05-24 17:23:52
 Description:
 '''
 import socket as sk
@@ -95,14 +95,9 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
 
         # *数据报文
         elif msg_extp == EX_DAT:  # TODO:合并后数据报文处理方法
-            if msg_intp == IND_ADM:
-                # adm_acc = Dhandle_ACC(Rsm_msg, k_share)
-                # retFlag = LOG_ACC
-                pass
-            elif msg_intp == IND_STU:
-                # stu_acc = Dhandle_ACC(Rsm_msg, k_share)
-                # retFlag = LOG_ACC
-                pass
+            if msg_intp == IND_ADM or msg_intp == IND_STU:
+                log_acc = Dhandle_ACC(Rsm_msg, k_share)
+                retFlag = LOG_ACC
             elif msg_intp == IND_QRY:
                 pass
             elif msg_intp == IND_QRY_ADM:
@@ -126,8 +121,8 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         return TMP_KEY, TMP_TKT
     elif retFlag == INC_V2C:  # *返回step6 V生成的时间戳和PK_V
         return TMP_TS, C_PKEY_V
-    elif retFlag == LOG_ACC:  # *
-        pass
+    elif retFlag == LOG_ACC:  # *返回登录许可
+        return log_acc
     else:
         pass
 
@@ -367,21 +362,15 @@ def C_Kerberos():
 
 
 # *登录调用函数
-def SndRcv_msg(Dst_socket: sk, bmsg):  # 收发消息(含返回值)
+def SndRcv_msg(Dst_socket: sk, bmsg, k_cv=None):  # 收发消息(含返回值)
     try:
         Dst_socket.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        resp = Dst_socket.recv(MAX_SIZE)
-        print("Received response:", resp)
-        return resp.decode()
-    except Exception as e:
-        print("Error:", e)
-
-
-def Snd_msg(Dst_socket: sk, bmsg):  # !待删除 发消息(无返回值)
-    try:
-        Dst_socket.sendall(bmsg)
-        print("Sent message:", bmsg)
+        # resp = Dst_socket.recv(MAX_SIZE)
+        # print("Received response:", resp)
+        # return resp.decode()
+        ret = C_Recv(Dst_socket, k_cv)
+        return ret
     except Exception as e:
         print("Error:", e)
 
@@ -390,28 +379,38 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
     atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()  # *获取共享密钥和PK_V
     if atc_flag:  # 认证成功
         Sba_log = create_D_ADMLOG(usr, pwd, k_cv)
-        Rsa_log = SndRcv_msg(Vsock, Sba_log)  # 收发消息
-        print("[C] admin login response")
-        if Rsa_log == "adm login":
+        # Rsa_log = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
+        # print("[C] admin login response")
+        # if Rsa_log == "adm login":
+        #     return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
+        # else:
+        #     pass
+        ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
+        if ret == LOG_ACC:  # 返回结果为登录ACC
             return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
         else:
-            pass
+            print('[admLogin] LOG_ACC匹配失败')
     else:
-        print('[admin_on_login] fatal.')
+        print('[admLogin] fatal.')
 
 
 def stu_on_login(usr, pwd):  # 学生登陆消息
     atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()
     if atc_flag:  # 认证成功
         Sba_log = create_D_STULOG(usr, pwd, k_cv)
-        Rsa_log = SndRcv_msg(Vsock, Sba_log)  # 收发消息
-        print("[C] stu login response")
-        if Rsa_log == "stu login":
+        # Rsa_log = SndRcv_msg(Vsock, Sba_log)  # 收发消息
+        # print("[C] stu login response")
+        # if Rsa_log == "stu login":
+        #     return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
+        # else:
+        #     pass
+        ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
+        if ret == LOG_ACC:  # 返回结果为登录ACC
             return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
         else:
-            pass
+            print('[stuLogin] LOG_ACC匹配失败')
     else:
-        print('[stu_on_login] fatal.')
+        print('[stuLogin] fatal.')
 
 
 def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
@@ -430,17 +429,17 @@ def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成
 
 def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生信息
     Sba_add = create_D_ADMADD(stu_dict, k_cv)
-    Snd_msg(Dst_socket, Sba_add)
+    Dst_socket.sendall(Sba_add)
 
 
 def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信息
     Sba_del = create_D_ADMDEL(sid, k_cv)
-    Snd_msg(Dst_socket, Sba_del)
+    Dst_socket.sendall(Sba_del)
 
 
 def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学生信息
     Sba_upd = create_D_ADMUPD(stu_dict, k_cv)
-    Snd_msg(Dst_socket, Sba_upd)
+    Dst_socket.sendall(Sba_upd)
 
 
 if __name__ == '__main__':
