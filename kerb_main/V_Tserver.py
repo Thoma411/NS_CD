@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 19:23:20
+LastEditTime: 2023-05-24 19:36:49
 Description:
 '''
 import socket as sk
@@ -17,7 +17,7 @@ PRT_LOG = True  # 是否打印输出
 PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成V的公私钥
 
 
-def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
+def Chandle_C2V(mt):  # 处理C2V报文 mt:str
     Rdm_c2v = str2dict(mt)  # 正文str->dict
     tkt_v, atc_c = Rdm_c2v['mTKT_V'], Rdm_c2v['mATC_C']
 
@@ -139,7 +139,7 @@ def create_D_ADMQRY(stu_all_dict, k_cv):  # 生成管理员查询报文
     return Sba_qry
 
 
-def V_Recv(C_Socket: sk, cAddr):
+def V_Recv(C_Socket: sk):
     k_cv, V_PKEY_C = None, None  # 在while外临时存储k_cv, PK_C
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
@@ -168,7 +168,7 @@ def V_Recv(C_Socket: sk, cAddr):
 
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
-                    Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
+                    Ssa_msg, k_cv = Chandle_C2V(Rsm_msg)  # 相应函数处理
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
@@ -191,13 +191,11 @@ def V_Recv(C_Socket: sk, cAddr):
                 elif msg_intp == IND_QRY:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
                     stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
-                    # C_Socket.send(dict2str(stu_dict).encode())  # !格式
                     C_Socket.send(create_D_STUQRY(stu_dict, k_cv))
 
                 elif msg_intp == IND_QRY_ADM:  # 管理员查询请求
                     qry = Dhangle_ADM_QRY(Rsm_msg, k_cv)
                     stu_all_dict = ss.sql_search_adm()
-                    # C_Socket.send(dict2str(stu_all_dict).encode())  # !格式
                     C_Socket.send(create_D_STUQRY(stu_all_dict, k_cv))
 
                 elif msg_intp == IND_ADD:  # 管理员添加
@@ -214,10 +212,6 @@ def V_Recv(C_Socket: sk, cAddr):
         else:  # 收包非法
             print('illegal package!')
             break
-
-        # print(Rsh_msg, Rsm_msg, cAddr)
-        # *发送
-        # C_Socket.send(Rsa_msg.encode())
     C_Socket.close()
 
 

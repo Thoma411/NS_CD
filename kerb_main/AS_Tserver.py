@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-21 16:17:48
+LastEditTime: 2023-05-24 19:35:18
 Description: 
 '''
 import socket as sk
@@ -51,7 +51,6 @@ def AS_Recv(C_Socket: sk, cAddr):
 
         # *初步分割
         if not Rba_msg:  # 判空
-            # print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
         if PRT_LOG:
@@ -82,10 +81,6 @@ def AS_Recv(C_Socket: sk, cAddr):
         else:  # 收包非法
             print('illegal package!')
             break
-
-        # print(Rsh_msg, Rsm_msg, cAddr)
-        # *发送
-        # C_Socket.send(Rsa_msg.encode())
     C_Socket.close()
 
 
