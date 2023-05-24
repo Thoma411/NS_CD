@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 17:35:04
+LastEditTime: 2023-05-24 19:36:49
 Description:
 '''
 import socket as sk
@@ -14,12 +14,10 @@ MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 PRT_LOG = True  # 是否打印输出
-# K_CV = th.local()
-# K_CV = DKEY_C
 PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成V的公私钥
 
 
-def Chandle_C2V(mt, caddr):  # 处理C2V报文 mt:str
+def Chandle_C2V(mt):  # 处理C2V报文 mt:str
     Rdm_c2v = str2dict(mt)  # 正文str->dict
     tkt_v, atc_c = Rdm_c2v['mTKT_V'], Rdm_c2v['mATC_C']
 
@@ -101,7 +99,7 @@ def Dhangle_ADM_DEL(mt, k_cv):  # 处理管理员删除学生信息的报文
     return sid
 
 
-def create_D_ACC(LOG_TYPE, k_cv):
+def create_D_ACC(LOG_TYPE, k_cv):  # 生成登录确认报文
     Sdm_acc = initM_V2C_ACC(LOG_ACC)  # 生成登录确认正文
     Sdh_acc = initHEAD(EX_DAT, LOG_TYPE, len(Sdm_acc))  # 生成首部
     Ssm_acc = dict2str(Sdm_acc)
@@ -110,12 +108,38 @@ def create_D_ACC(LOG_TYPE, k_cv):
     Sbc_acc = cbRSA.RSA_sign(Sbm_acc, SKEY_V)  # *加密正文生成数字签名
     Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc
     if PRT_LOG:
-        print('[query_student_score]:', Ssa_acc)
+        print('[create_D_ACC]:', Ssa_acc)
     Sba_acc = Ssa_acc.encode()
     return Sba_acc
 
 
-def V_Recv(C_Socket: sk, cAddr):
+def create_D_STUQRY(stu_dict, k_cv):  # 生成学生查询报文
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(stu_dict))
+    Ssm_qry = dict2str(stu_dict)
+    Ssh_qry = dict2str(Sdh_qry)
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_V)
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry
+    if PRT_LOG:
+        print('[create_D_STUQRY]:', Ssa_qry)
+    Sba_qry = Ssa_qry.encode()
+    return Sba_qry
+
+
+def create_D_ADMQRY(stu_all_dict, k_cv):  # 生成管理员查询报文
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(stu_all_dict))
+    Ssm_qry = dict2str(stu_all_dict)
+    Ssh_qry = dict2str(Sdh_qry)
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_V)
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry
+    if PRT_LOG:
+        print('[create_D_ADMQRY]:', Ssa_qry)
+    Sba_qry = Ssa_qry.encode()
+    return Sba_qry
+
+
+def V_Recv(C_Socket: sk):
     k_cv, V_PKEY_C = None, None  # 在while外临时存储k_cv, PK_C
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
@@ -125,14 +149,14 @@ def V_Recv(C_Socket: sk, cAddr):
             # print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
-        if PRT_LOG:
-            print('C->V:\n', Rsa_msg)  # 输出收到的报文
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+PK/Sign
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
-        print('sign:', Rsc_msg)
-        print('正文：', Rsm_msg)
+        if PRT_LOG:
+            print('C->V:\n', Rsa_msg)  # 输出收到的报文
+            # print('sign:', Rsc_msg)
+            # print('正文:', Rsm_msg)
         if findstrX(Rsc_msg, PK_SUFFIX):  # 匹配PK后缀
-            V_PKEY_C = str2PK(Rsc_msg)  # *得到PK_V str->tuple
+            V_PKEY_C = str2PK(Rsc_msg)  # *得到PK_C str->tuple
         else:
             verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, V_PKEY_C)
             print('数字签名验证:', verFlag)
@@ -144,7 +168,7 @@ def V_Recv(C_Socket: sk, cAddr):
 
             if msg_extp == EX_CTL:  # *控制报文
                 if msg_intp == INC_C2V:
-                    Ssa_msg, k_cv = Chandle_C2V(Rsm_msg, cAddr)  # 相应函数处理
+                    Ssa_msg, k_cv = Chandle_C2V(Rsm_msg)  # 相应函数处理
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
                 else:  # 找不到处理函数
                     print('no match func for msg.')
@@ -155,7 +179,6 @@ def V_Recv(C_Socket: sk, cAddr):
                     user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, k_cv)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
-                        # C_Socket.send('adm login'.encode())  # !格式
                         C_Socket.send(create_D_ACC(IND_ADM, k_cv))
 
                 elif msg_intp == IND_STU:  # 学生登录
@@ -163,19 +186,17 @@ def V_Recv(C_Socket: sk, cAddr):
                     user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, k_cv)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
-                        # C_Socket.send('stu login'.encode())  # !格式
                         C_Socket.send(create_D_ACC(IND_STU, k_cv))
 
-                elif msg_intp == IND_QRY:  # 请求/删除
+                elif msg_intp == IND_QRY:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
                     stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
-                    C_Socket.send(dict2str(stu_dict).encode())  # !格式
+                    C_Socket.send(create_D_STUQRY(stu_dict, k_cv))
 
                 elif msg_intp == IND_QRY_ADM:  # 管理员查询请求
-                    # Dq_adm_k_cv = local_data.K_CV
                     qry = Dhangle_ADM_QRY(Rsm_msg, k_cv)
                     stu_all_dict = ss.sql_search_adm()
-                    C_Socket.send(dict2str(stu_all_dict).encode())  # !格式
+                    C_Socket.send(create_D_STUQRY(stu_all_dict, k_cv))
 
                 elif msg_intp == IND_ADD:  # 管理员添加
                     stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, k_cv)
@@ -191,11 +212,6 @@ def V_Recv(C_Socket: sk, cAddr):
         else:  # 收包非法
             print('illegal package!')
             break
-
-        # print(Rsh_msg, Rsm_msg, cAddr)
-        # *发送
-        # C_Socket.send(Rsa_msg.encode())
-        # print('external loop K_CV:', local_data.K_CV)
     C_Socket.close()
 
 

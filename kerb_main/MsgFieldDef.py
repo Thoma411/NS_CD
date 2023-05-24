@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-24 11:16:03
+LastEditTime: 2023-05-24 19:18:13
 Description: 
 '''
 
@@ -42,8 +42,6 @@ DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
 DEF_LEN_RSA_K = 256
-# PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
-# PKEY_V, SKEY_V = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)
 
 # PKEY_AS = '00000000'  # AS的公钥
 # SKEY_AS = '00000000'  # AS的私钥

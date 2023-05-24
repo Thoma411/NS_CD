@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 17:23:52
+LastEditTime: 2023-05-24 19:23:35
 Description:
 '''
 import socket as sk
@@ -14,7 +14,11 @@ TGS_IP, TGS_PORT = '192.168.137.60', 8020
 V_IP, V_PORT = '192.168.137.60', 8030
 
 MAX_SIZE = 2048
+
+PRT_LOG = True  # 是否打印输出
 PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
+
+C_PKEY_V = None
 
 
 def Chandle_AS2C(mt):  # 处理AS2C控制报文
@@ -22,6 +26,9 @@ def Chandle_AS2C(mt):  # 处理AS2C控制报文
     Rdm_as2c = str2dict(Rsm_as2c)  # str->dict
     k_ctgs = Rdm_as2c['K_C_TGS']  # 获取共享密钥k_ctgs
     Ticket_TGS = Rdm_as2c['mTKT_T']  # 获取Ticket_TGS
+    if PRT_LOG:
+        print('K_ctgs:\n', k_ctgs)
+        print('Ticket_TGS:\n', Ticket_TGS)
     return k_ctgs, Ticket_TGS
 
 
@@ -31,6 +38,9 @@ def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
     # print(Rdm_tgs2c)
     k_cv = Rdm_tgs2c['K_C_V']  # 获取共享密钥k_cv
     Ticket_V = Rdm_tgs2c['mTKT_V']  # 获取Ticket_V
+    if PRT_LOG:
+        print('K_cv:\n', k_cv)
+        print('Ticket_V:\n', Ticket_V)
     return k_cv, Ticket_V
 
 
@@ -38,6 +48,8 @@ def Chandle_V2C(mt, k_cv):  # 处理V2C控制报文
     Rsm_v2c = cbDES.DES_decry(mt, k_cv)  # bytes直接解密为str
     Rdm_v2c = str2dict(Rsm_v2c)  # str->dicts
     ts_5 = Rdm_v2c['TS_5']  # 获取ts_5
+    if PRT_LOG:
+        print('ts_5:', ts_5)
     return ts_5
 
 
@@ -48,18 +60,27 @@ def Dhandle_ACC(mt, k_cv):  # 处理允许登录报文
     return acc
 
 
+def Dhandle_QRY(mt, k_cv):  # 处理请求报文
+    Rsm_qry = cbDES.DES_decry(mt, k_cv)
+    Rdm_qry = str2dict(Rsm_qry)
+    return Rdm_qry
+
+
 def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     '''报文在此分割为首部+正文, 正文在函数字典对应的方法处理'''
-    Rba_msg = Dst_socket.recv(MAX_SIZE)  # 收
-    C_PKEY_V = None  # tuple
+    Rba_msg = Dst_socket.recv(MAX_SIZE)
+    global C_PKEY_V  # tuple
     # *初步分割
     Rsa_msg = Rba_msg.decode()  # bytes->str
     if Rsa_msg.count('|') == 1:  # 按分隔符数量划分
         Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
-    elif Rsa_msg.count('|') == 2:  # !此处要求V统一报文后C收到的msg为三段
+    elif Rsa_msg.count('|') == 2:
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+Rsc
         if findstrX(Rsc_msg, PK_SUFFIX):
             C_PKEY_V = str2PK(Rsc_msg)  # *得到PK_V
+        else:
+            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, C_PKEY_V)
+            print('数字签名验证:', verFlag)
 
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
@@ -94,13 +115,16 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                 print('no match func for control msg.')
 
         # *数据报文
-        elif msg_extp == EX_DAT:  # TODO:合并后数据报文处理方法
+        elif msg_extp == EX_DAT:
             if msg_intp == IND_ADM or msg_intp == IND_STU:
                 log_acc = Dhandle_ACC(Rsm_msg, k_share)
                 retFlag = LOG_ACC
             elif msg_intp == IND_QRY:
-                pass
+                Rstu_dict = Dhandle_QRY(Rsm_msg, k_share)
+                retFlag = IND_QRY
             elif msg_intp == IND_QRY_ADM:
+                Rstu_all_dict = Dhandle_QRY(Rsm_msg, k_share)
+                retFlag = IND_QRY_ADM
                 pass
             elif msg_intp == IND_ADD:
                 pass
@@ -123,6 +147,10 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         return TMP_TS, C_PKEY_V
     elif retFlag == LOG_ACC:  # *返回登录许可
         return log_acc
+    elif retFlag == IND_QRY:  # *返回单个学生信息字典
+        return Rstu_dict
+    elif retFlag == IND_QRY_ADM:  # *返回学生信息字典列表
+        return Rstu_all_dict
     else:
         pass
 
@@ -415,16 +443,14 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
 
 def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
     Sba_qry = create_D_STUQRY(sid, k_cv)
-    Rsa_qry = SndRcv_msg(Dst_socket, Sba_qry)
-    Rda_qry = str2dict(Rsa_qry)
-    return Rda_qry
+    ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
+    return ret
 
 
 def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成绩
     Sba_qry = create_D_ADMQRY(qry, k_cv)
-    Rsa_qry = SndRcv_msg(Dst_socket, Sba_qry)  # 发送接收
-    Rda_qry = str2dict(Rsa_qry)
-    return Rda_qry
+    ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
+    return ret
 
 
 def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生信息
