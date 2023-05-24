@@ -28,10 +28,10 @@ def sql_login_adm(username):
             # 打印结果
             print("admin_id=%s,admin_pass=%s" %
                   (admin_id, admin_pass))
-            print("正在登陆管理员管理界面")
+            print("[DB] 正在登陆管理员管理界面")
             return admin_pass
     except:
-        print("Error: unable to fetch data")
+        print("[DB] Error: unable to fetch data")
         # messagebox.showinfo('警告！', '用户名或密码不正确！')
     db.close()  # 关闭数据库连接
 
@@ -57,24 +57,21 @@ def sql_login_stu(username):
                   (stu_id, stu_pass, stu_type))
             return stu_pass
     except:
-        print("Error: unable to fecth data")
+        print("[DB] Error: unable to fecth data")
         # messagebox.showinfo('警告！', '用户名或密码不正确！')
     db.close()  # 关闭数据库连接
-
-    print("正在登陆学生信息查看界面")
+    print("[DB] 正在登陆学生信息查看界面")
 
 
 # 学生成绩查询连接数据库
-def sql_search_stu(student_id):
+def sql_search_stu(sid):
     db = pymysql.connect(host=DB_HOST, user="root",
                          passwd="", db="student")  # 打开数据库连接
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    sql = "SELECT name, gender, age, c_grade, m_grade, e_grade FROM student_k WHERE id='%s'" % student_id  # SQL 查询语句
+    sql = "SELECT name, gender, age, c_grade, m_grade, e_grade FROM student_k WHERE id='%s'" % sid  # SQL 查询语句
     try:
-        # 执行SQL语句
-        cursor.execute(sql)
-        # 获取所有记录列表
-        results = cursor.fetchall()
+        cursor.execute(sql)  # 执行SQL语句
+        results = cursor.fetchall()  # 获取所有记录列表
         if len(results) > 0:
             # 取第一个结果
             result = results[0]
@@ -93,10 +90,10 @@ def sql_search_stu(student_id):
         else:
             # 没有找到学生记录，发送空字典给客户端
             # connection.sendall(dict2str({}).encode())
+            print("[DB] 没有找到学生记录")
             return {}
-            print("没有找到学生记录")
     except Exception as e:
-        print("查询学生成绩时发生错误。错误消息：", e)
+        print("[DB] 查询学生成绩时发生错误。错误消息：", e)
         # 数据库操作时发生错误，将错误信息发送给客户端
         connection.sendall(dict2str({"error": str(e)}).encode())
     finally:
@@ -108,15 +105,11 @@ def sql_search_adm():
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT * FROM student_k"  # SQL 查询语句
-
-    student_list = []  # 创建一个空列表用于存储学生信息的字典
-
+    stu_list = []  # 创建一个空列表用于存储学生信息的字典
     try:
         cursor.execute(sql)  # 执行SQL语句
         results = cursor.fetchall()  # 获取所有记录列表
-
-        for row in results:
-            # 将每个学生信息存储到一个字典中
+        for row in results:  # 将每个学生信息存储到一个字典中
             stu_dict = {
                 "id": row[0],
                 "name": row[1],
@@ -126,31 +119,29 @@ def sql_search_adm():
                 "m_grade": row[5],
                 "e_grade": row[6]
             }
-
-            student_list.append(stu_dict)  # 将学生信息的字典添加到列表中
+            stu_list.append(stu_dict)  # 将学生信息的字典添加到列表中
         # 将学生信息的字典添加到列表中
-        students_all_dict = {}  # 创建一个字典用于保存所有学生的信息， 其中键值是每个学生的id
-        for student in student_list:
-            id = student['id']
-            students_all_dict[id] = student
-        print('学生成绩的所有字典db:', students_all_dict)
-        return students_all_dict
+        stu_all_dict = {}  # 创建一个字典用于保存所有学生的信息， 其中键值是每个学生的id
+        for stu in stu_list:
+            id = stu['id']
+            stu_all_dict[id] = stu
+        print('[DB] 学生成绩的所有字典:', stu_all_dict)
+        return stu_all_dict
     except Exception as e:  # 捕获异常
-        print("查询学生成绩时发生错误。错误消息：", e)
+        print("[DB] 查询学生成绩时发生错误。错误消息：", e)
         # 数据库操作时发生错误，将错误信息发送给客户端
         connection.sendall(dict2str({"error": str(e)}).encode())
-
     db.close()  # 关闭数据库连接
-    return student_list  # 返回学生信息的列表
+    return stu_list  # 返回学生信息的列表
 
 
 # 管理员修改学生信息
-def sql_del_stu(stu_id):
+def sql_del_stu(sid):
     # 打开数据库连接
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    print('打印学生id：', stu_id)
-    sql = "DELETE FROM student_k WHERE id = '%s'" % (stu_id)  # SQL 插入语句
+    print('[DB] 打印学生id:', sid)
+    sql = "DELETE FROM student_k WHERE id = '%s'" % sid  # SQL 插入语句
     try:
         cursor.execute(sql)  # 执行sql语句
         db.commit()  # 提交到数据库执行
@@ -168,26 +159,25 @@ def sql_add_stu(stu_dict):
     # if str(self.var_id.get()) in self.id:
     #     messagebox.showinfo('警告！', '该学生已存在！')
     # else:
-    print('增加学生的字典', stu_dict)
+    print('[DB] 增加学生的字典', stu_dict)
     if stu_dict['ID'] != '' and stu_dict['NAME'] != '' and stu_dict['GEND'] != '' and stu_dict['AGE'] != '' \
             and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
         # 打开数据库连接
         db = pymysql.connect(host='127.0.0.1', user="root",
                              passwd="", db="student")
         cursor = db.cursor()  # 使用cursor()方法获取操作游标
-        print("sql执行前")
+        print("[DB] sql执行前")
         total = float(stu_dict['MARK_C']) + \
             float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])
         ave = (float(stu_dict['MARK_C']) +
-               float(stu_dict['MARK_M']) + float(stu_dict['MARK_E']))/3
+               float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])) / 3
         sql = "INSERT INTO student_k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
               (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
                stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'], total, ave
                )  # SQL 插入语句
 
-        print("sql执行后")
-        print(stu_dict)
+        print("[DB] sql执行后\n", stu_dict)
         try:
             cursor.execute(sql)  # 执行sql语句
             db.commit()  # 提交到数据库执行
@@ -205,16 +195,15 @@ def sql_update_stu(stu_dict):
     #         # 打开数据库连接
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    print("更新的学生的信息为：",stu_dict)
+    print("[DB] 更新的学生的信息为:", stu_dict)
     sql = "UPDATE student_k SET name = '%s', gender = '%s', age = '%s',c_grade = '%s', m_grade = '%s', e_grade = '%s' , total = '%s', ave = '%s'  \
 				 WHERE id = '%s'" % (
         stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
         stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
         float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']) +
         float(stu_dict['MARK_E']),
-        (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M']
-                                           ) + float(stu_dict['MARK_E'])) / 3,
-        stu_dict['ID'])  # SQL 插入语句
+        (float(stu_dict['MARK_C']) + float(stu_dict['MARK_M'])
+         + float(stu_dict['MARK_E'])) / 3, stu_dict['ID'])  # SQL 插入语句
 
     try:
         cursor.execute(sql)  # 执行sql语句
@@ -229,13 +218,9 @@ def sql_update_stu(stu_dict):
 def handle_client(connection, client_address):
     try:
         print("Connection from", client_address)
-
-        # 接收数据
-        data = connection.recv(MAX_SIZE)
+        data = connection.recv(MAX_SIZE)  # 接收数据
         print("Received:", repr(data), type(data))
-
-        # 解析数据
-        message = str2dict(data.decode('utf-8'))
+        message = str2dict(data.decode('utf-8'))  # 解析数据
         print(message)
         if "username" in message and "password" in message:
             if message["INTYPE"] == 10:  # 管理员
@@ -263,16 +248,13 @@ def handle_client(connection, client_address):
                     data = connection.recv(MAX_SIZE)
                     # 解析数据
                     message = str2dict(data.decode('utf-8'))
-
                 else:
                     pass
-
         elif "student_id" in message and len(message) == 1:
             student_id = message["student_id"]
             sql_search_stu(student_id)
             print("1")
             # 数据库操作 查询学生成绩
-
         # 当前请求处理完毕后可以关闭连接
         # connection.close()
         print(f"Closed connection: {client_address}")
@@ -282,13 +264,10 @@ def handle_client(connection, client_address):
 
 
 if __name__ == '__main__':
-
     server_socket = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     server_socket.bind(('', SERVER_PORT))
     server_socket.listen(MAX_LISTEN)
-
     print(f"Server listening on {SERVER_HOST}:{SERVER_PORT}...")
-
     while True:
         connection, client_address = server_socket.accept()
         t = th.Thread(target=handle_client,
