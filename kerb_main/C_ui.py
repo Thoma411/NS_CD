@@ -8,6 +8,9 @@ from tkinter import *
 # K_CV = cc.DKEY_C
 # Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
 # #Vsock.connect((V_IP, V_PORT))
+k_cv = None
+C_PKEY_V = None
+Vsock = None
 
 
 class StartPage:  # 主菜单
@@ -85,10 +88,11 @@ class AdminPage:  # 管理员登录界面
     def login(self):
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
-        global K_CV, C_PKEY_V  # *声明K_CV为共享密钥
-        tag, k_cv, C_PKEY_V = cc.admin_on_login(
+        global K_CV, C_PKEY_V, Vsock  # *声明K_CV为共享密钥
+        tag, k_cv, C_PKEY_V, Vsock = cc.admin_on_login(
             username, password)  # *返回PK_V 保存为全局变量供后续验证
         K_CV = k_cv
+
         if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
@@ -133,8 +137,8 @@ class StudentPage:  # 学生登录界面
     def login(self):
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
-        global K_CV, C_PKEY_V  # *声明K_CV为共享密钥
-        tag, k_cv, C_PKEY_V = cc.stu_on_login(username, password)
+        global K_CV, C_PKEY_V, Vsock  # *声明K_CV为共享密钥
+        tag, k_cv, C_PKEY_V, Vsock = cc.stu_on_login(username, password)
         K_CV = k_cv
         if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入学生操作界面
@@ -257,7 +261,7 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.ave = []
         print("xx")
         # 打开数据库连接
-        stu_dict = cc.query_student_score(student_id, K_CV)
+        stu_dict = cc.query_student_score(Vsock, student_id, K_CV)
         self.id.append(student_id)
         self.name.append(stu_dict['NAME'])
         self.gender.append(stu_dict['GEND'])
@@ -358,7 +362,7 @@ class AdminManage:
         # global K_CV
         qry = 1
 
-        stu_all_dict = cc.query_admin_stuscore(qry, K_CV)
+        stu_all_dict = cc.query_admin_stuscore(Vsock, qry, K_CV)
         print('abcccc', stu_all_dict)
         for key in stu_all_dict.keys():
             self.id.append(stu_all_dict[key]['id'])
@@ -559,7 +563,7 @@ class AdminManage:
                     'MARK_E': self.var_e_grade.get()  # 英语成绩
                 }
 
-                cc.add_admin_stuscore(stu_dict, K_CV)
+                cc.add_admin_stuscore(Vsock, stu_dict, K_CV)
                 # cc.C_D_Send()
                 print("添加学生成功")
                 self.id.append(self.var_id.get())
@@ -590,7 +594,7 @@ class AdminManage:
             print(self.tree.get_children())  # 所有行
 
             id_index = self.id.index(self.row_info[0])
-            cc.del_admin_stuscore(self.id[id_index], K_CV)
+            cc.del_admin_stuscore(Vsock, self.id[id_index], K_CV)
             print(id_index)
             del self.id[id_index]
             del self.name[id_index]
@@ -621,7 +625,7 @@ class AdminManage:
                     'MARK_E': self.var_e_grade.get()  # 英语成绩
                 }
                 id_index = self.id.index(self.row_info[0])
-                cc.update_admin_stuscore(stu_dict, K_CV)
+                cc.update_admin_stuscore(Vsock, stu_dict, K_CV)
                 self.name[id_index] = self.var_name.get()
                 self.gender[id_index] = self.var_gender.get()
                 self.age[id_index] = self.var_age.get()

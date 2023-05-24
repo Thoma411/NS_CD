@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 13:09:32
+LastEditTime: 2023-05-24 15:46:14
 Description:
 '''
 import socket as sk
@@ -15,9 +15,9 @@ ID_C = 13  # !每个C的ID需不同
 # V_IP, V_PORT = '192.128.137.60', 8030
 C_IP = '127.0.0.1'  # !IP需提前声明
 
-AS_IP, AS_PORT = '127.0.0.1', 8010
-TGS_IP, TGS_PORT = '127.0.0.1', 8020
-V_IP, V_PORT = '127.0.0.1', 8030
+AS_IP, AS_PORT = '192.168.137.60', 8010
+TGS_IP, TGS_PORT = '192.168.137.60', 8020
+V_IP, V_PORT = '192.168.137.60', 8030
 MAX_SIZE = 2048
 
 PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
@@ -369,23 +369,23 @@ def C_Kerberos():
     # print(recv_ts_5, type(recv_ts_5))
     if send_ts_5 == recv_ts_5:
         print('[Kerberos] Authentication success.')
-        return True, k_cv, C_PKEY_V  # *返回业务逻辑所需的对称钥和PK_V
+        return True, k_cv, C_PKEY_V, Vsock  # *返回业务逻辑所需的对称钥和PK_V
     else:
         print('[Kerberos] Authentication failed.')
         return False
 
 
 # *登录调用函数
-def send_message(host, port, bmsg):  # 消息的发送与接收(含返回值)
+def send_message(Dst_socket: sk, bmsg):  # 消息的发送与接收(含返回值)
     # 连接到服务器并发送数据
     try:
-        sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
-        sock.connect(server_address)
-        # Dst_socket.sendall(bmsg)  # 发送
+        # sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+        # server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        # sock.connect(server_address)
+        Dst_socket.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        # response = Dst_socket.recv(MAX_SIZE)
-        response = sock.recv(MAX_SIZE)
+        response = Dst_socket.recv(MAX_SIZE)
+        # response = sock.recv(MAX_SIZE)
         print("Received response:", response)
         return response
     except Exception as e:
@@ -409,7 +409,7 @@ def send_message_tmp(Dst_socket: sk, bmsg):  # !待删除 消息的发送与接�
 
 
 def admin_on_login(usr, pwd):  # 管理员登录消息
-    atc_flag, k_cv, C_PKEY_V = C_Kerberos()  # *获取共享密钥和PK_V
+    atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()  # *获取共享密钥和PK_V
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
@@ -423,11 +423,11 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         # print('C自己解得摘要:', testRSA)
         Sba_log = Ssa_log.encode()
         # 发送消息
-        Rba_log = send_message(V_IP, V_PORT, Sba_log)
+        Rba_log = send_message(Vsock, Sba_log)
         Rsa_log = Rba_log.decode()
         print("[C] admin login response")
         if Rsa_log == "adm login":
-            return LOG_ACC, k_cv, C_PKEY_V  # *返回PK_V
+            return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
         else:
             pass
     else:
@@ -435,7 +435,7 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
 
 
 def stu_on_login(usr, pwd):  # 学生登陆消息
-    atc_flag, k_cv, C_PKEY_V = C_Kerberos()
+    atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()
     if atc_flag:  # 认证成功
         Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
         Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
@@ -447,18 +447,18 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         print('[stu_on_login]:', Sbc_log)
         Sba_log = Ssa_log.encode()
         # 发送消息
-        Rba_log = send_message(V_IP, V_PORT, Sba_log)
+        Rba_log = send_message(Vsock, Sba_log)
         Rsa_log = Rba_log.decode()
         print("[C] stu login response")
         if Rsa_log == "stu login":
-            return LOG_ACC, k_cv, C_PKEY_V  # *返回PK_V
+            return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
         else:
             pass
     else:
         print('[stu_on_login] fatal.')
 
 
-def query_student_score(sid, k_cv):  # 学生查询学生成绩
+def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
     Sdm_qry = initM_C2V_DEL(sid)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
@@ -469,13 +469,13 @@ def query_student_score(sid, k_cv):  # 学生查询学生成绩
     print('[query_student_score]:', Sbc_qry)
     Sba_qry = Ssa_qry.encode()
 
-    Rba_log = send_message(V_IP, V_PORT, Sba_qry)
+    Rba_log = send_message(Dst_socket, Sba_qry)
     Rsa_log = Rba_log.decode()
     Rda_log = str2dict(Rsa_log)
     return Rda_log
 
 
-def query_admin_stuscore(qry, k_cv):  # 管理员查询学生成绩
+def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成绩
     Sdm_qry = initM_C2V_ADMIN_QRY(qry)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
@@ -486,13 +486,13 @@ def query_admin_stuscore(qry, k_cv):  # 管理员查询学生成绩
     print('[query_admin_stuscore]:', Sbc_qry)
     Sba_qry = Ssa_qry.encode()
     # print('[query_admin_stuscore] encode')
-    Rba_qry = send_message(V_IP, V_PORT, Sba_qry)  # 发送接收
+    Rba_qry = send_message(Dst_socket, Sba_qry)  # 发送接收
     Rsa_qry = Rba_qry.decode()
     Rda_qry = str2dict(Rsa_qry)
     return Rda_qry
 
 
-def add_admin_stuscore(stu_dict, k_cv):  # 管理员添加学生信息
+def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生信息
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
@@ -501,11 +501,11 @@ def add_admin_stuscore(stu_dict, k_cv):  # 管理员添加学生信息
     Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
     print('[add_admin_stuscore]:', Sbc_add)
     Sba_add = Ssa_add.encode()
-    send_message_tmp(V_IP, V_PORT, Sba_add)
+    send_message_tmp(Dst_socket, Sba_add)
     pass
 
 
-def del_admin_stuscore(sid, k_cv):  # 管理员删除学生信息
+def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信息
     Sdm_del = initM_C2V_DEL(sid)
     Sdh_del = initHEAD(EX_DAT, IND_DEL, len(Sdm_del))
     Ssm_del = dict2str(Sdm_del)  # 正文dict->str
@@ -515,10 +515,10 @@ def del_admin_stuscore(sid, k_cv):  # 管理员删除学生信息
     Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
     print('[del_admin_stuscore]:', Sbc_del)
     Sba_del = Ssa_del.encode()
-    send_message_tmp(V_IP, V_PORT, Sba_del)
+    send_message_tmp(Dst_socket, Sba_del)
 
 
-def update_admin_stuscore(stu_dict, k_cv):  # 管理员更新学生信息
+def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学生信息
     Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
     Ssm_upd = dict2str(stu_dict)
     Ssh_upd = dict2str(Sdh_upd)
@@ -527,7 +527,7 @@ def update_admin_stuscore(stu_dict, k_cv):  # 管理员更新学生信息
     Ssa_upd = Ssh_upd + '|' + Sbm_upd + '|' + Sbc_upd  # *拼接含数字签名
     print('[query_student_score]:', Sbc_upd)
     Sba_upd = Ssa_upd.encode()
-    send_message_tmp(V_IP, V_PORT, Sba_upd)
+    send_message_tmp(Dst_socket, Sba_upd)
 
 
 if __name__ == '__main__':
