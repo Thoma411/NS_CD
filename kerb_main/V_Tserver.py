@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 10:23:43
+LastEditTime: 2023-05-24 12:49:44
 Description:
 '''
 import socket as sk
@@ -82,7 +82,7 @@ def Dhangle_ADM_QRY(mt, k_cv):  # 处理管理员请求报文
     return qry
 
 
-def Dhangle_ADM_ADD(mt, k_cv):  # 处理管理员添加学生的报文
+def Dhangle_ADM_ADD(mt, k_cv):  # 处理管理员添加学生信息的报文
     adm_str_add = cbDES.DES_decry(mt, k_cv)
     adm_dict_add = str2dict(adm_str_add)
     return adm_dict_add
@@ -94,11 +94,25 @@ def Dhangle_ADM_UPD(mt, k_cv):  # 处理管理员更新学生信息的报文
     return adm_dict_update
 
 
-def Dhangle_ADM_DEL(mt, k_cv):
+def Dhangle_ADM_DEL(mt, k_cv):  # 处理管理员删除学生信息的报文
     adm_str_del = cbDES.DES_decry(mt, k_cv)
     adm_dict_del = str2dict(adm_str_del)
     sid = adm_dict_del['SID']
     return sid
+
+
+def create_D_ACC(LOG_TYPE, k_cv):
+    Sdm_acc = initM_V2C_ACC(LOG_ACC)  # 生成登录确认正文
+    Sdh_acc = initHEAD(EX_DAT, LOG_TYPE, len(Sdm_acc))  # 生成首部
+    Ssm_acc = dict2str(Sdm_acc)
+    Ssh_acc = dict2str(Sdh_acc)
+    Sbm_acc = cbDES.DES_encry(Ssm_acc, k_cv)
+    Sbc_acc = cbRSA.RSA_sign(Sbm_acc, SKEY_V)  # *加密正文生成数字签名
+    Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc
+    if PRT_LOG:
+        print('[query_student_score]:', Ssa_acc)
+    Sba_acc = Ssa_acc.encode()
+    return Sba_acc
 
 
 def V_Recv(C_Socket: sk, cAddr):
@@ -146,6 +160,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         C_Socket.send('adm login'.encode())  # !格式
+                        # C_Socket.send(create_D_ACC)
 
                 elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', K_CV)
@@ -153,6 +168,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send('stu login'.encode())  # !格式
+                        # C_Socket.send(create_D_ACC)
 
                 elif msg_intp == IND_QRY:  # 请求/删除
                     sid = Dhangle_STU_QRY(Rsm_msg, K_CV)
@@ -163,7 +179,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     # Dq_adm_k_cv = local_data.K_CV
                     qry = Dhangle_ADM_QRY(Rsm_msg, K_CV)
                     stu_all_dict = ss.sql_search_adm()
-                    C_Socket.send(dict2str(stu_all_dict).encode())
+                    C_Socket.send(dict2str(stu_all_dict).encode())  # !格式
 
                 elif msg_intp == IND_ADD:  # 管理员添加
                     stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, K_CV)

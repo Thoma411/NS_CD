@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-23 11:32:08
+LastEditTime: 2023-05-24 11:16:03
 Description: 
 '''
 
@@ -25,7 +25,9 @@ INC_TGS2C = 40
 INC_C2V = 50
 INC_V2C = 60
 
-# IND_:控制报文类型
+LOG_ACC = 1  # 允许登录
+
+# IND_:数据报文类型
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生
 IND_QRY = 12  # 请求/删除

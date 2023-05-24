@@ -6,13 +6,14 @@ import C_Tclient as cc
 from tkinter import *
 
 # K_CV = cc.DKEY_C
+# Vsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+# #Vsock.connect((V_IP, V_PORT))
 
 
 class StartPage:  # 主菜单
     def __init__(self, parent_window):
         parent_window.update()
         parent_window.destroy()  # 销毁子界面
-
         self.window = tk.Tk()  # 初始框的声明
         self.window.title('学生信息管理系统')
         # align_str = '%dx%d+%d+%d' % (800, 600, (x - 800) / 2, (y - 600) / 2)
@@ -52,10 +53,9 @@ class AdminPage:  # 管理员登录界面
         parent_window.destroy()  # 销毁主界面
         self.admin_on_login = cc.admin_on_login  # 登录回调函数
         self.window = tk.Tk()  # 初始框的声明
-        self.window.title('管理员登陆页面')
+        self.window.title('管理员登录页面')
         self.window.geometry('900x800')  # 这里的乘是小x
-
-        label = tk.Label(self.window, text="管理员登陆", width=24,
+        label = tk.Label(self.window, text="管理员登录", width=24,
                          height=1, fg='blue', font=("Verdana", 20))
         label.grid(row=0, column=5, columnspan=3, pady=70)  # pady=50 界面的长度
         label2 = tk.Label(self.window, text='管理员账号：',
@@ -65,15 +65,13 @@ class AdminPage:  # 管理员登录界面
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory')
         self.admin_username.grid(
             row=1, column=5, columnspan=3, padx=15, pady=20)
-
         label3 = tk.Label(self.window, text='管理员密码：',
                           fg='blue', font=tkFont.Font(size=18))
         label3.grid(row=2, column=3, columnspan=3, padx=15, pady=20)
         self.admin_pass = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory', show='*')
         self.admin_pass.grid(row=2, column=5, columnspan=3, padx=15, pady=20)
-
-        btn1 = tk.Button(self.window, text="登陆", width=20,
+        btn1 = tk.Button(self.window, text="登录", width=20,
                          font=tkFont.Font(size=15), command=self.login)
         btn1.grid(row=3, column=5, columnspan=3, padx=25, pady=20)
 
@@ -91,7 +89,7 @@ class AdminPage:  # 管理员登录界面
         tag, k_cv, C_PKEY_V = cc.admin_on_login(
             username, password)  # *返回PK_V 保存为全局变量供后续验证
         K_CV = k_cv
-        if tag == 1:
+        if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
         else:
@@ -101,33 +99,28 @@ class AdminPage:  # 管理员登录界面
         StartPage(self.window)  # 显示主窗口 销毁本窗口
 
 
-class StudentPage:  # 学生登陆界面
+class StudentPage:  # 学生登录界面
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
-
         self.window = tk.Tk()  # 初始框的声明
-        self.window.title('学生登陆')
+        self.window.title('学生登录')
         self.window.geometry('900x800')  # 这里的乘是小x
-
-        label = tk.Label(self.window, text='学生登陆', width=24,
+        label = tk.Label(self.window, text='学生登录', width=24,
                          height=1, fg='blue', font=('Verdana', 20))
         label.grid(row=0, column=5, columnspan=3, pady=50)  # pady=50 界面的长度
-
         label2 = tk.Label(self.window, text='学生账号：',
                           fg='blue', font=tkFont.Font(size=18))
         label2.grid(row=1, column=3, columnspan=3, padx=35, pady=20)
         self.student_id = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory')
         self.student_id.grid(row=1, column=5, columnspan=3, padx=15, pady=20)
-
         label3 = tk.Label(self.window, text='学生密码：',
                           fg='blue', font=tkFont.Font(size=18))
         label3.grid(row=2, column=3, columnspan=3, padx=35, pady=20)
         self.student_pass = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory', show='*')
         self.student_pass.grid(row=2, column=5, columnspan=3, padx=15, pady=20)
-
-        btn1 = tk.Button(self.window, text="登陆", width=20,
+        btn1 = tk.Button(self.window, text="登录", width=20,
                          font=tkFont.Font(size=15), command=self.login)
         btn1.grid(row=3, column=5, columnspan=3, padx=25, pady=20)
         btn2 = tk.Button(self.window, text="返回首页", width=20,
@@ -143,7 +136,7 @@ class StudentPage:  # 学生登陆界面
         global K_CV, C_PKEY_V  # *声明K_CV为共享密钥
         tag, k_cv, C_PKEY_V = cc.stu_on_login(username, password)
         K_CV = k_cv
-        if tag == 1:
+        if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入学生操作界面
             StudentInfoManage(self.window, self.student_id.get())
         else:
@@ -156,22 +149,18 @@ class StudentPage:  # 学生登陆界面
 class InfoManage:  # 信息管理界面
     def __init__(self, parent_window):
         parent_window.destroy()  # 销毁主界面
-
         self.window = tk.Tk()  # 初始框的声明
         self.window.title('信息管理')
         self.window.geometry('900x600')  # 这里的乘是小x
-
         label = tk.Label(self.window, text='信息管理', width=24,
                          height=1, font=('Verdana', 20))
         label.grid(row=1, column=5, columnspan=3,
                    padx=80, pady=30)  # pady=20 界面的长度
-
         btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised', font=('Verdana', 20),
                       command=lambda: AdminManage(self.window),
                       fg='white', bg='green', activebackground='black',
                       activeforeground='blue')
         btn1.grid(row=2, column=5, columnspan=3, padx=80, pady=30)
-
         # btn2 = Button(self.window, text="用户信息管理", width=30, height=1, relief='raised', font=('Verdana', 20),
         #               command=lambda: UserInfoManage(self.window),
         #               fg='white', bg='green', activebackground='black',
@@ -571,6 +560,7 @@ class AdminManage:
                 }
 
                 cc.add_admin_stuscore(stu_dict, K_CV)
+                # cc.C_D_Send()
                 print("添加学生成功")
                 self.id.append(self.var_id.get())
                 self.name.append(self.var_name.get())

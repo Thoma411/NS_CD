@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 10:59:54
+LastEditTime: 2023-05-24 13:09:32
 Description:
 '''
 import socket as sk
@@ -24,7 +24,7 @@ PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
 
 
 def Chandle_AS2C(mt):  # 处理AS2C控制报文
-    Rsm_as2c = cbDES.DES_decry(mt, DKEY_C)  # *bytes直接解密为str
+    Rsm_as2c = cbDES.DES_decry(mt, DKEY_C)  # bytes直接解密为str
     Rdm_as2c = str2dict(Rsm_as2c)  # str->dict
     k_ctgs = Rdm_as2c['K_C_TGS']  # 获取共享密钥k_ctgs
     Ticket_TGS = Rdm_as2c['mTKT_T']  # 获取Ticket_TGS
@@ -32,7 +32,7 @@ def Chandle_AS2C(mt):  # 处理AS2C控制报文
 
 
 def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
-    Rsm_tgs2c = cbDES.DES_decry(mt, k_ctgs)  # *bytes直接解密为str
+    Rsm_tgs2c = cbDES.DES_decry(mt, k_ctgs)  # bytes直接解密为str
     Rdm_tgs2c = str2dict(Rsm_tgs2c)  # str->dict
     # print(Rdm_tgs2c)
     k_cv = Rdm_tgs2c['K_C_V']  # 获取共享密钥k_cv
@@ -41,15 +41,17 @@ def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
 
 
 def Chandle_V2C(mt, k_cv):  # 处理V2C控制报文
-    Rsm_v2c = cbDES.DES_decry(mt, k_cv)  # *bytes直接解密为str
+    Rsm_v2c = cbDES.DES_decry(mt, k_cv)  # bytes直接解密为str
     Rdm_v2c = str2dict(Rsm_v2c)  # str->dicts
     ts_5 = Rdm_v2c['TS_5']  # 获取ts_5
     return ts_5
 
 
-Dmsg_handles = {  # 数据报文处理函数字典
-    # TODO:预留存放数据报文处理函数
-}
+def Dhandle_ACC(mt, k_cv):  # 处理允许登录报文
+    Rsm_acc = cbDES.DES_decry(mt, k_cv)
+    Rdm_acc = str2dict(Rsm_acc)
+    acc = Rdm_acc['STAT']
+    return acc
 
 
 def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
@@ -84,26 +86,27 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                 k_ctgs, tkt_tgs = Chandle_AS2C(Rsm_msg)  # 处理AS2C正文
                 TMP_KEY = k_ctgs  # 将k_ctgs,tkt_tgs传出if-else
                 TMP_TKT = tkt_tgs
-                retFlag = 2
+                retFlag = INC_AS2C
             elif msg_intp == INC_TGS2C:
                 k_cv, tkt_v = Chandle_TGS2C(Rsm_msg, k_share)  # 处理TGS2C正文
                 TMP_KEY = k_cv  # 将k_cv,tkt_v传出if-else
                 TMP_TKT = tkt_v
-                retFlag = 4
+                retFlag = INC_TGS2C
             elif msg_intp == INC_V2C:
                 ts_5 = Chandle_V2C(Rsm_msg, k_share)  # 处理V2C正文
                 TMP_TS = ts_5  # 将ts_5传出if-else
-                retFlag = 6
+                retFlag = INC_V2C
             else:
                 print('no match func for control msg.')
+
         # *数据报文
-        elif msg_extp == EX_DAT:
-            # Dhandler = Dmsg_handles.get((msg_extp, msg_intp))
-            # if Dhandler:
-            #     pass  # TODO:合并后数据报文处理方法
+        elif msg_extp == EX_DAT:  # TODO:合并后数据报文处理方法
             if msg_intp == IND_ADM:
-                pass
+                adm_acc = Dhandle_ACC(Rsm_msg, k_share)
+                retFlag = LOG_ACC
             elif msg_intp == IND_STU:
+                # stu_acc = Dhandle_ACC(Rsm_msg, k_share)
+                # retFlag = LOG_ACC
                 pass
             elif msg_intp == IND_QRY:
                 pass
@@ -122,12 +125,14 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         print('illegal package!')
 
     # *根据retFlag决定返回值
-    if retFlag == 2:  # 返回step2的共享密钥/票据
+    if retFlag == INC_AS2C:  # 返回step2的共享密钥/票据
         return TMP_KEY, TMP_TKT
-    elif retFlag == 4:  # 返回step4的共享密钥/票据
+    elif retFlag == INC_TGS2C:  # 返回step4的共享密钥/票据
         return TMP_KEY, TMP_TKT
-    elif retFlag == 6:  # *返回step6 V生成的时间戳和PK_V
+    elif retFlag == INC_V2C:  # *返回step6 V生成的时间戳和PK_V
         return TMP_TS, C_PKEY_V
+    elif retFlag == LOG_ACC:
+        return adm_acc
     else:
         pass
 
@@ -371,15 +376,16 @@ def C_Kerberos():
 
 
 # *登录调用函数
-def send_message(Dst_socket: sk, bmsg):  # 消息的发送与接收(含返回值)
+def send_message(host, port, bmsg):  # 消息的发送与接收(含返回值)
     # 连接到服务器并发送数据
     try:
-        # sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-        # server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
-        # Dst_socket.connect(server_address)
-        Dst_socket.sendall(bmsg)  # 发送
+        sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        sock.connect(server_address)
+        # Dst_socket.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        response = Dst_socket.recv(MAX_SIZE)
+        # response = Dst_socket.recv(MAX_SIZE)
+        response = sock.recv(MAX_SIZE)
         print("Received response:", response)
         return response
     except Exception as e:
@@ -421,7 +427,7 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         Rsa_log = Rba_log.decode()
         print("[C] admin login response")
         if Rsa_log == "adm login":
-            return 1, k_cv, C_PKEY_V  # *返回PK_V
+            return LOG_ACC, k_cv, C_PKEY_V  # *返回PK_V
         else:
             pass
     else:
@@ -445,7 +451,7 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         Rsa_log = Rba_log.decode()
         print("[C] stu login response")
         if Rsa_log == "stu login":
-            return 1, k_cv, C_PKEY_V  # *返回PK_V
+            return LOG_ACC, k_cv, C_PKEY_V  # *返回PK_V
         else:
             pass
     else:
