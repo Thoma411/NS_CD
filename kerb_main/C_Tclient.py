@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 18:04:24
+LastEditTime: 2023-05-24 19:23:35
 Description:
 '''
 import socket as sk
@@ -14,8 +14,11 @@ TGS_IP, TGS_PORT = '192.168.137.60', 8020
 V_IP, V_PORT = '192.168.137.60', 8030
 
 MAX_SIZE = 2048
-PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
+
 PRT_LOG = True  # 是否打印输出
+PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
+
+C_PKEY_V = None
 
 
 def Chandle_AS2C(mt):  # 处理AS2C控制报文
@@ -57,7 +60,7 @@ def Dhandle_ACC(mt, k_cv):  # 处理允许登录报文
     return acc
 
 
-def Dhandle_QRY(mt, k_cv):  # 处理学生请求报文
+def Dhandle_QRY(mt, k_cv):  # 处理请求报文
     Rsm_qry = cbDES.DES_decry(mt, k_cv)
     Rdm_qry = str2dict(Rsm_qry)
     return Rdm_qry
@@ -65,16 +68,19 @@ def Dhandle_QRY(mt, k_cv):  # 处理学生请求报文
 
 def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     '''报文在此分割为首部+正文, 正文在函数字典对应的方法处理'''
-    Rba_msg = Dst_socket.recv(MAX_SIZE)  # 收
-    C_PKEY_V = None  # tuple
+    Rba_msg = Dst_socket.recv(MAX_SIZE)
+    global C_PKEY_V  # tuple
     # *初步分割
     Rsa_msg = Rba_msg.decode()  # bytes->str
     if Rsa_msg.count('|') == 1:  # 按分隔符数量划分
         Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
-    elif Rsa_msg.count('|') == 2:  # !此处要求V统一报文后C收到的msg为三段
+    elif Rsa_msg.count('|') == 2:
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+Rsc
         if findstrX(Rsc_msg, PK_SUFFIX):
             C_PKEY_V = str2PK(Rsc_msg)  # *得到PK_V
+        else:
+            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, C_PKEY_V)
+            print('数字签名验证:', verFlag)
 
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
@@ -113,7 +119,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
             if msg_intp == IND_ADM or msg_intp == IND_STU:
                 log_acc = Dhandle_ACC(Rsm_msg, k_share)
                 retFlag = LOG_ACC
-            elif msg_intp == IND_QRY:  # TODO:合并后数据报文处理方法
+            elif msg_intp == IND_QRY:
                 Rstu_dict = Dhandle_QRY(Rsm_msg, k_share)
                 retFlag = IND_QRY
             elif msg_intp == IND_QRY_ADM:
@@ -437,17 +443,12 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
 
 def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
     Sba_qry = create_D_STUQRY(sid, k_cv)
-    # Rsa_qry = SndRcv_msg(Dst_socket, Sba_qry)
-    # Rda_qry = str2dict(Rsa_qry)
     ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
     return ret
 
 
 def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成绩
     Sba_qry = create_D_ADMQRY(qry, k_cv)
-    # Rsa_qry = SndRcv_msg(Dst_socket, Sba_qry)  # 发送接收
-    # Rda_qry = str2dict(Rsa_qry)
-    # return Rda_qry
     ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
     return ret
 

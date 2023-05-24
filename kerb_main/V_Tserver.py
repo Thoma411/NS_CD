@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 18:05:16
+LastEditTime: 2023-05-24 19:23:20
 Description:
 '''
 import socket as sk
@@ -127,8 +127,16 @@ def create_D_STUQRY(stu_dict, k_cv):  # 生成学生查询报文
 
 
 def create_D_ADMQRY(stu_all_dict, k_cv):  # 生成管理员查询报文
-    # TODO
-    return
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(stu_all_dict))
+    Ssm_qry = dict2str(stu_all_dict)
+    Ssh_qry = dict2str(Sdh_qry)
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_V)
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry
+    if PRT_LOG:
+        print('[create_D_ADMQRY]:', Ssa_qry)
+    Sba_qry = Ssa_qry.encode()
+    return Sba_qry
 
 
 def V_Recv(C_Socket: sk, cAddr):
@@ -141,14 +149,14 @@ def V_Recv(C_Socket: sk, cAddr):
             # print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
-        if PRT_LOG:
-            print('C->V:\n', Rsa_msg)  # 输出收到的报文
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+PK/Sign
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
-        print('sign:', Rsc_msg)
-        print('正文：', Rsm_msg)
+        if PRT_LOG:
+            print('C->V:\n', Rsa_msg)  # 输出收到的报文
+            # print('sign:', Rsc_msg)
+            # print('正文:', Rsm_msg)
         if findstrX(Rsc_msg, PK_SUFFIX):  # 匹配PK后缀
-            V_PKEY_C = str2PK(Rsc_msg)  # *得到PK_V str->tuple
+            V_PKEY_C = str2PK(Rsc_msg)  # *得到PK_C str->tuple
         else:
             verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, V_PKEY_C)
             print('数字签名验证:', verFlag)
@@ -183,13 +191,14 @@ def V_Recv(C_Socket: sk, cAddr):
                 elif msg_intp == IND_QRY:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
                     stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
-                    C_Socket.send(dict2str(stu_dict).encode())  # !格式
-                    # C_Socket.send(create_D_STUQRY(stu_dict, k_cv))
+                    # C_Socket.send(dict2str(stu_dict).encode())  # !格式
+                    C_Socket.send(create_D_STUQRY(stu_dict, k_cv))
 
                 elif msg_intp == IND_QRY_ADM:  # 管理员查询请求
                     qry = Dhangle_ADM_QRY(Rsm_msg, k_cv)
                     stu_all_dict = ss.sql_search_adm()
-                    C_Socket.send(dict2str(stu_all_dict).encode())  # !格式
+                    # C_Socket.send(dict2str(stu_all_dict).encode())  # !格式
+                    C_Socket.send(create_D_STUQRY(stu_all_dict, k_cv))
 
                 elif msg_intp == IND_ADD:  # 管理员添加
                     stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, k_cv)
