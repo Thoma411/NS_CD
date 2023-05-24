@@ -130,11 +130,11 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                     f.write('V to C LOGIN :' + str(Rsa_msg) + '\n')
                 log_acc = Dhandle_ACC(Rsm_msg, k_share)
                 retFlag = LOG_ACC
-            elif msg_intp == IND_QRY:
+            elif msg_intp == IND_QRY_STU:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C STU_QUERY :' + str(Rsa_msg) + '\n')
                 Rstu_dict = Dhandle_QRY(Rsm_msg, k_share)
-                retFlag = IND_QRY
+                retFlag = IND_QRY_STU
             elif msg_intp == IND_QRY_ADM:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_QUERY :' + str(Rsa_msg) + '\n')
@@ -162,7 +162,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         return TMP_TS, C_PKEY_V
     elif retFlag == LOG_ACC:  # *返回登录许可
         return log_acc
-    elif retFlag == IND_QRY:  # *返回单个学生信息字典
+    elif retFlag == IND_QRY_STU:  # *返回单个学生信息字典
         return Rstu_dict
     elif retFlag == IND_QRY_ADM:  # *返回学生信息字典列表
         return Rstu_all_dict
@@ -256,7 +256,7 @@ def create_D_STULOG(usr, pwd, k_cv):  # 生成学生登录报文
 
 def create_D_STUQRY(sid, k_cv):  # 生成学生查询报文
     Sdm_qry = initM_C2V_DEL(sid)
-    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_STU, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
     Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
@@ -355,7 +355,7 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
         Sba_msg = create_D_STULOG(usr, pwd, k_share)  # 生成学生登录报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V LOGIN_STU :' + str(Sba_msg) + '\n')
-    elif dst_flag == IND_QRY:
+    elif dst_flag == IND_QRY_STU:
         Sba_msg = create_D_STUQRY(sid, k_share)  # 生成学生查询报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V QUERY_STU :' + str(Sba_msg) + '\n')

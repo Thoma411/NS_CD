@@ -114,7 +114,7 @@ def create_D_ACC(LOG_TYPE, k_cv):  # 生成登录确认报文
 
 
 def create_D_STUQRY(stu_dict, k_cv):  # 生成学生查询报文
-    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(stu_dict))
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_STU, len(stu_dict))
     Ssm_qry = dict2str(stu_dict)
     Ssh_qry = dict2str(Sdh_qry)
     Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)
@@ -188,7 +188,7 @@ def V_Recv(C_Socket: sk):
                     if pswd_stu == check_stu_pwd:
                         C_Socket.send(create_D_ACC(IND_STU,k_cv))
 
-                elif msg_intp == IND_QRY:  # 学生查询请求
+                elif msg_intp == IND_QRY_STU:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
                     stu_dict = ss.sql_search_stu(sid)  # 学生查询成绩
                     C_Socket.send(create_D_STUQRY(stu_dict, k_cv))

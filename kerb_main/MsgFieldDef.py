@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-24 23:12:36
+LastEditTime: 2023-05-24 23:15:09
 Description: 
 '''
 import datetime as dt
@@ -29,7 +29,7 @@ LOG_ACC = 1  # 允许登录
 # IND_:数据报文类型
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生
-IND_QRY = 12  # 请求/删除
+IND_QRY_STU = 12  # 学生请求
 IND_QRY_ADM = 13  # 管理员请求
 IND_ADD = 14  # 管理员增加
 IND_DEL = 15  # 管理员删除
