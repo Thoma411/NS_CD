@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 17:25:49
+LastEditTime: 2023-05-24 17:35:04
 Description:
 '''
 import socket as sk
@@ -156,7 +156,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
                         # C_Socket.send('adm login'.encode())  # !格式
-                        C_Socket.send(create_D_ACC)
+                        C_Socket.send(create_D_ACC(IND_ADM, k_cv))
 
                 elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', k_cv)
@@ -164,7 +164,7 @@ def V_Recv(C_Socket: sk, cAddr):
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
                         # C_Socket.send('stu login'.encode())  # !格式
-                        C_Socket.send(create_D_ACC)
+                        C_Socket.send(create_D_ACC(IND_STU, k_cv))
 
                 elif msg_intp == IND_QRY:  # 请求/删除
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
