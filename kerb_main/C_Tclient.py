@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 20:37:41
+LastEditTime: 2023-05-25 00:19:49
 Description:
 '''
 import socket as sk
@@ -35,7 +35,6 @@ def Chandle_AS2C(mt):  # 处理AS2C控制报文
 def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
     Rsm_tgs2c = myDES.DES_decry(mt, k_ctgs)  # bytes直接解密为str
     Rdm_tgs2c = str2dict(Rsm_tgs2c)  # str->dict
-    # print(Rdm_tgs2c)
     k_cv = Rdm_tgs2c['K_C_V']  # 获取共享密钥k_cv
     Ticket_V = Rdm_tgs2c['mTKT_V']  # 获取Ticket_V
     if PRT_LOG:
@@ -70,8 +69,12 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     '''报文在此分割为首部+正文, 正文在函数字典对应的方法处理'''
     Rba_msg = Dst_socket.recv(MAX_SIZE)
     global C_PKEY_V  # tuple
+
     # *初步分割
     Rsa_msg = Rba_msg.decode()  # bytes->str
+    if PRT_LOG:
+        print('[C_Recv] C Recv:\n', Rsa_msg)
+
     if Rsa_msg.count('|') == 1:  # 按分隔符数量划分
         Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
     elif Rsa_msg.count('|') == 2:
@@ -83,7 +86,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
             print('数字签名验证:', verFlag)
             if verFlag:
                 with open('./text1.txt', 'a', encoding='gbk') as f:
-                    f.write('The digital signature has been successfully verified!' + '\n')
+                    f.write('successfully verified Digital signature.' + '\n')
 
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
@@ -169,25 +172,23 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     else:
         pass
 
-    # def create_C2AS_CTF():  # 生成C2AS_CTF报文
+
+def create_C2AS_CTF():  # 生成C2AS_CTF报文
     '''
     变量说明:
     S/R - 发送/接收
     d/s/b/h - 字典/字符串/比特/16进制比特
     h/m/c/a - 首部/正文/签名/拼接整体
     '''
-
-
-#     Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
-#     Sdc_c2as_ctf = initSIGN(SKEY_C, ID_C, PKEY_C)  # 生成签名
-#     Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF,
-#                             len(Sdm_c2as_ctf + Sdc_c2as_ctf))  # 生成首部
-#     Ssm_c2as_ctf = dict2str(Sdm_c2as_ctf)  # 正文dict->str
-#     Ssc_c2as_ctf = dict2str(Sdc_c2as_ctf)  # 签名dict->str
-#     Ssh_c2as_ctf = dict2str(Sdh_c2as_ctf)  # 首部dict->str
-#     Ssa_c2as_ctf = Ssh_c2as_ctf + '|' + Ssm_c2as_ctf + '|'+Ssc_c2as_ctf  # 拼接
-#     Sba_c2as_ctf = Ssa_c2as_ctf.encode()  # str->bytes
-#     return Sba_c2as_ctf
+    Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
+    Sdc_c2as_ctf = initSIGN(ID_C, PKEY_C, SKEY_C)  # 生成签名
+    Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF, len(Sdm_c2as_ctf))  # 生成首部
+    Ssm_c2as_ctf = dict2str(Sdm_c2as_ctf)  # 正文dict->str
+    Ssh_c2as_ctf = dict2str(Sdh_c2as_ctf)  # 首部dict->str
+    Ssc_c2as_ctf = dict2str(Sdc_c2as_ctf)  # 签名dict->str
+    Ssa_c2as_ctf = Ssh_c2as_ctf + '|' + Ssm_c2as_ctf + '|' + Ssc_c2as_ctf  # 拼接
+    Sba_c2as_ctf = Ssa_c2as_ctf.encode()  # str->bytes
+    return Sba_c2as_ctf
 
 # *------------生成控制报文------------
 
@@ -322,7 +323,7 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
     # *生成报文
     Sba_msg = None
     if dst_flag == INC_C2AS_CTF:
-        # Sba_msg = create_C2AS_CTF()  # 生成C2AS_CTF报文
+        Sba_msg = create_C2AS_CTF()  # *生成C2AS_CTF报文
         pass
     elif dst_flag == INC_C2AS:
         Sba_msg = create_C_C2AS()  # 生成C2AS报文
@@ -338,10 +339,7 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
             f.write('C to V :' + str(Sba_msg) + '\n')
     else:
         print('[C_C_Send] no match func for send ctl_msg.')
-
     Dst_socket.send(Sba_msg)  # 发送
-
-    pass
 
 
 def C_D_Send(Dst_socket: sk, dst_flag: int,
@@ -378,7 +376,6 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
     else:
         print('[C_D_Send] no match func for send dat_msg.')
     Dst_socket.send(Sba_msg)  # 发送
-    pass
 
 
 def C_Kerberos():
@@ -389,7 +386,8 @@ def C_Kerberos():
     ASsock.connect((AS_IP, AS_PORT))
 
     # TODO:ctf
-
+    # C_C_Send(ASsock, INC_C2AS_CTF, client_ip)
+    # exit()
     # *发送给AS
     C_C_Send(ASsock, INC_C2AS, client_ip)
 
@@ -530,4 +528,5 @@ def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学
 
 
 if __name__ == '__main__':
-    print(C_Kerberos())
+    # print(C_Kerberos())
+    C_Kerberos()

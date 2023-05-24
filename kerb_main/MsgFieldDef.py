@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-24 23:15:09
+LastEditTime: 2023-05-25 00:10:44
 Description: 
 '''
 import datetime as dt
@@ -81,13 +81,13 @@ ATC_C = {
 # (M)Signature_C/AS
 M_SIG_SRC_AC = {
     'ID_SRC': int,  # 发送方的ID
-    'PK_SRC': bytes,  # 发送方的公钥
+    'PK_SRC': str,  # 发送方的公钥
     'TS_0': int
 }
 
 # Signature_C/AS
 SIG_SRC_AC = {
-    'M_SIG_SRC': bytes  # 加密后的数字签名
+    'M_SIG_SRC': str  # 加密后的数字签名
 }
 
 # Signature_C/V
@@ -335,11 +335,15 @@ def initATC(id_c, ad_c, ts=None):  # 装载Authenticator_C
     return amsg_eg
 
 
-def initSIGN(cpmsg, sk_src):  # 生成数字签名
-    dmsg_eg = SIG_SRC_CV
-    ssmg_sig = myRSA.RSA_sign(cpmsg, sk_src)
-    dmsg_eg['CPT_SIG'] = ssmg_sig
-    return dmsg_eg
+def initSIGN(id_c, pk_c, sk_src):  # 生成数字签名
+    dmsg_eg = M_SIG_SRC_AC  # 借由签名正文字典完成对签名的转换
+    dmsg_eg['ID_SRC'] = id_c
+    dmsg_eg['PK_SRC'] = pk_c
+    dmsg_eg['TS_0'] = msg_getTime()
+    smsg_sig = myRSA.RSA_sign(dict2str(dmsg_eg), sk_src)  # 返回值类型为str
+    dsg_eg = SIG_SRC_AC
+    dsg_eg['M_SIG_SRC'] = smsg_sig
+    return dsg_eg
 
 
 def initM_C2AS_CTF(id_c, pk_c):  # certification step1正文
