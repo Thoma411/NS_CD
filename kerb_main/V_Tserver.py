@@ -208,11 +208,14 @@ def V_Main():
     Vsock.bind(('', V_PORT))
     Vsock.listen(MAX_LISTEN)
     print('V_Tserver started...')
+    print('线程信息(连接前):', th.enumerate())
     while True:
         cSocket, cAddr = Vsock.accept()
         print('conn:', cAddr)
         thr = th.Thread(target=V_Recv, args=(cSocket, cAddr))
         thr.start()
+        thread_num = len(th.enumerate())
+        print("线程数量(连接后): %d" % thread_num)
     Vsock.close()
 
 
