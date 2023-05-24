@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-24 19:23:35
+LastEditTime: 2023-05-24 20:37:41
 Description:
 '''
 import socket as sk
@@ -16,13 +16,13 @@ V_IP, V_PORT = '192.168.137.60', 8030
 MAX_SIZE = 2048
 
 PRT_LOG = True  # 是否打印输出
-PKEY_C, SKEY_C = cbRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
+PKEY_C, SKEY_C = myRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
 
 C_PKEY_V = None
 
 
 def Chandle_AS2C(mt):  # 处理AS2C控制报文
-    Rsm_as2c = cbDES.DES_decry(mt, DKEY_C)  # bytes直接解密为str
+    Rsm_as2c = myDES.DES_decry(mt, DKEY_C)  # bytes直接解密为str
     Rdm_as2c = str2dict(Rsm_as2c)  # str->dict
     k_ctgs = Rdm_as2c['K_C_TGS']  # 获取共享密钥k_ctgs
     Ticket_TGS = Rdm_as2c['mTKT_T']  # 获取Ticket_TGS
@@ -33,7 +33,7 @@ def Chandle_AS2C(mt):  # 处理AS2C控制报文
 
 
 def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
-    Rsm_tgs2c = cbDES.DES_decry(mt, k_ctgs)  # bytes直接解密为str
+    Rsm_tgs2c = myDES.DES_decry(mt, k_ctgs)  # bytes直接解密为str
     Rdm_tgs2c = str2dict(Rsm_tgs2c)  # str->dict
     # print(Rdm_tgs2c)
     k_cv = Rdm_tgs2c['K_C_V']  # 获取共享密钥k_cv
@@ -45,7 +45,7 @@ def Chandle_TGS2C(mt, k_ctgs):  # 处理TGS2C控制报文
 
 
 def Chandle_V2C(mt, k_cv):  # 处理V2C控制报文
-    Rsm_v2c = cbDES.DES_decry(mt, k_cv)  # bytes直接解密为str
+    Rsm_v2c = myDES.DES_decry(mt, k_cv)  # bytes直接解密为str
     Rdm_v2c = str2dict(Rsm_v2c)  # str->dicts
     ts_5 = Rdm_v2c['TS_5']  # 获取ts_5
     if PRT_LOG:
@@ -54,14 +54,14 @@ def Chandle_V2C(mt, k_cv):  # 处理V2C控制报文
 
 
 def Dhandle_ACC(mt, k_cv):  # 处理允许登录报文
-    Rsm_acc = cbDES.DES_decry(mt, k_cv)
+    Rsm_acc = myDES.DES_decry(mt, k_cv)
     Rdm_acc = str2dict(Rsm_acc)
     acc = Rdm_acc['STAT']
     return acc
 
 
 def Dhandle_QRY(mt, k_cv):  # 处理请求报文
-    Rsm_qry = cbDES.DES_decry(mt, k_cv)
+    Rsm_qry = myDES.DES_decry(mt, k_cv)
     Rdm_qry = str2dict(Rsm_qry)
     return Rdm_qry
 
@@ -79,7 +79,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         if findstrX(Rsc_msg, PK_SUFFIX):
             C_PKEY_V = str2PK(Rsc_msg)  # *得到PK_V
         else:
-            verFlag = cbRSA.RSA_verf(Rsm_msg, Rsc_msg, C_PKEY_V)
+            verFlag = myRSA.RSA_verf(Rsm_msg, Rsc_msg, C_PKEY_V)
             print('数字签名验证:', verFlag)
 
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
@@ -216,8 +216,8 @@ def create_D_ADMLOG(usr, pwd, k_cv):  # 生成管理员登录报文
     Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
+    Sbm_log = myDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+    Sbc_log = myRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
     Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
     print('[admin_on_login]:', Sbc_log, len(Sbc_log))
     Sba_log = Ssa_log.encode()
@@ -229,8 +229,8 @@ def create_D_STULOG(usr, pwd, k_cv):  # 生成学生登录报文
     Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
+    Sbm_log = myDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+    Sbc_log = myRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
     Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
     print('[stu_on_login]:', Sbc_log, len(Sbc_log))
     Sba_log = Ssa_log.encode()
@@ -242,8 +242,8 @@ def create_D_STUQRY(sid, k_cv):  # 生成学生查询报文
     Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
-    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
-    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
+    Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Sbc_qry = myRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
     Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
     print('[query_student_score]:', Sbc_qry)
     Sba_qry = Ssa_qry.encode()
@@ -255,8 +255,8 @@ def create_D_ADMQRY(qry, k_cv):  # 生成管理员查询报文
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
-    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
-    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
+    Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Sbc_qry = myRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
     Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
     print('[query_admin_stuscore]:', Sbc_qry)
     Sba_qry = Ssa_qry.encode()
@@ -267,8 +267,8 @@ def create_D_ADMADD(stu_dict, k_cv):  # 生成管理员添加学生信息报文
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
-    Sbm_add = cbDES.DES_encry(Ssm_add, k_cv)
-    Sbc_add = cbRSA.RSA_sign(Sbm_add, SKEY_C)  # *加密正文生成数字签名
+    Sbm_add = myDES.DES_encry(Ssm_add, k_cv)
+    Sbc_add = myRSA.RSA_sign(Sbm_add, SKEY_C)  # *加密正文生成数字签名
     Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
     print('[add_admin_stuscore]:', Sbc_add)
     Sba_add = Ssa_add.encode()
@@ -280,8 +280,8 @@ def create_D_ADMDEL(sid, k_cv):  # 生成管理员删除学生信息报文
     Sdh_del = initHEAD(EX_DAT, IND_DEL, len(Sdm_del))
     Ssm_del = dict2str(Sdm_del)  # 正文dict->str
     Ssh_del = dict2str(Sdh_del)  # 首部dict->str
-    Sbm_del = cbDES.DES_encry(Ssm_del, k_cv)
-    Sbc_del = cbRSA.RSA_sign(Sbm_del, SKEY_C)  # *加密正文生成数字签名
+    Sbm_del = myDES.DES_encry(Ssm_del, k_cv)
+    Sbc_del = myRSA.RSA_sign(Sbm_del, SKEY_C)  # *加密正文生成数字签名
     Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
     print('[del_admin_stuscore]:', Sbc_del)
     Sba_del = Ssa_del.encode()
@@ -292,8 +292,8 @@ def create_D_ADMUPD(stu_dict, k_cv):  # 生成管理员更新学生信息报文
     Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
     Ssm_upd = dict2str(stu_dict)
     Ssh_upd = dict2str(Sdh_upd)
-    Sbm_upd = cbDES.DES_encry(Ssm_upd, k_cv)
-    Sbc_upd = cbRSA.RSA_sign(Sbm_upd, SKEY_C)  # *加密正文生成数字签名
+    Sbm_upd = myDES.DES_encry(Ssm_upd, k_cv)
+    Sbc_upd = myRSA.RSA_sign(Sbm_upd, SKEY_C)  # *加密正文生成数字签名
     Ssa_upd = Ssh_upd + '|' + Sbm_upd + '|' + Sbc_upd  # *拼接含数字签名
     print('[query_student_score]:', Sbc_upd)
     Sba_upd = Ssa_upd.encode()

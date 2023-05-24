@@ -1,15 +1,20 @@
+'''
+Author: sccccc1 & Luckyhao266
+Date: 2023-05-04 21:04:42
+LastEditTime: 2023-05-24 20:42:22
+Description: 
+'''
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, messagebox
 import tkinter.font as tkFont
-# from MsgFieldDef import *
 import C_Tclient as cc
 from tkinter import *
 import os
 import time
 
+Vsock = None
 k_cv = None
 C_PKEY_V = None
-Vsock = None
 
 
 class StartPage:  # 主菜单
@@ -269,7 +274,7 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.m_grade.append(stu_dict['MARK_M'])
         self.e_grade.append(stu_dict['MARK_E'])
         grade_total = stu_dict['MARK_C'] + \
-                      stu_dict['MARK_M'] + stu_dict['MARK_E']
+            stu_dict['MARK_M'] + stu_dict['MARK_E']
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
@@ -281,8 +286,8 @@ class StudentGradeView:  # 学生成绩信息查看界面
         print("test***********************")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-                    self.e_grade), len(self.total), len(self.ave)
-                           )):  # 写入数据
+            self.e_grade), len(self.total), len(self.ave)
+        )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
@@ -372,15 +377,15 @@ class AdminManage:
             self.m_grade.append(stu_all_dict[key]['m_grade'])
             self.e_grade.append(stu_all_dict[key]['e_grade'])
             total = stu_all_dict[key]['c_grade'] + \
-                    stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
+                stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
             ave = (total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-                    self.e_grade), len(self.total), len(self.ave)
-                           )):  # 写入数据
+            self.e_grade), len(self.total), len(self.ave)
+        )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
                                             self.ave[i]

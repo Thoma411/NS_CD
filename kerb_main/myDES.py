@@ -1,3 +1,9 @@
+'''
+Author: NS_CD
+Date: 2023-03-13 01:09:14
+LastEditTime: 2023-05-16 20:14:03
+Description: 
+'''
 import binascii as ba
 
 
@@ -17,6 +23,7 @@ class mysimDES():
             36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27,
             34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25,
         ]  # 逆ip置换
+
         self.E = [
             32, 1, 2, 3, 4, 5,
             4, 5, 6, 7, 8, 9,
@@ -27,14 +34,16 @@ class mysimDES():
             24, 25, 26, 27, 28, 29,
             28, 29, 30, 31, 32, 1,
         ]  # E置换, 将32位明文置换位48位
+
         self.P = [
             16, 7, 20, 21, 29, 12, 28, 17,
             1, 15, 23, 26, 5, 18, 31, 10,
             2, 8, 24, 14, 32, 27, 3, 9,
             19, 13, 30, 6, 22, 11, 4, 25,
         ]  # P置换, 对经过S盒之后的数据再次进行置换
-        # 设置默认密钥
-        self.K = '0111010001101000011010010111001101101001011100110110100101110110'
+
+        self.K = '0111010001101000011010010111001101101001011100110110100101110110'  # 设置默认密钥
+
         self.k1 = [
             57, 49, 41, 33, 25, 17, 9,
             1, 58, 50, 42, 34, 26, 18,
@@ -45,6 +54,7 @@ class mysimDES():
             14, 6, 61, 53, 45, 37, 29,
             21, 13, 5, 28, 20, 12, 4,
         ]  # 密钥的K1初始置换
+
         self.k2 = [
             14, 17, 11, 24, 1, 5, 3, 28,
             15, 6, 21, 10, 23, 19, 12, 4,
@@ -181,16 +191,11 @@ class mysimDES():
         修改默认密钥函数
         :return: None
         """
-        # print('当前二进制形式密钥为: {}'.format(self.K))
-        # print("当前字符串形式密钥为: {}".format(self.bin2str(self.K)))
-        #newkey = input("KEY(8): ")
         if len(newkey) != 8:
             print("len(newkey) is not 8!")
-            # self.modify_secretkey()
         else:
             bin_key = self.str2bin(newkey)
             self.K = bin_key
-            # print("binKey:{}".format(self.K))
 
     def __f_funtion(self, right: str, key: str):
         """
@@ -314,28 +319,18 @@ class mysimDES():
         return self.bin2str(bin_plaintext)
 
     def main(self):
-        select = input(
-            "Please selecting:\n1、Encryption\t 2、Decrpytion\nYour selecting:")
+        select = input('1-Encry\t2-Decry\nYour choice: ')
         if select == '1':
-            plaintext = input("Input plaintext: ")
-            # print("Your plaintext is:{}".format(plaintext))
+            plaintext = input('Input plaintext: ')
             ciphertext = self.encrypt(plaintext)
-            print("The ciphertext is:{}".format(ciphertext))
+            print(f'The ciphertext is:{ciphertext}')
         elif select == '2':
-            plaintext = input("Input ciphertext: ")
-            # print("Your ciphertext is:{}".format(plaintext))
+            plaintext = input('Input ciphertext: ')
             plaintext = self.decrypt(plaintext)
-            print("The plaintext is:{}".format(plaintext))
-            # print(len(plaintext))
+            print(f'The plaintext is:{plaintext}')
         else:
-            input("Please selecting again!")
+            input('Please selecting again!')
             self.main()
-        # plaintext = input("plaintext: ")
-        # ciphertext = self.encode(plaintext)
-        # print("[DES]密文:{}".format(ciphertext))
-        # plaintext = input("ciphertext: ")
-        # plaintext = self.decode(plaintext)
-        # print("[DES]明文:{}".format(plaintext))
 
 
 def DES_encry(msg, key):  # 供调用的DES加密方法
@@ -353,8 +348,6 @@ def DES_decry(cmsg, key):  # 供调用的DES解密方法
 
 
 if __name__ == '__main__':
-    # myDES = ArrangeSimpleDES()
-    # myDES.modify_secretkey('1jC8wQ0c')
     k = '00000000'
     mstr1 = '\{csascasdw\}'
     print(mstr1, type(mstr1))

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 19:35:18
+LastEditTime: 2023-05-24 20:37:55
 Description: 
 '''
 import socket as sk
@@ -32,7 +32,7 @@ def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     Sdh_as2c = initHEAD(EX_CTL, INC_AS2C, len(Sdm_as2c))  # 生成首部
     Ssm_as2c = dict2str(Sdm_as2c)  # dict->str
     Ssh_as2c = dict2str(Sdh_as2c)
-    Sbm_as2c = cbDES.DES_encry(Ssm_as2c, DKEY_C)  # *加密正文(Sbm_as2c已是str)
+    Sbm_as2c = myDES.DES_encry(Ssm_as2c, DKEY_C)  # *加密正文(Sbm_as2c已是str)
     Ssa_as2c = Ssh_as2c + '|' + str(Sbm_as2c)  # 拼接str
     if PRT_LOG:
         print('AS->C:\n', Ssa_as2c)

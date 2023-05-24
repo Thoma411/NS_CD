@@ -1,3 +1,9 @@
+'''
+Author: NS_CD
+Date: 2023-03-28 22:50:51
+LastEditTime: 2023-05-22 15:05:24
+Description: 
+'''
 import random as rd
 import hashlib as hs
 
@@ -77,8 +83,7 @@ def Extended_Eulid(a: int, m: int) -> int:
             x, y, gcd = extended_eulid(m % a, a)  # 递归
             x, y = y, (x - (m // a) * y)  # 递推关系，左端为上层
             return x, y, gcd  # 返回第一层的计算结果。
-        # 最终返回的y值即为b在模a下的乘法逆元
-        # 若y为复数，则y+a为相应的正数逆元
+        # 最终返回的y值即为b在模a下的乘法逆元 若y为复数，则y+a为相应的正数逆元
     n = extended_eulid(a, m)
     if n[1] < 0:
         return n[1] + m

@@ -1,15 +1,14 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-24 19:18:13
+LastEditTime: 2023-05-24 20:39:57
 Description: 
 '''
-
 import datetime as dt
 import random as rd
 import string as st
-import cbDES
-import cbRSA
+import myDES
+import myRSA
 
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
@@ -339,7 +338,7 @@ def initATC(id_c, ad_c, ts=None):  # 装载Authenticator_C
 
 def initSIGN(cpmsg, sk_src):  # 生成数字签名
     dmsg_eg = SIG_SRC_CV
-    ssmg_sig = cbRSA.RSA_sign(cpmsg, sk_src)
+    ssmg_sig = myRSA.RSA_sign(cpmsg, sk_src)
     dmsg_eg['CPT_SIG'] = ssmg_sig
     return dmsg_eg
 
@@ -373,7 +372,7 @@ def initM_AS2C_REP(k_ctgs, id_tgs, tkt_tgs):  # kerberos step2正文
     mmsg_eg['TS_2'] = msg_getTime()
     mmsg_eg['LT_2'] = DEF_LT
     # *str(tkt_tgs)是为了防止传入的是非字符串类型(如字典)
-    sTKT_T = cbDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
+    sTKT_T = myDES.DES_encry(str(tkt_tgs), DKEY_TGS)  # 加密
     mmsg_eg['mTKT_T'] = sTKT_T
     return mmsg_eg
 
@@ -382,7 +381,7 @@ def initM_C2TGS_REQ(id_v, tkt_tgs, atc_c, k_ctgs):  # kerberos step3正文
     mmsg_eg = M_C2TGS_REQ
     mmsg_eg['ID_V'] = id_v
     mmsg_eg['mTKT_T'] = tkt_tgs  # 这里tkt_tgs沿用上一步,无需生成
-    sATC_C = cbDES.DES_encry(str(atc_c), k_ctgs)  # 使用k_ctgs加密ATC_C
+    sATC_C = myDES.DES_encry(str(atc_c), k_ctgs)  # 使用k_ctgs加密ATC_C
     mmsg_eg['mATC_C'] = sATC_C  # sATC_C为字符串
     return mmsg_eg
 
@@ -393,7 +392,7 @@ def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # kerberos step4正文
     mmsg_eg['ID_V'] = id_v
     mmsg_eg['TS_4'] = msg_getTime()
     mmsg_eg['LT_4'] = DEF_LT
-    sTKT_V = cbDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
+    sTKT_V = myDES.DES_encry(str(tkt_v), DKEY_V)  # 加密
     mmsg_eg['mTKT_V'] = sTKT_V
     return mmsg_eg
 
@@ -401,7 +400,7 @@ def initM_TGS2C_REP(k_cv, id_v, tkt_v):  # kerberos step4正文
 def initM_C2V_REQ(tkt_v, atc_c, k_cv):  # kerberos step5正文
     mmsg_eg = M_C2V_REQ
     mmsg_eg['mTKT_V'] = tkt_v  # 这里tkt_v沿用上一步,无需生成
-    sATC_C = cbDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
+    sATC_C = myDES.DES_encry(str(atc_c), k_cv)  # 使用k_cv加密ATC_C
     mmsg_eg['mATC_C'] = sATC_C
     return mmsg_eg
 
@@ -470,7 +469,7 @@ if __name__ == '__main__':
     # print(ds_atc1)
     # s1 = initSIGN('fw7qw', SKEY_C)
     # print(s1)
-    pk1, sk1 = cbRSA.RSA_initKey('a', 40)
+    pk1, sk1 = myRSA.RSA_initKey('a', 40)
     spk1 = PK2str(pk1)
     print(pk1, '\nspk1:', spk1, len(spk1))
     print(findstrX(spk1, PK_SUFFIX))

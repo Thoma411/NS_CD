@@ -1,3 +1,9 @@
+'''
+Author: sccccc1 & Luckyhao266
+Date: 2023-05-10 20:22:14
+LastEditTime: 2023-05-22 20:33:53
+Description: 
+'''
 import socket as sk
 import threading as th
 import pymysql
@@ -10,41 +16,32 @@ MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 
-# 管理员登陆连接数据库
-def sql_login_adm(username):
-    db = pymysql.connect(
-        host=DB_HOST, user="root", passwd="", db="student")  # 打开数据库连接
+def sql_login_adm(usrname):  # 管理员登录连接数据库
+    db = pymysql.connect(host=DB_HOST, user="root",
+                         passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 0" % (
-        username)  # SQL 查询语句
+    sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 0" % usrname  # SQL 查询语句
     try:
-        # 执行SQL语句
         cursor.execute(sql)
-        # 获取所有记录列表
-        results = cursor.fetchall()
+        results = cursor.fetchall()  # 获取所有记录列表
         for row in results:
-            admin_id = row[0]
-            admin_pass = row[1]
-            # 打印结果
-            print("admin_id=%s,admin_pass=%s" %
-                  (admin_id, admin_pass))
-            print("[DB] 正在登陆管理员管理界面")
-            return admin_pass
+            adm_id = row[0]
+            adm_pwd = row[1]
+            print(f'admin_id: {adm_id}, admin_pass: {adm_pwd}')
+            print('[DB] 正在登录管理员管理界面')
+            return adm_pwd
     except:
         print("[DB] Error: unable to fetch data")
         # messagebox.showinfo('警告！', '用户名或密码不正确！')
-    db.close()  # 关闭数据库连接
+    db.close()
 
 
-# 学生登录连接数据库
-def sql_login_stu(username):
-    db = pymysql.connect(
-        host=DB_HOST, user="root", passwd="", db="student")  # 打开数据库连接
+def sql_login_stu(usrname):  # 学生登录连接数据库
+    db = pymysql.connect(host=DB_HOST, user="root",
+                         passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 1" % (
-        username)  # SQL 查询语句
+    sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 1" % usrname  # SQL 查询语句
     try:
-        # 执行SQL语句
         cursor.execute(sql)
         # 获取所有记录列表
         results = cursor.fetchall()
@@ -52,25 +49,22 @@ def sql_login_stu(username):
             stu_id = row[0]
             stu_pass = row[1]
             stu_type = row[2]
-            # 打印结果
-            print("stu_id=%s,stu_pass=%s,stu_type=%s" %
-                  (stu_id, stu_pass, stu_type))
+            print(f'sid: {stu_id}, stu_pwd: {stu_pass}, stu_type: {stu_type}')
             return stu_pass
     except:
         print("[DB] Error: unable to fecth data")
         # messagebox.showinfo('警告！', '用户名或密码不正确！')
-    db.close()  # 关闭数据库连接
-    print("[DB] 正在登陆学生信息查看界面")
+    db.close()
+    print("[DB] 正在登录学生信息查看界面")
 
 
-# 学生成绩查询连接数据库
-def sql_search_stu(sid):
+def sql_search_stu(sid):  # 学生成绩查询连接数据库
     db = pymysql.connect(host=DB_HOST, user="root",
-                         passwd="", db="student")  # 打开数据库连接
+                         passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT name, gender, age, c_grade, m_grade, e_grade FROM student_k WHERE id='%s'" % sid  # SQL 查询语句
     try:
-        cursor.execute(sql)  # 执行SQL语句
+        cursor.execute(sql)
         results = cursor.fetchall()  # 获取所有记录列表
         if len(results) > 0:
             # 取第一个结果
@@ -97,11 +91,10 @@ def sql_search_stu(sid):
         # 数据库操作时发生错误，将错误信息发送给客户端
         connection.sendall(dict2str({"error": str(e)}).encode())
     finally:
-        db.close()  # 关闭数据库连接
+        db.close()
 
 
-# 管理员查询连接数据库
-def sql_search_adm():
+def sql_search_adm():  # 管理员查询连接数据库
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     sql = "SELECT * FROM student_k"  # SQL 查询语句
@@ -127,46 +120,40 @@ def sql_search_adm():
             stu_all_dict[id] = stu
         print('[DB] 学生成绩的所有字典:', stu_all_dict)
         return stu_all_dict
-    except Exception as e:  # 捕获异常
-        print("[DB] 查询学生成绩时发生错误。错误消息：", e)
+    except Exception as e:
+        print('[DB] 查询学生成绩时发生错误。错误消息:', e)
         # 数据库操作时发生错误，将错误信息发送给客户端
         connection.sendall(dict2str({"error": str(e)}).encode())
-    db.close()  # 关闭数据库连接
+    db.close()
     return stu_list  # 返回学生信息的列表
 
 
-# 管理员修改学生信息
-def sql_del_stu(sid):
-    # 打开数据库连接
+def sql_del_stu(sid):  # 管理员修改学生信息
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     print('[DB] 打印学生id:', sid)
     sql = "DELETE FROM student_k WHERE id = '%s'" % sid  # SQL 插入语句
     try:
-        cursor.execute(sql)  # 执行sql语句
+        cursor.execute(sql)
         db.commit()  # 提交到数据库执行
         # messagebox.showinfo('提示！', '删除成功！')
         return 1
     except:
         db.rollback()  # 发生错误时回滚
         # messagebox.showinfo('警告！', '删除失败，数据库连接失败！')
-        return 0
-    db.close()  # 关闭数据库连接
+    db.close()
 
 
-# 管理员增加学生信息
-def sql_add_stu(stu_dict):
+def sql_add_stu(stu_dict):  # 管理员增加学生信息
     # if str(self.var_id.get()) in self.id:
     #     messagebox.showinfo('警告！', '该学生已存在！')
     # else:
     print('[DB] 增加学生的字典', stu_dict)
     if stu_dict['ID'] != '' and stu_dict['NAME'] != '' and stu_dict['GEND'] != '' and stu_dict['AGE'] != '' \
             and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
-        # 打开数据库连接
         db = pymysql.connect(host='127.0.0.1', user="root",
                              passwd="", db="student")
         cursor = db.cursor()  # 使用cursor()方法获取操作游标
-        print("[DB] sql执行前")
         total = float(stu_dict['MARK_C']) + \
             float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])
         ave = (float(stu_dict['MARK_C']) +
@@ -174,25 +161,20 @@ def sql_add_stu(stu_dict):
         sql = "INSERT INTO student_k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
               (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
-               stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'], total, ave
-               )  # SQL 插入语句
-
-        print("[DB] sql执行后\n", stu_dict)
+               stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'], total, ave)  # SQL 插入语句
         try:
             cursor.execute(sql)  # 执行sql语句
             db.commit()  # 提交到数据库执行
         except:
             db.rollback()  # 发生错误时回滚
             # messagebox.showinfo('警告！', '数据库连接失败！')
-        db.close()  # 关闭数据库连接
+        db.close()
 
 
-# 管理员更新学生信息
-def sql_update_stu(stu_dict):
+def sql_update_stu(stu_dict):  # 管理员更新学生信息
     # res = messagebox.askyesnocancel('警告！', '是否更新所填数据？')
     # if res == True:
     #     if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
-    #         # 打开数据库连接
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     print("[DB] 更新的学生的信息为:", stu_dict)
@@ -212,62 +194,58 @@ def sql_update_stu(stu_dict):
     except:
         db.rollback()  # 发生错误时回滚
         # messagebox.showinfo('警告！', '更新失败，数据库连接失败！')
-    db.close()  # 关闭数据库连
+    db.close()
 
 
-def handle_client(connection, client_address):
+def handle_client(conn, caddr):
     try:
-        print("Connection from", client_address)
-        data = connection.recv(MAX_SIZE)  # 接收数据
+        print('Connection from', caddr)
+        data = conn.recv(MAX_SIZE)  # 接收数据
         print("Received:", repr(data), type(data))
-        message = str2dict(data.decode('utf-8'))  # 解析数据
-        print(message)
-        if "username" in message and "password" in message:
-            if message["INTYPE"] == 10:  # 管理员
-                username = message["username"]
-                password = message["password"]
-                print("Received message 1: username=%s, password=%s" %
-                      (username, password))
-                # 数据库操作 查询管理员表
-                admin_pass = sql_login_adm(username)
+        msg = str2dict(data.decode())  # 解析数据
+        print(msg)
+        if "username" in msg and "password" in msg:
+            if msg["INTYPE"] == IND_ADM:  # 管理员
+                usr = msg["username"]
+                pwd = msg["password"]
+                print(f'Received message 1: username={usr}, password={pwd}')
+                admin_pass = sql_login_adm(usr)  # 数据库操作 查询管理员表
 
-                if message["password"] == admin_pass:
+                if msg["password"] == admin_pass:
                     print(admin_pass)
-                    connection.sendall("01".encode())
+                    conn.sendall('01'.encode())
                 else:
                     pass
-            elif message["INTYPE"] == 11:  # 学生
-                username = message["username"]
-                password = message["password"]
-                print("Received message 1: username=%s, password=%s" %
-                      (username, password))
-                stu_pass = sql_login_stu(username)
-                if message["password"] == stu_pass:
+            elif msg["INTYPE"] == IND_STU:  # 学生
+                usr = msg["username"]
+                pwd = msg["password"]
+                print(f'Received message 1: username={usr}, password={pwd}')
+                stu_pass = sql_login_stu(usr)
+                if msg["password"] == stu_pass:
                     print(stu_pass)
-                    connection.sendall("01".encode())  # 进入学生信息查看界面
-                    data = connection.recv(MAX_SIZE)
+                    conn.sendall('01'.encode())  # 进入学生信息查看界面
+                    data = conn.recv(MAX_SIZE)
                     # 解析数据
-                    message = str2dict(data.decode('utf-8'))
+                    msg = str2dict(data.decode())
                 else:
                     pass
-        elif "student_id" in message and len(message) == 1:
-            student_id = message["student_id"]
-            sql_search_stu(student_id)
-            print("1")
-            # 数据库操作 查询学生成绩
-        # 当前请求处理完毕后可以关闭连接
-        # connection.close()
-        print(f"Closed connection: {client_address}")
+        elif "student_id" in msg and len(msg) == 1:
+            student_id = msg["student_id"]
+            sql_search_stu(student_id)  # 数据库操作 查询学生成绩
+            print('1')
+
+        # conn.close()  # 当前请求处理完毕后可以关闭连接
+        print(f'Closed connection: {caddr}')
     except Exception as e:
-        print(f"Error occurred on thread for {client_address}: {e}")
-        # connection.close()
+        print(f'Error occurred on thread for {caddr}: {e}')
+        # conn.close()
 
 
 if __name__ == '__main__':
     server_socket = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     server_socket.bind(('', SERVER_PORT))
     server_socket.listen(MAX_LISTEN)
-    print(f"Server listening on {SERVER_HOST}:{SERVER_PORT}...")
+    print(f'Server listening on {SERVER_HOST}:{SERVER_PORT}...')
     while True:
         connection, client_address = server_socket.accept()
         t = th.Thread(target=handle_client,

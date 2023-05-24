@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 19:34:47
+LastEditTime: 2023-05-24 20:38:12
 Description: 
 '''
 import socket as sk
@@ -23,14 +23,14 @@ def handle_C2TGS(mt, caddr):  # 处理C2TGS报文 mt:str
     c_ip = IP2AD(caddr[0])  # IP字符串->6位str
 
     # *解密Ticket_TGS, 获得K_C_TGS
-    Rsm_tktT = cbDES.DES_decry(tkt_tgs, DKEY_TGS)  # *解密为str
+    Rsm_tktT = myDES.DES_decry(tkt_tgs, DKEY_TGS)  # *解密为str
     Rdm_tktT = str2dict(Rsm_tktT)  # str->dict
     if PRT_LOG:
         print('Ticket_TGS:\n', Rdm_tktT)
     k_ctgs = Rdm_tktT['K_SHARE']  # 取得k_ctgs共享密钥
 
     # *解密Authenticator_C, 获得ID_C
-    Rsm_ATCC = cbDES.DES_decry(atc_c, k_ctgs)  # 解密为str
+    Rsm_ATCC = myDES.DES_decry(atc_c, k_ctgs)  # 解密为str
     Rdm_ATCC = str2dict(Rsm_ATCC)  # str->dict
     if PRT_LOG:
         print('Rdm_ATCC:\n', Rdm_ATCC)
@@ -43,7 +43,7 @@ def handle_C2TGS(mt, caddr):  # 处理C2TGS报文 mt:str
     Sdh_tgs2c = initHEAD(EX_CTL, INC_TGS2C, len(Sdm_tgs2c))  # 生成首部
     Ssm_tgs2c = dict2str(Sdm_tgs2c)  # dict->str
     Ssh_tgs2c = dict2str(Sdh_tgs2c)
-    Sbm_tgs2c = cbDES.DES_encry(Ssm_tgs2c, k_ctgs)  # *加密正文
+    Sbm_tgs2c = myDES.DES_encry(Ssm_tgs2c, k_ctgs)  # *加密正文
     Ssa_tgs2c = Ssh_tgs2c + '|' + str(Sbm_tgs2c)  # 拼接str
     if PRT_LOG:
         print('TGS->C:\n', Ssa_tgs2c)
