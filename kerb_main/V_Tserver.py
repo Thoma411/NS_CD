@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-23 11:36:59
+LastEditTime: 2023-05-24 10:23:43
 Description:
 '''
 import socket as sk
@@ -102,7 +102,7 @@ def Dhangle_ADM_DEL(mt, k_cv):
 
 
 def V_Recv(C_Socket: sk, cAddr):
-    k_cv = None  # 在while外临时存储k_cv
+    k_cv, V_PKEY_C = None, None  # 在while外临时存储k_cv, PK_C
     global K_CV
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收

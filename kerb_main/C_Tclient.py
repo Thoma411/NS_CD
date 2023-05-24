@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-23 11:33:45
+LastEditTime: 2023-05-24 10:59:54
 Description:
 '''
 import socket as sk
@@ -98,9 +98,23 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                 print('no match func for control msg.')
         # *数据报文
         elif msg_extp == EX_DAT:
-            Dhandler = Dmsg_handles.get((msg_extp, msg_intp))
-            if Dhandler:
-                pass  # TODO:合并后数据报文处理方法
+            # Dhandler = Dmsg_handles.get((msg_extp, msg_intp))
+            # if Dhandler:
+            #     pass  # TODO:合并后数据报文处理方法
+            if msg_intp == IND_ADM:
+                pass
+            elif msg_intp == IND_STU:
+                pass
+            elif msg_intp == IND_QRY:
+                pass
+            elif msg_intp == IND_QRY_ADM:
+                pass
+            elif msg_intp == IND_ADD:
+                pass
+            elif msg_intp == IND_DEL:
+                pass
+            elif msg_intp == IND_UPD:
+                pass
             else:
                 print('no match func for data msg.')
                 pass
@@ -174,27 +188,97 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
 # *------------生成数据报文------------
 
 
-def create_D_ADMLOG(user, pswd, k_cv):
-    Sdm_log = initM_C2V_LOG(user, pswd)  # 生成登录正文
-    Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
-    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
-    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
+def create_D_ADMLOG(usr, pwd, k_cv):  # 生成管理员登录报文
+    atc_flag, k_cv, C_PKEY_V = C_Kerberos()  # *获取共享密钥和PK_V
+    if atc_flag:  # 认证成功
+        Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
+        Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
+        Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+        Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+        Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+        Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
+        Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        print('[admin_on_login]:', Sbc_log, len(Sbc_log))
     Sba_log = Ssa_log.encode()
-    return Sba_log
+    return Sba_log, C_PKEY_V
 
 
-def create_D_STULOG(user, pswd, k_cv):
-    Sdm_log = initM_C2V_LOG(user, pswd)  # 生成登录正文
-    Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
-    Ssm_log = dict2str(Sdm_log)  # 正文dict->str
-    Ssh_log = dict2str(Sdh_log)  # 首部dict->str
-    Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
-    Ssa_log = Ssh_log + '|' + Sbm_log + '|'  # 拼接
+def create_D_STULOG(usr, pwd, k_cv):  # 生成学生登录报文
+    atc_flag, k_cv, C_PKEY_V = C_Kerberos()
+    if atc_flag:  # 认证成功
+        Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
+        Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
+        Ssm_log = dict2str(Sdm_log)  # 正文dict->str
+        Ssh_log = dict2str(Sdh_log)  # 首部dict->str
+        Sbm_log = cbDES.DES_encry(Ssm_log, k_cv)  # 已是str类型
+        Sbc_log = cbRSA.RSA_sign(Sbm_log, SKEY_C)  # *加密正文生成数字签名
+        Ssa_log = Ssh_log + '|' + Sbm_log + '|' + Sbc_log  # *拼接含数字签名
+        print('[stu_on_login]:', Sbc_log, len(Sbc_log))
     Sba_log = Ssa_log.encode()
-    print(Ssa_log)
-    return Sba_log
+    return Sba_log, C_PKEY_V
+
+
+def create_D_STUQRY(sid, k_cv):  # 生成学生查询报文
+    Sdm_qry = initM_C2V_DEL(sid)
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
+    Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
+    Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    print('[query_student_score]:', Sbc_qry)
+    Sba_qry = Ssa_qry.encode()
+    return Sba_qry
+
+
+def create_D_ADMQRY(qry, k_cv):  # 生成管理员查询报文
+    Sdm_qry = initM_C2V_ADMIN_QRY(qry)
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
+    Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
+    Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
+    Sbm_qry = cbDES.DES_encry(Ssm_qry, k_cv)  # 已是str类型
+    Sbc_qry = cbRSA.RSA_sign(Sbm_qry, SKEY_C)  # *加密正文生成数字签名
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # *拼接含数字签名
+    print('[query_admin_stuscore]:', Sbc_qry)
+    Sba_qry = Ssa_qry.encode()
+    return Sba_qry
+
+
+def create_D_ADMADD(stu_dict, k_cv):  # 生成管理员添加学生信息报文
+    Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
+    Ssm_add = dict2str(stu_dict)  # 正文dict->str
+    Ssh_add = dict2str(Sdh_add)  # 首部dict->str
+    Sbm_add = cbDES.DES_encry(Ssm_add, k_cv)
+    Sbc_add = cbRSA.RSA_sign(Sbm_add, SKEY_C)  # *加密正文生成数字签名
+    Ssa_add = Ssh_add + '|' + Sbm_add + '|' + Sbc_add  # *拼接含数字签名
+    print('[add_admin_stuscore]:', Sbc_add)
+    Sba_add = Ssa_add.encode()
+    return Sba_add
+
+
+def create_D_ADMDEL(sid, k_cv):  # 生成管理员删除学生信息报文
+    Sdm_del = initM_C2V_DEL(sid)
+    Sdh_del = initHEAD(EX_DAT, IND_DEL, len(Sdm_del))
+    Ssm_del = dict2str(Sdm_del)  # 正文dict->str
+    Ssh_del = dict2str(Sdh_del)  # 首部dict->str
+    Sbm_del = cbDES.DES_encry(Ssm_del, k_cv)
+    Sbc_del = cbRSA.RSA_sign(Sbm_del, SKEY_C)  # *加密正文生成数字签名
+    Ssa_del = Ssh_del + '|' + Sbm_del + '|' + Sbc_del  # *拼接含数字签名
+    print('[del_admin_stuscore]:', Sbc_del)
+    Sba_del = Ssa_del.encode()
+    return Sba_del
+
+
+def create_D_ADMUPD(stu_dict, k_cv):  # 生成管理员更新学生信息报文
+    Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
+    Ssm_upd = dict2str(stu_dict)
+    Ssh_upd = dict2str(Sdh_upd)
+    Sbm_upd = cbDES.DES_encry(Ssm_upd, k_cv)
+    Sbc_upd = cbRSA.RSA_sign(Sbm_upd, SKEY_C)  # *加密正文生成数字签名
+    Ssa_upd = Ssh_upd + '|' + Sbm_upd + '|' + Sbc_upd  # *拼接含数字签名
+    print('[query_student_score]:', Sbc_upd)
+    Sba_upd = Ssa_upd.encode()
+    return Sba_upd
 
 
 def C_C_Send(Dst_socket: sk, dst_flag: int,
@@ -202,28 +286,40 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
     # *生成报文
     Sba_msg = None
     if dst_flag == INC_C2AS_CTF:
-        # Sba_msg = create_C2AS_CTF()  # *生成C2AS_CTF报文
+        # Sba_msg = create_C2AS_CTF()  # 生成C2AS_CTF报文
         pass
     elif dst_flag == INC_C2AS:
-        Sba_msg = create_C_C2AS()  # *生成C2AS报文
+        Sba_msg = create_C_C2AS()  # 生成C2AS报文
     elif dst_flag == INC_C2TGS:
-        Sba_msg = create_C_C2TGS(caddr_ip, tkt, k_share)  # *生成C2TGS报文
+        Sba_msg = create_C_C2TGS(caddr_ip, tkt, k_share)  # 生成C2TGS报文
     elif dst_flag == INC_C2V:
-        Sba_msg = create_C_C2V(caddr_ip, tkt, k_share, ts_5)  # *生成C2V报文
-    # *发送
-    Dst_socket.send(Sba_msg)
+        Sba_msg = create_C_C2V(caddr_ip, tkt, k_share, ts_5)  # 生成C2V报文
+    else:
+        print('[C_C_Send] no match func for send ctl_msg.')
+    Dst_socket.send(Sba_msg)  # 发送
     pass
 
 
 def C_D_Send(Dst_socket: sk, dst_flag: int,
-             user, pswd, k_share=None):  # 发送数据报文
+             usr=None, pwd=None, sid=None, qry=None, stu_dict=None, k_share=None):  # 发送数据报文
     Sba_msg = None
     if dst_flag == IND_ADM:
-        Sba_msg = create_D_ADMLOG(user, pswd, k_share)  # 生成管理员登录报文
+        Sba_msg = create_D_ADMLOG(usr, pwd, k_share)  # 生成管理员登录报文
     elif dst_flag == IND_STU:
-        Sba_msg = create_D_STULOG(user, pswd, k_share)  # 生成学生登录报文
-    # *发送
-    Dst_socket.send(Sba_msg)
+        Sba_msg = create_D_STULOG(usr, pwd, k_share)  # 生成学生登录报文
+    elif dst_flag == IND_QRY:
+        Sba_msg = create_D_STUQRY(sid, k_share)  # 生成学生查询报文
+    elif dst_flag == IND_QRY_ADM:
+        Sba_msg = create_D_ADMQRY(qry, k_share)  # 生成管理员查询报文
+    elif dst_flag == IND_ADD:
+        Sba_msg = create_D_ADMADD(stu_dict, k_share)  # 生成管理员添加学生信息报文
+    elif dst_flag == IND_DEL:
+        Sba_msg = create_D_ADMDEL(sid, k_share)  # 生成管理员删除学生信息报文
+    elif dst_flag == IND_UPD:
+        Sba_msg = create_D_ADMUPD(stu_dict, k_share)  # 生成管理员更新学生信息报文
+    else:
+        print('[C_D_Send] no match func for send dat_msg.')
+    Dst_socket.send(Sba_msg)  # 发送
     pass
 
 
@@ -275,37 +371,35 @@ def C_Kerberos():
 
 
 # *登录调用函数
-
-
-def send_message(host, port, bmsg):  # 消息的发送与接收
+def send_message(Dst_socket: sk, bmsg):  # 消息的发送与接收(含返回值)
     # 连接到服务器并发送数据
     try:
-        sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
-        sock.connect(server_address)
-        sock.sendall(bmsg)  # 发送
+        # sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+        # server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        # Dst_socket.connect(server_address)
+        Dst_socket.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        response = sock.recv(MAX_SIZE)
+        response = Dst_socket.recv(MAX_SIZE)
         print("Received response:", response)
         return response
     except Exception as e:
         print("Error:", e)
-    finally:
-        sock.close()
+    # finally:
+    #     sock.close()
 
 
-def send_message_tmp(host, port, bmsg):  # 消息的发送与接收
+def send_message_tmp(Dst_socket: sk, bmsg):  # !待删除 消息的发送与接收(无返回值)
     # 连接到服务器并发送数据
     try:
-        sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-        server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
-        sock.connect(server_address)
-        sock.sendall(bmsg)  # 发送
+        # sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+        # server_address = (host, port)  # 将服务器IP地址和端口号设置为实际情况
+        # sock.connect(server_address)
+        Dst_socket.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
     except Exception as e:
         print("Error:", e)
-    finally:
-        sock.close()
+    # finally:
+    #     sock.close()
 
 
 def admin_on_login(usr, pwd):  # 管理员登录消息
@@ -358,8 +452,7 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         print('[stu_on_login] fatal.')
 
 
-# 学生查询学生成绩
-def query_student_score(sid, k_cv):
+def query_student_score(sid, k_cv):  # 学生查询学生成绩
     Sdm_qry = initM_C2V_DEL(sid)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
@@ -376,8 +469,7 @@ def query_student_score(sid, k_cv):
     return Rda_log
 
 
-# 管理员查询学生成绩
-def query_admin_stuscore(qry, k_cv):
+def query_admin_stuscore(qry, k_cv):  # 管理员查询学生成绩
     Sdm_qry = initM_C2V_ADMIN_QRY(qry)
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
@@ -394,8 +486,7 @@ def query_admin_stuscore(qry, k_cv):
     return Rda_qry
 
 
-# 管理员添加学生信息
-def add_admin_stuscore(stu_dict, k_cv):
+def add_admin_stuscore(stu_dict, k_cv):  # 管理员添加学生信息
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
@@ -408,8 +499,8 @@ def add_admin_stuscore(stu_dict, k_cv):
     pass
 
 
-def del_admin_stuscore(stu_id, k_cv):
-    Sdm_del = initM_C2V_DEL(stu_id)
+def del_admin_stuscore(sid, k_cv):  # 管理员删除学生信息
+    Sdm_del = initM_C2V_DEL(sid)
     Sdh_del = initHEAD(EX_DAT, IND_DEL, len(Sdm_del))
     Ssm_del = dict2str(Sdm_del)  # 正文dict->str
     Ssh_del = dict2str(Sdh_del)  # 首部dict->str
@@ -421,7 +512,7 @@ def del_admin_stuscore(stu_id, k_cv):
     send_message_tmp(V_IP, V_PORT, Sba_del)
 
 
-def update_admin_stuscore(stu_dict, k_cv):
+def update_admin_stuscore(stu_dict, k_cv):  # 管理员更新学生信息
     Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
     Ssm_upd = dict2str(stu_dict)
     Ssh_upd = dict2str(Sdh_upd)
