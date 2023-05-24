@@ -47,7 +47,7 @@ class StartPage:  # 主菜单
                          command=self.window.destroy,
                          fg='black', bg='red', activebackground='black', activeforeground='white')
         btn4.grid(row=3, column=3, columnspan=3, pady=20)
-        self.window.mainloop()  # 主消息循环
+        # self.window.mainloop()  # 主消息循环
 
 
 class AdminPage:  # 管理员登录界面
@@ -269,7 +269,7 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.m_grade.append(stu_dict['MARK_M'])
         self.e_grade.append(stu_dict['MARK_E'])
         grade_total = stu_dict['MARK_C'] + \
-            stu_dict['MARK_M'] + stu_dict['MARK_E']
+                      stu_dict['MARK_M'] + stu_dict['MARK_E']
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
@@ -281,8 +281,8 @@ class StudentGradeView:  # 学生成绩信息查看界面
         print("test***********************")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-            self.e_grade), len(self.total), len(self.ave)
-        )):  # 写入数据
+                    self.e_grade), len(self.total), len(self.ave)
+                           )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
@@ -372,15 +372,15 @@ class AdminManage:
             self.m_grade.append(stu_all_dict[key]['m_grade'])
             self.e_grade.append(stu_all_dict[key]['e_grade'])
             total = stu_all_dict[key]['c_grade'] + \
-                stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
+                    stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
             self.total.append(total)
             ave = (total / 3)
             self.ave.append(ave)
         print("查询学生字典成功！")
         for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
                            len(self.c_grade), len(self.m_grade), len(
-            self.e_grade), len(self.total), len(self.ave)
-        )):  # 写入数据
+                    self.e_grade), len(self.total), len(self.ave)
+                           )):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
                                             self.ave[i]
@@ -647,31 +647,23 @@ class AdminManage:
                 messagebox.showinfo('警告！', '不能修改学生学号！')
 
 
-class TextFileReader(tk.Tk):
+class TextFileReader():
 
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-
-        self.title('实时文本阅读器')
-
-        self.text1 = tk.Text(self, wrap=tk.WORD)
+    def __init__(self, parent_window, *args, **kwargs):
+        parent_window.update()
+        parent_window.destroy()  # 销毁子界面
+        self.window = tk.Tk()
+        self.window.title('实时文本阅读器')
+        self.text1 = tk.Text(self.window, wrap=tk.WORD)
         self.text1.pack(expand=True, fill=tk.BOTH)
-
-        self.text2 = tk.Text(self, wrap=tk.WORD)
+        self.text2 = tk.Text(self.window, wrap=tk.WORD)
         self.text2.pack(expand=True, fill=tk.BOTH)
-
-        button = tk.Button(self, text='打开文件1', command=self.open_file_1)
-        button.pack(fill=tk.X)
-
-        button2 = tk.Button(self, text='打开文件2', command=self.open_file_2)
-        button2.pack(fill=tk.X)
-
         self.file_path_1 = None
         self.file_path_2 = None
-
         self.text_last_update_time_1 = None
         self.text_last_update_time_2 = None
-
+        self.open_file_1()
+        self.open_file_2()
         self.poll_file_changes()
 
     def load_text(self, file_path, text_widget):
@@ -681,12 +673,12 @@ class TextFileReader(tk.Tk):
         text_widget.insert(tk.END, content)
 
     def open_file_1(self):
-        self.file_path_1 = filedialog.askopenfilename()
+        self.file_path_1 = './text1.txt'
         self.text_last_update_time_1 = time.time()
         self.load_text(self.file_path_1, self.text1)
 
     def open_file_2(self):
-        self.file_path_2 = filedialog.askopenfilename()
+        self.file_path_2 = './text2.txt'
         self.text_last_update_time_2 = time.time()
         self.load_text(self.file_path_2, self.text2)
 
@@ -699,4 +691,4 @@ class TextFileReader(tk.Tk):
             if os.path.getmtime(self.file_path_2) >= self.text_last_update_time_2:
                 self.load_text(self.file_path_2, self.text2)
 
-        self.after(2000, self.poll_file_changes)
+        self.window.after(100, self.poll_file_changes)
