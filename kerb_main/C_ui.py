@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-04 21:04:42
-LastEditTime: 2023-05-24 20:42:22
+LastEditTime: 2023-05-24 21:35:11
 Description: 
 '''
 import tkinter as tk
@@ -65,14 +65,14 @@ class AdminPage:  # 管理员登录界面
         label = tk.Label(self.window, text="管理员登录", width=24,
                          height=1, fg='blue', font=("Verdana", 20))
         label.grid(row=0, column=5, columnspan=3, pady=70)  # pady=50 界面的长度
-        label2 = tk.Label(self.window, text='管理员账号：',
+        label2 = tk.Label(self.window, text='管理员账号:',
                           fg='blue', font=tkFont.Font(size=18))
         label2.grid(row=1, column=3, columnspan=3, padx=15, pady=20)
         self.admin_username = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory')
         self.admin_username.grid(
             row=1, column=5, columnspan=3, padx=15, pady=20)
-        label3 = tk.Label(self.window, text='管理员密码：',
+        label3 = tk.Label(self.window, text='管理员密码:',
                           fg='blue', font=tkFont.Font(size=18))
         label3.grid(row=2, column=3, columnspan=3, padx=15, pady=20)
         self.admin_pass = tk.Entry(
@@ -92,16 +92,15 @@ class AdminPage:  # 管理员登录界面
     def login(self):
         username = self.admin_username.get().strip()
         password = self.admin_pass.get().strip()
-        global K_CV, C_PKEY_V, Vsock  # *声明K_CV为共享密钥
-        tag, k_cv, C_PKEY_V, Vsock = cc.admin_on_login(
+        global K_CV, C_PKEY_V, Vsock  # *声明为全局变量
+        tag, K_CV, C_PKEY_V, Vsock = cc.admin_on_login(
             username, password)  # *返回PK_V 保存为全局变量供后续验证
-        K_CV = k_cv
 
         if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
         else:
-            messagebox.showinfo('警告！', '用户名或密码不正确！')
+            messagebox.showinfo('警告!', '用户名或密码不正确!')
 
     def back(self):
         StartPage(self.window)  # 显示主窗口 销毁本窗口
@@ -116,13 +115,13 @@ class StudentPage:  # 学生登录界面
         label = tk.Label(self.window, text='学生登录', width=24,
                          height=1, fg='blue', font=('Verdana', 20))
         label.grid(row=0, column=5, columnspan=3, pady=50)  # pady=50 界面的长度
-        label2 = tk.Label(self.window, text='学生账号：',
+        label2 = tk.Label(self.window, text='学生账号:',
                           fg='blue', font=tkFont.Font(size=18))
         label2.grid(row=1, column=3, columnspan=3, padx=35, pady=20)
         self.student_id = tk.Entry(
             self.window, width=15, font=tkFont.Font(size=18), bg='Ivory')
         self.student_id.grid(row=1, column=5, columnspan=3, padx=15, pady=20)
-        label3 = tk.Label(self.window, text='学生密码：',
+        label3 = tk.Label(self.window, text='学生密码:',
                           fg='blue', font=tkFont.Font(size=18))
         label3.grid(row=2, column=3, columnspan=3, padx=35, pady=20)
         self.student_pass = tk.Entry(
@@ -142,13 +141,12 @@ class StudentPage:  # 学生登录界面
         username = self.student_id.get().strip()
         password = self.student_pass.get().strip()
         global K_CV, C_PKEY_V, Vsock  # *声明K_CV为共享密钥
-        tag, k_cv, C_PKEY_V, Vsock = cc.stu_on_login(username, password)
-        K_CV = k_cv
+        tag, K_CV, C_PKEY_V, Vsock = cc.stu_on_login(username, password)
         if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入学生操作界面
             StudentInfoManage(self.window, self.student_id.get())
         else:
-            messagebox.showinfo('警告！', '用户名或密码不正确！')
+            messagebox.showinfo('警告!', '用户名或密码不正确!')
 
     def back(self):
         StartPage(self.window)  # 显示主窗口 销毁本窗口
@@ -164,8 +162,8 @@ class InfoManage:  # 信息管理界面
                          height=1, font=('Verdana', 20))
         label.grid(row=1, column=5, columnspan=3,
                    padx=80, pady=30)  # pady=20 界面的长度
-        btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised', font=('Verdana', 20),
-                      command=lambda: AdminManage(self.window),
+        btn1 = Button(self.window, text="学生成绩管理", width=24, height=1, relief='raised',
+                      font=('Verdana', 20), command=lambda: AdminManage(self.window),
                       fg='white', bg='green', activebackground='black',
                       activeforeground='blue')
         btn1.grid(row=2, column=5, columnspan=3, padx=80, pady=30)
@@ -202,11 +200,10 @@ class StudentInfoManage:  # 学生信息查询
         label.grid(row=1, column=8, columnspan=5,
                    padx=80, pady=30)  # pady=20 界面的长度
 
-        btn1 = tk.Button(self.window, text="学生成绩查询", width=24, height=1, relief='raised', font=('Verdana', 20),
-                         command=lambda: StudentGradeView(
-                             self.window, student_id),
-                         fg='white', bg='blue', activebackground='black',
-                         activeforeground='white')
+        btn1 = tk.Button(self.window, text="学生成绩查询", width=24, height=1, relief='raised',
+                         font=('Verdana', 20), command=lambda: StudentGradeView(
+                             self.window, student_id), fg='white', bg='blue',
+                         activebackground='black', activeforeground='white')
         btn1.grid(row=3, column=8, columnspan=5, padx=80, pady=30)
 
         # btn2 = Button(self.window, text="考勤信息查询", width=24, height=1, relief='raised', font=('Verdana', 20),
@@ -263,7 +260,6 @@ class StudentGradeView:  # 学生成绩信息查看界面
         self.e_grade = []
         self.total = []
         self.ave = []
-        print("xx")
         # 打开数据库连接
         stu_dict = cc.query_student_score(Vsock, student_id, K_CV)
         self.id.append(student_id)
@@ -278,16 +274,10 @@ class StudentGradeView:  # 学生成绩信息查看界面
         grade_ave = grade_total / 3
         self.total.append(grade_total)
         self.ave.append(grade_ave)
-        # print(self.id)
-        # print(self.name)
-        # print(self.gender)
-        # print(self.age)
 
-        print("test***********************")
-        for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
-                           len(self.c_grade), len(self.m_grade), len(
-            self.e_grade), len(self.total), len(self.ave)
-        )):  # 写入数据
+        for i in range(min(len(self.id), len(self.name), len(self.gender),
+                           len(self.age), len(self.c_grade), len(self.m_grade),
+                           len(self.e_grade), len(self.total), len(self.ave))):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
@@ -297,11 +287,8 @@ class StudentGradeView:  # 学生成绩信息查看界面
                               command=lambda _col=col: self.tree_sort_column(self.tree, _col, False))
 
         self.frame_center.grid(row=1, column=0, columnspan=2, padx=4, pady=5)
-
         self.frame_center.grid_propagate(0)
-
         self.frame_center.tkraise()  # 开始显示主菜单
-
         self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
         self.window.mainloop()  # 进入消息循环
 
@@ -363,11 +350,10 @@ class AdminManage:
         self.e_grade = []
         self.total = []
         self.ave = []
-        # global K_CV
-        qry = 1
 
+        qry = 1
         stu_all_dict = cc.query_admin_stuscore(Vsock, qry, K_CV)
-        print('abcccc', stu_all_dict)
+        print('stu_all_dict:', stu_all_dict)
         for key in stu_all_dict.keys():
             self.id.append(stu_all_dict[key]['id'])
             self.name.append(stu_all_dict[key]['name'])
@@ -381,19 +367,16 @@ class AdminManage:
             self.total.append(total)
             ave = (total / 3)
             self.ave.append(ave)
-        print("查询学生字典成功！")
-        for i in range(min(len(self.id), len(self.name), len(self.gender), len(self.age),
-                           len(self.c_grade), len(self.m_grade), len(
-            self.e_grade), len(self.total), len(self.ave)
-        )):  # 写入数据
+        print("查询学生字典成功!")
+        for i in range(min(len(self.id), len(self.name), len(self.gender),
+                           len(self.age), len(self.c_grade), len(self.m_grade),
+                           len(self.e_grade), len(self.total), len(self.ave))):  # 写入数据
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
-                                            self.c_grade[i], self.m_grade[i], self.e_grade[i], self.total[i],
-                                            self.ave[i]
-                                            ))
-
+                                            self.c_grade[i], self.m_grade[i], self.e_grade[i],
+                                            self.total[i], self.ave[i]))
         for col in self.columns:  # 绑定函数，使表头可排序
-            self.tree.heading(col, text=col,
-                              command=lambda _col=col: self.tree_sort_column(self.tree, _col, False))
+            self.tree.heading(col, text=col, command=lambda _col=col: self.tree_sort_column(
+                self.tree, _col, False))
 
         # 定义顶部区域
         # 定义左上方区域
@@ -414,28 +397,28 @@ class AdminManage:
         self.var_ave = StringVar()  # 声明平均分
         # 学号
         self.right_top_id_label = Label(
-            self.frame_left_top, text="学号：", font=('Verdana', 15))
+            self.frame_left_top, text="学号:", font=('Verdana', 15))
         self.right_top_id_entry = Entry(
             self.frame_left_top, textvariable=self.var_id, font=('Verdana', 15))
         self.right_top_id_label.grid(row=1, column=0)  # 位置设置
         self.right_top_id_entry.grid(row=1, column=1)
         # 姓名
         self.right_top_name_label = Label(
-            self.frame_left_top, text="姓名：", font=('Verdana', 15))
+            self.frame_left_top, text="姓名:", font=('Verdana', 15))
         self.right_top_name_entry = Entry(
             self.frame_left_top, textvariable=self.var_name, font=('Verdana', 15))
         self.right_top_name_label.grid(row=2, column=0)  # 位置设置
         self.right_top_name_entry.grid(row=2, column=1)
         # 性别
         self.right_top_gender_label = Label(
-            self.frame_left_top, text="性别：", font=('Verdana', 15))
-        self.right_top_gender_entry = Entry(self.frame_left_top, textvariable=self.var_gender,
-                                            font=('Verdana', 15))
+            self.frame_left_top, text="性别:", font=('Verdana', 15))
+        self.right_top_gender_entry = Entry(self.frame_left_top,
+                                            textvariable=self.var_gender, font=('Verdana', 15))
         self.right_top_gender_label.grid(row=3, column=0)  # 位置设置
         self.right_top_gender_entry.grid(row=3, column=1)
         # 年龄
         self.right_top_gender_label = Label(
-            self.frame_left_top, text="年龄：", font=('Verdana', 15))
+            self.frame_left_top, text="年龄:", font=('Verdana', 15))
         self.right_top_gender_entry = Entry(self.frame_left_top, textvariable=self.var_age,
                                             font=('Verdana', 15))
         self.right_top_gender_label.grid(row=4, column=0)  # 位置设置
@@ -443,7 +426,7 @@ class AdminManage:
 
         # 语文成绩
         self.right_top_c_grade_label = Label(
-            self.frame_left_top, text="语文成绩：", font=('Verdana', 15))
+            self.frame_left_top, text="语文成绩:", font=('Verdana', 15))
         self.right_top_c_grade_entry = Entry(self.frame_left_top, textvariable=self.var_c_grade,
                                              font=('Verdana', 15))
         self.right_top_c_grade_label.grid(row=5, column=0)  # 位置设置
@@ -451,7 +434,7 @@ class AdminManage:
 
         # 数学成绩
         self.right_top_m_grade_label = Label(
-            self.frame_left_top, text="数学成绩：", font=('Verdana', 15))
+            self.frame_left_top, text="数学成绩:", font=('Verdana', 15))
         self.right_top_m_grade_entry = Entry(self.frame_left_top, textvariable=self.var_m_grade,
                                              font=('Verdana', 15))
         self.right_top_m_grade_label.grid(row=6, column=0)  # 位置设置
@@ -459,7 +442,7 @@ class AdminManage:
 
         # 英语成绩
         self.right_top_e_grade_label = Label(
-            self.frame_left_top, text="英语成绩：", font=('Verdana', 15))
+            self.frame_left_top, text="英语成绩:", font=('Verdana', 15))
         self.right_top_e_grade_entry = Entry(self.frame_left_top, textvariable=self.var_e_grade,
                                              font=('Verdana', 15))
         self.right_top_e_grade_label.grid(row=7, column=0)  # 位置设置
@@ -467,17 +450,17 @@ class AdminManage:
 
         # 定义右上方区域
         self.right_top_title = Label(
-            self.frame_right_top, text="操作：", font=('Verdana', 20))
+            self.frame_right_top, text="操作:", font=('Verdana', 20))
 
         self.tree.bind('<Button-1>', self.click)  # 左键获取位置
         self.right_top_button1 = ttk.Button(
             self.frame_right_top, text='新建学生信息', width=20, command=self.new_row)
-        self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息', width=20,
-                                            command=self.updata_row)
-        self.right_top_button3 = ttk.Button(self.frame_right_top, text='删除选中学生信息', width=20,
-                                            command=self.del_row)
-        self.right_top_button4 = ttk.Button(self.frame_right_top, text='清空', width=20,
-                                            command=self.clear)
+        self.right_top_button2 = ttk.Button(self.frame_right_top, text='更新选中学生信息',
+                                            width=20, command=self.updata_row)
+        self.right_top_button3 = ttk.Button(self.frame_right_top, text='删除选中学生信息',
+                                            width=20, command=self.del_row)
+        self.right_top_button4 = ttk.Button(self.frame_right_top, text='清空',
+                                            width=20, command=self.clear)
         # 位置设置
         self.right_top_title.grid(row=0, column=0, pady=10)
         self.right_top_button1.grid(row=1, column=0, padx=20, pady=10)
@@ -526,14 +509,12 @@ class AdminManage:
         self.right_top_id_entry = Entry(self.frame_left_top, state='disabled', textvariable=self.var_id,
                                         font=('Verdana', 15))
 
-        print('')
-
     def tree_sort_column(self, tv, col, reverse):  # Treeview、列名、排列方式
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
         l.sort(reverse=reverse)  # 排序方式
         # rearrange items in sorted positions
-        for index, (val, k) in enumerate(l):  # 根据排序后索引移动
-            tv.move(k, '', index)
+        for index, (val, k) in enumerate(l):
+            tv.move(k, '', index)  # 根据排序后索引移动
         tv.heading(col, command=lambda: self.tree_sort_column(
             tv, col, not reverse))  # 重写标题，使之成为再点倒序的标题
 
@@ -549,11 +530,10 @@ class AdminManage:
         self.var_ave.set('')
 
     def new_row(self):
-        print('123')
         print(self.var_id.get())
         print(self.id)
         if str(self.var_id.get()) in self.id:
-            messagebox.showinfo('警告！', '该学生已存在！')
+            messagebox.showinfo('警告!', '该学生已存在!')
         else:
             if self.var_id.get() != '' and self.var_name.get() != '' and self.var_gender.get() != '' and self.var_age.get() != '' \
                     and self.var_c_grade.get() != '' and self.var_m_grade.get() != '' and self.var_e_grade.get() != '':
@@ -580,18 +560,20 @@ class AdminManage:
                 self.total.append(self.var_total.get())
                 self.ave.append(self.var_ave.get())
                 self.tree.insert('', len(self.id) - 1, values=(
-                    self.id[len(self.id) - 1], self.name[len(self.id) -
-                                                         1], self.gender[len(self.id) - 1],
-                    self.age[len(self.id) - 1], self.c_grade[len(self.id) -
-                                                             1], self.m_grade[len(self.id) - 1],
-                    self.e_grade[len(self.id) - 1], self.total[len(self.id) - 1], self.ave[len(self.id) - 1],))
+                    self.id[len(self.id) - 1], self.name[len(self.id) - 1],
+                    self.gender[len(self.id) - 1], self.age[len(self.id) - 1],
+                    self.c_grade[len(self.id) - 1],
+                    self.m_grade[len(self.id) - 1],
+                    self.e_grade[len(self.id) - 1],
+                    self.total[len(self.id) - 1],
+                    self.ave[len(self.id) - 1],))
                 self.tree.update()
-                messagebox.showinfo('提示！', '插入成功！')
+                messagebox.showinfo('提示!', '插入成功!')
             else:
-                messagebox.showinfo('警告！', '请填写学生数据')
+                messagebox.showinfo('警告!', '请填写学生数据')
 
     def del_row(self):
-        res = messagebox.askyesnocancel('警告！', '是否删除所选数据？')
+        res = messagebox.askyesnocancel('警告!', '是否删除所选数据?')
         if res == True:
             print(self.row_info[0])  # 鼠标选中的学号
             print(self.tree.selection()[0])  # 行号
@@ -615,7 +597,7 @@ class AdminManage:
             print(self.tree.get_children())
 
     def updata_row(self):
-        res = messagebox.askyesnocancel('警告！', '是否更新所填数据？')
+        res = messagebox.askyesnocancel('警告!', '是否更新所填数据?')
         if res == True:
             if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
                 # 打开数据库连接
@@ -641,15 +623,15 @@ class AdminManage:
 
                 self.tree.item(self.tree.selection()[0], values=(
                     self.var_id.get(), self.var_name.get(), self.var_gender.get(),
-                    self.var_age.get(), self.var_c_grade.get(
-                    ), self.var_m_grade.get(), self.var_e_grade.get(),
-                    float(self.var_c_grade.get()) + float(self.var_m_grade.get()
-                                                          ) + float(self.var_e_grade.get()),
-                    (float(self.var_c_grade.get()) + float(self.var_m_grade.get()
-                                                           ) + float(self.var_e_grade.get())) / 3
-                ))  # 修改对于行信息
+                    self.var_age.get(), self.var_c_grade.get(),
+                    self.var_m_grade.get(), self.var_e_grade.get(),
+                    float(self.var_c_grade.get()) +
+                    float(self.var_m_grade.get()) +
+                    float(self.var_e_grade.get()),
+                    (float(self.var_c_grade.get()) + float(self.var_m_grade.get()) +
+                     float(self.var_e_grade.get())) / 3))  # 修改对于行信息
             else:
-                messagebox.showinfo('警告！', '不能修改学生学号！')
+                messagebox.showinfo('警告!', '不能修改学生学号!')
 
 
 class TextFileReader():
