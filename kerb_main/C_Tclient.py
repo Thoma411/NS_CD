@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 13:03:05
+LastEditTime: 2023-05-25 13:06:29
 Description:
 '''
 import socket as sk
@@ -112,8 +112,8 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         # *控制报文
         if msg_extp == EX_CTL:
             if msg_intp == INC_AS2C_KC:
-                # with open('kerb_main/text2.txt', 'w', encoding='gbk') as f:
-                #     f.write('AS to C :' + str(Rsa_msg) + '\n\n')
+                with open('kerb_main/text2.txt', 'w', encoding='gbk') as f:
+                    f.write('AS to C :' + str(Rsa_msg) + '\n\n')
                 K_C = Chandle_AS2C_CTF(Rsm_msg)
                 retFlag = INC_AS2C_KC
 
@@ -189,6 +189,8 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     else:
         pass
 
+# *------------生成控制报文------------
+
 
 def create_C2AS_CTF():  # 生成C2AS_CTF报文
     '''
@@ -207,8 +209,6 @@ def create_C2AS_CTF():  # 生成C2AS_CTF报文
         print('Ssa_c2as_ctf:\n', Ssa_c2as_ctf)
     Sba_c2as_ctf = Ssa_c2as_ctf.encode()  # str->bytes
     return Sba_c2as_ctf
-
-# *------------生成控制报文------------
 
 
 def create_C_C2AS():  # 生成C2AS报文
