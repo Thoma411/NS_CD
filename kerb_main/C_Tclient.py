@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 16:10:11
+LastEditTime: 2023-05-25 16:24:41
 Description:
 '''
 import socket as sk
@@ -575,22 +575,28 @@ def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生
     Sba_add = create_D_ADMADD(stu_dict, k_cv)
     with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
         f.write('C to V ADD_ADM :' + str(Sba_add) + '\n\n')
-    Dst_socket.sendall(Sba_add)
+    ret = SndRcv_msg(Dst_socket, Sba_add, k_cv)
+    with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
+        f.write('V to C ADD_ADM :' + str(ret) + '\n\n')
+
 
 
 def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信息
     Sba_del = create_D_ADMDEL(sid, k_cv)
     with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
         f.write('C to V DEL_ADM :' + str(Sba_del) + '\n\n')
-    Dst_socket.sendall(Sba_del)
+    ret = SndRcv_msg(Dst_socket, Sba_del, k_cv)
+    with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
+        f.write('V to C DEL_ADM :' + str(ret) + '\n\n')
 
 
 def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学生信息
     Sba_upd = create_D_ADMUPD(stu_dict, k_cv)
     with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
         f.write('C to V UPD_ADM :' + str(Sba_upd) + '\n\n')
-    Dst_socket.sendall(Sba_upd)
-
+    ret = SndRcv_msg(Dst_socket, Sba_upd, k_cv)
+    with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
+        f.write('V to C UPD_ADM :' + str(ret) + '\n\n')
 
 if __name__ == '__main__':
     # print(C_Kerberos())

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 16:06:36
+LastEditTime: 2023-05-25 16:22:49
 Description:
 '''
 import socket as sk
@@ -220,6 +220,7 @@ def V_Recv(C_Socket: sk):
                     stu_id = Dhangle_ADM_DEL(Rsm_msg, k_cv)
                     ss.sql_del_stu(stu_id)
                     C_Socket.send(create_ADM_ACC(DEL_ACC, IND_DEL, k_cv))
+
                 elif msg_intp == IND_UPD:
                     stu_update_dict = Dhangle_ADM_UPD(Rsm_msg, k_cv)
                     ss.sql_update_stu(stu_update_dict)
