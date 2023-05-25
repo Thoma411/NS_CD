@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 20:37:55
+LastEditTime: 2023-05-25 00:18:03
 Description: 
 '''
 import socket as sk
@@ -18,8 +18,11 @@ PRT_LOG = False  # 是否打印输出
 def handle_C2AS_CTF(m_text, m_sig, cAddr):  # 处理C2AS_CTF报文
     Rdm_c2as_ctf = str2dict(m_text)  # 正文str->dict
     Rdc_c2as_ctf = str2dict(m_sig)  # 签名str->dict
-    print(Rdm_c2as_ctf, Rdc_c2as_ctf)
-    pass
+    id_c, pk_c = Rdm_c2as_ctf['ID_C'], Rdm_c2as_ctf['PK_C']  # 获取正文内容
+    Rsc_c2as_ctf = Rdc_c2as_ctf['M_SIG_SRC']
+    # print(pk_c)
+    # print(Rsc_c2as_ctf, len(Rsc_c2as_ctf))
+    # verFlag = myRSA.RSA_verf()
 
 
 def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
@@ -39,12 +42,6 @@ def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
     return Ssa_as2c  # str+str
 
 
-Cmsg_handles = {  # 控制报文处理函数字典
-    (EX_CTL, INC_C2AS_CTF): handle_C2AS_CTF,
-    (EX_CTL, INC_C2AS): handle_C2AS
-}
-
-
 def AS_Recv(C_Socket: sk, cAddr):
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
@@ -55,8 +52,12 @@ def AS_Recv(C_Socket: sk, cAddr):
         Rsa_msg = Rba_msg.decode()  # bytes->str
         if PRT_LOG:
             print('C->AS:\n', Rsa_msg)
-        Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
-        # Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文
+
+        if Rsa_msg.count('|') == 1:  # 按分隔符数量划分
+            Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
+        elif Rsa_msg.count('|') == 2:
+            Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+Rsc
+
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
         # *匹配报文类型
@@ -71,7 +72,7 @@ def AS_Recv(C_Socket: sk, cAddr):
             # *控制报文
             elif msg_extp == EX_CTL:
                 if msg_intp == INC_C2AS_CTF:
-                    # handle_C2AS_CTF(Rsm_msg, Rsc_msg, cAddr)  # *处理CTF报文
+                    handle_C2AS_CTF(Rsm_msg, Rsc_msg, cAddr)  # *处理CTF报文
                     pass
                 elif msg_intp == INC_C2AS:
                     Ssa_msg = handle_C2AS(Rsm_msg, cAddr)  # 处理C2AS正文
