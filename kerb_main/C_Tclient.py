@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 14:21:59
+LastEditTime: 2023-05-25 16:10:11
 Description:
 '''
 import socket as sk
@@ -163,23 +163,35 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                     f.write('V to C LOGIN :' + str(Rsa_msg) + '\n\n')
                 log_acc = Dhandle_ACC(Rsm_msg, k_share)
                 retFlag = LOG_ACC
+
             elif msg_intp == IND_QRY_STU:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C STU_QUERY :' + str(Rsa_msg) + '\n\n')
                 Rstu_dict = Dhandle_QRY(Rsm_msg, k_share)
                 retFlag = IND_QRY_STU
+
             elif msg_intp == IND_QRY_ADM:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_QUERY :' + str(Rsa_msg) + '\n\n')
                 Rstu_all_dict = Dhandle_QRY(Rsm_msg, k_share)
                 retFlag = IND_QRY_ADM
-                pass
+
             elif msg_intp == IND_ADD:
-                pass
+                with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
+                    f.write('V to C ADM_ADD :' + str(Rsa_msg) + '\n\n')
+                Racc_add = Dhandle_QRY(Rsm_msg, k_share)
+                retFlag = IND_ADD
+
             elif msg_intp == IND_DEL:
-                pass
+                with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
+                    f.write('V to C ADM_DEL :' + str(Rsa_msg) + '\n\n')
+                Racc_del = Dhandle_QRY(Rsm_msg, k_share)
+
             elif msg_intp == IND_UPD:
-                pass
+                with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
+                    f.write('V to C ADM_UPD :' + str(Rsa_msg) + '\n\n')
+                Racc_upd = Dhandle_QRY(Rsm_msg, k_share)
+
             else:
                 print('no match func for data msg.')
                 pass
@@ -265,7 +277,7 @@ def create_C_C2V(c_ip, tkt_v, k_cv, ts_5=None):  # 生成C2V报文
 def create_D_ADMLOG(usr, pwd, k_cv):  # 生成管理员登录报文
     Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V ADM_LOGIN :' + str(Sdm_log) + '\n\n')
+        f.write('C to V ADM_LOGIN :' + str(Sdm_log) + '\n\n')
     Sdh_log = initHEAD(EX_DAT, IND_ADM, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
@@ -280,7 +292,7 @@ def create_D_ADMLOG(usr, pwd, k_cv):  # 生成管理员登录报文
 def create_D_STULOG(usr, pwd, k_cv):  # 生成学生登录报文
     Sdm_log = initM_C2V_LOG(usr, pwd)  # 生成登录正文
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V STU_LOGIN :' + str(Sdm_log) + '\n\n')
+        f.write('C to V STU_LOGIN :' + str(Sdm_log) + '\n\n')
     Sdh_log = initHEAD(EX_DAT, IND_STU, len(Sdm_log))  # 生成首部
     Ssm_log = dict2str(Sdm_log)  # 正文dict->str
     Ssh_log = dict2str(Sdh_log)  # 首部dict->str
@@ -295,7 +307,7 @@ def create_D_STULOG(usr, pwd, k_cv):  # 生成学生登录报文
 def create_D_STUQRY(sid, k_cv):  # 生成学生查询报文
     Sdm_qry = initM_C2V_DEL(sid)
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V STU_QRY :' + str(Sdm_qry) + '\n\n')
+        f.write('C to V STU_QRY :' + str(Sdm_qry) + '\n\n')
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_STU, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
@@ -310,7 +322,7 @@ def create_D_STUQRY(sid, k_cv):  # 生成学生查询报文
 def create_D_ADMQRY(qry, k_cv):  # 生成管理员查询报文
     Sdm_qry = initM_C2V_ADMIN_QRY(qry)
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V ADM_QRY :' + str(Sdm_qry) + '\n\n')
+        f.write('C to V ADM_QRY :' + str(Sdm_qry) + '\n\n')
     Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(Sdm_qry))
     Ssm_qry = dict2str(Sdm_qry)  # 正文dict->str
     Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
@@ -324,7 +336,7 @@ def create_D_ADMQRY(qry, k_cv):  # 生成管理员查询报文
 
 def create_D_ADMADD(stu_dict, k_cv):  # 生成管理员添加学生信息报文
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V ADM_ADD :' + str(stu_dict) + '\n\n')
+        f.write('C to V ADM_ADD :' + str(stu_dict) + '\n\n')
     Sdh_add = initHEAD(EX_DAT, IND_ADD, len(stu_dict))
     Ssm_add = dict2str(stu_dict)  # 正文dict->str
     Ssh_add = dict2str(Sdh_add)  # 首部dict->str
@@ -339,7 +351,7 @@ def create_D_ADMADD(stu_dict, k_cv):  # 生成管理员添加学生信息报文
 def create_D_ADMDEL(sid, k_cv):  # 生成管理员删除学生信息报文
     Sdm_del = initM_C2V_DEL(sid)
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V ADM_DEL :' + str(sid) + '\n\n')
+        f.write('C to V ADM_DEL :' + str(sid) + '\n\n')
     Sdh_del = initHEAD(EX_DAT, IND_DEL, len(Sdm_del))
     Ssm_del = dict2str(Sdm_del)  # 正文dict->str
     Ssh_del = dict2str(Sdh_del)  # 首部dict->str
@@ -354,7 +366,7 @@ def create_D_ADMDEL(sid, k_cv):  # 生成管理员删除学生信息报文
 def create_D_ADMUPD(stu_dict, k_cv):  # 生成管理员更新学生信息报文
     Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-                    f.write('C to V ADM_UPD :' + str(Sdh_upd) + '\n\n')
+        f.write('C to V ADM_UPD :' + str(Sdh_upd) + '\n\n')
     Ssm_upd = dict2str(stu_dict)
     Ssh_upd = dict2str(Sdh_upd)
     Sbm_upd = myDES.DES_encry(Ssm_upd, k_cv)

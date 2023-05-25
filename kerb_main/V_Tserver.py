@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 14:22:16
+LastEditTime: 2023-05-25 16:06:36
 Description:
 '''
 import socket as sk
@@ -98,8 +98,8 @@ def Dhangle_ADM_DEL(mt, k_cv):  # 处理管理员删除学生信息的报文
     return sid
 
 
-def create_ADM_ACC(acc,LOG_TYPE, k_cv):  # 生成登录确认报文
-    Sdm_acc = initM_V2C_ACC(acc)  # 生成登录确认正文
+def create_ADM_ACC(acc, LOG_TYPE, k_cv):  # 生成V确认报文
+    Sdm_acc = initM_V2C_ACC(acc)  # 生成V确认正文
     Sdh_acc = initHEAD(EX_DAT, LOG_TYPE, len(Sdm_acc))  # 生成首部
     Ssm_acc = dict2str(Sdm_acc)
     Ssh_acc = dict2str(Sdh_acc)
@@ -107,7 +107,7 @@ def create_ADM_ACC(acc,LOG_TYPE, k_cv):  # 生成登录确认报文
     Sbc_acc = myRSA.RSA_sign(Sbm_acc, SKEY_V)  # *加密正文生成数字签名
     Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc
     if PRT_LOG:
-        print('[create_D_ACC]:', Ssa_acc)
+        print('[create_ADM_ACC]:', Ssa_acc)
     Sba_acc = Ssa_acc.encode()
     return Sba_acc
 
@@ -192,14 +192,14 @@ def V_Recv(C_Socket: sk):
                     user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, k_cv)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
-                        C_Socket.send(create_D_ACC(IND_ADM,k_cv))
+                        C_Socket.send(create_D_ACC(IND_ADM, k_cv))
 
                 elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', k_cv)
                     user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, k_cv)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
-                        C_Socket.send(create_D_ACC(IND_STU,k_cv))
+                        C_Socket.send(create_D_ACC(IND_STU, k_cv))
 
                 elif msg_intp == IND_QRY_STU:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
@@ -214,16 +214,16 @@ def V_Recv(C_Socket: sk):
                 elif msg_intp == IND_ADD:  # 管理员添加
                     stu_add_dict = Dhangle_ADM_ADD(Rsm_msg, k_cv)
                     ss.sql_add_stu(stu_add_dict)
-                    C_Socket.send(create_ADM_ACC(ADD_ACC, IND_ADD,k_cv))
+                    C_Socket.send(create_ADM_ACC(ADD_ACC, IND_ADD, k_cv))
 
                 elif msg_intp == IND_DEL:  # 管理员删除
                     stu_id = Dhangle_ADM_DEL(Rsm_msg, k_cv)
                     ss.sql_del_stu(stu_id)
-                    C_Socket.send(create_ADM_ACC(DEL_ACC, IND_DEL,k_cv))
+                    C_Socket.send(create_ADM_ACC(DEL_ACC, IND_DEL, k_cv))
                 elif msg_intp == IND_UPD:
                     stu_update_dict = Dhangle_ADM_UPD(Rsm_msg, k_cv)
                     ss.sql_update_stu(stu_update_dict)
-                    C_Socket.send(create_ADM_ACC(UPD_ACC, IND_UPD,k_cv))
+                    C_Socket.send(create_ADM_ACC(UPD_ACC, IND_UPD, k_cv))
 
         else:  # 收包非法
             print('illegal package!')
