@@ -674,11 +674,13 @@ class TextFileReader():
 
     def poll_file_changes(self):
         if self.file_path_1:
-            if os.path.getmtime(self.file_path_1) >= self.text_last_update_time_1:
+            if os.path.getmtime(self.file_path_1) > self.text_last_update_time_1:
+                self.text_last_update_time_1 = os.path.getmtime(self.file_path_1)
                 self.load_text(self.file_path_1, self.text1)
 
         if self.file_path_2:
-            if os.path.getmtime(self.file_path_2) >= self.text_last_update_time_2:
+            if os.path.getmtime(self.file_path_2) > self.text_last_update_time_2:
+                self.text_last_update_time_2 = os.path.getmtime(self.file_path_2)  # 更新时间戳
                 self.load_text(self.file_path_2, self.text2)
 
-        self.window.after(100, self.poll_file_changes)
+        self.window.after(1000, self.poll_file_changes)
