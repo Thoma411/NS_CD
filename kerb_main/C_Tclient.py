@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 13:39:06
+LastEditTime: 2023-05-25 14:21:59
 Description:
 '''
 import socket as sk
@@ -9,11 +9,9 @@ from MsgFieldDef import *
 
 ID_C = 11  # 每个C的ID需不同
 C_IP = '192.168.137.1'  # !IP需提前声明
-AS_IP, AS_PORT = '192.168.137.1', 8010
-TGS_IP, TGS_PORT = '192.168.137.51', 8020
-V_IP, V_PORT = '192.168.137.60', 8030
-
-MAX_SIZE = 2048
+AS_IP, AS_PORT = '192.168.43.70', 8010
+TGS_IP, TGS_PORT = '192.168.43.64', 8020
+V_IP, V_PORT = '192.168.43.90', 8030
 
 PRT_LOG = True  # 是否打印输出
 PKEY_C, SKEY_C = myRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 20:39:07
+LastEditTime: 2023-05-25 14:22:16
 Description:
 '''
 import socket as sk
@@ -10,7 +10,6 @@ from MsgFieldDef import *
 import DB_method as ss
 
 V_PORT = 8030
-MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 PRT_LOG = True  # 是否打印输出

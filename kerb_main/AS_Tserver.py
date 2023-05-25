@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 13:29:23
+LastEditTime: 2023-05-25 14:22:03
 Description: 
 '''
 import socket as sk
@@ -9,7 +9,6 @@ import threading as th
 from MsgFieldDef import *
 
 AS_PORT = 8010
-MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 PRT_LOG = True  # 是否打印输出

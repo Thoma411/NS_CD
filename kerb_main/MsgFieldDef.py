@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-25 13:01:31
+LastEditTime: 2023-05-25 14:21:49
 Description: 
 '''
 import datetime as dt
@@ -9,6 +9,8 @@ import random as rd
 import string as st
 import myDES
 import myRSA
+
+MAX_SIZE = 4096
 
 H_LIGAL = 80  # 合法包
 EX_CTL = 10  # 控制报文
