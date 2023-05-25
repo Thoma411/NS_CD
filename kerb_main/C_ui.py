@@ -596,11 +596,9 @@ class AdminManage:
                     self.ave[len(self.id) - 1],))
                 self.tree.update()
                 messagebox.showinfo('提示!', '插入成功!')
-                i=0
-                while i<5:
-                      self.update()
-                      i+=1
-                      time.sleep(2)
+                self.update()
+                time.sleep(1)
+                self.update()
             else:
                 messagebox.showinfo('警告!', '请填写学生数据')
 
