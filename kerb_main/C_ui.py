@@ -534,7 +534,7 @@ class AdminManage:
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
-        self.window.after(1000,self.update)
+     
         
     def tree_sort_column(self, tv, col, reverse):  # Treeview、列名、排列方式
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
@@ -596,6 +596,11 @@ class AdminManage:
                     self.ave[len(self.id) - 1],))
                 self.tree.update()
                 messagebox.showinfo('提示!', '插入成功!')
+                i=0
+                while i<5:
+                      self.update()
+                      i+=1
+                      time.sleep(2000)
             else:
                 messagebox.showinfo('警告!', '请填写学生数据')
 
