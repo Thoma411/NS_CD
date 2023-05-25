@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 09:54:22
+LastEditTime: 2023-05-25 00:19:49
 Description:
 '''
 import socket as sk
@@ -9,9 +9,9 @@ from MsgFieldDef import *
 
 ID_C = 13  # !每个C的ID需不同
 C_IP = '192.168.137.60'  # !IP需提前声明
-AS_IP, AS_PORT = '127.0.0.1', 8010
-TGS_IP, TGS_PORT = '127.0.0.1', 8020
-V_IP, V_PORT = '127.0.0.1', 8030
+AS_IP, AS_PORT = '192.168.137.60', 8010
+TGS_IP, TGS_PORT = '192.168.137.60', 8020
+V_IP, V_PORT = '192.168.137.60', 8030
 
 MAX_SIZE = 2048
 
@@ -86,7 +86,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
             print('数字签名验证:', verFlag)
             if verFlag:
                 with open('./text1.txt', 'a', encoding='gbk') as f:
-                    f.write('successfully verified Digital signature.' + '\n')
+                    f.write('successfully verified Digital signature.' + '\n\n')
 
     Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
 
@@ -105,21 +105,21 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                 pass
             elif msg_intp == INC_AS2C:
                 with open('./text2.txt', 'w', encoding='gbk') as f:
-                    f.write('AS to C :' + str(Rsa_msg) + '\n')
+                    f.write('AS to C :' + str(Rsa_msg) + '\n\n')
                 k_ctgs, tkt_tgs = Chandle_AS2C(Rsm_msg)  # 处理AS2C正文
                 TMP_KEY = k_ctgs  # 将k_ctgs,tkt_tgs传出if-else
                 TMP_TKT = tkt_tgs
                 retFlag = INC_AS2C
             elif msg_intp == INC_TGS2C:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
-                    f.write('TGS to C :' + str(Rsa_msg) + '\n')
+                    f.write('TGS to C :' + str(Rsa_msg) + '\n\n')
                 k_cv, tkt_v = Chandle_TGS2C(Rsm_msg, k_share)  # 处理TGS2C正文
                 TMP_KEY = k_cv  # 将k_cv,tkt_v传出if-else
                 TMP_TKT = tkt_v
                 retFlag = INC_TGS2C
             elif msg_intp == INC_V2C:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
-                    f.write('V to C :' + str(Rsa_msg) + '\n')
+                    f.write('V to C :' + str(Rsa_msg) + '\n\n')
                 ts_5 = Chandle_V2C(Rsm_msg, k_share)  # 处理V2C正文
                 TMP_TS = ts_5  # 将ts_5传出if-else
                 retFlag = INC_V2C
@@ -130,17 +130,17 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         elif msg_extp == EX_DAT:
             if msg_intp == IND_ADM or msg_intp == IND_STU:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
-                    f.write('V to C LOGIN :' + str(Rsa_msg) + '\n')
+                    f.write('V to C LOGIN :' + str(Rsa_msg) + '\n\n')
                 log_acc = Dhandle_ACC(Rsm_msg, k_share)
                 retFlag = LOG_ACC
             elif msg_intp == IND_QRY_STU:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
-                    f.write('V to C STU_QUERY :' + str(Rsa_msg) + '\n')
+                    f.write('V to C STU_QUERY :' + str(Rsa_msg) + '\n\n')
                 Rstu_dict = Dhandle_QRY(Rsm_msg, k_share)
                 retFlag = IND_QRY_STU
             elif msg_intp == IND_QRY_ADM:
                 with open('./text2.txt', 'a', encoding='gbk') as f:
-                    f.write('V to C ADM_QUERY :' + str(Rsa_msg) + '\n')
+                    f.write('V to C ADM_QUERY :' + str(Rsa_msg) + '\n\n')
                 Rstu_all_dict = Dhandle_QRY(Rsm_msg, k_share)
                 retFlag = IND_QRY_ADM
                 pass
@@ -181,10 +181,11 @@ def create_C2AS_CTF():  # 生成C2AS_CTF报文
     h/m/c/a - 首部/正文/签名/拼接整体
     '''
     Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
+    Sdc_c2as_ctf = initSIGN(ID_C, PKEY_C, SKEY_C)  # 生成签名
     Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF, len(Sdm_c2as_ctf))  # 生成首部
     Ssm_c2as_ctf = dict2str(Sdm_c2as_ctf)  # 正文dict->str
     Ssh_c2as_ctf = dict2str(Sdh_c2as_ctf)  # 首部dict->str
-    Ssc_c2as_ctf = myRSA.RSA_sign(Ssm_c2as_ctf, SKEY_C)
+    Ssc_c2as_ctf = dict2str(Sdc_c2as_ctf)  # 签名dict->str
     Ssa_c2as_ctf = Ssh_c2as_ctf + '|' + Ssm_c2as_ctf + '|' + Ssc_c2as_ctf  # 拼接
     Sba_c2as_ctf = Ssa_c2as_ctf.encode()  # str->bytes
     return Sba_c2as_ctf
@@ -327,15 +328,15 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
     elif dst_flag == INC_C2AS:
         Sba_msg = create_C_C2AS()  # 生成C2AS报文
         with open('./text1.txt', 'w', encoding='gbk') as f:
-            f.write('C to AS :' + str(Sba_msg) + '\n')
+            f.write('C to AS :' + str(Sba_msg) + '\n\n')
     elif dst_flag == INC_C2TGS:
         Sba_msg = create_C_C2TGS(caddr_ip, tkt, k_share)  # 生成C2TGS报文
         with open('./text1.txt', 'a', encoding='gbk') as f:
-            f.write('C to TGS :' + str(Sba_msg) + '\n')
+            f.write('C to TGS :' + str(Sba_msg) + '\n\n')
     elif dst_flag == INC_C2V:
         Sba_msg = create_C_C2V(caddr_ip, tkt, k_share, ts_5)  # 生成C2V报文
         with open('./text1.txt', 'a', encoding='gbk') as f:
-            f.write('C to V :' + str(Sba_msg) + '\n')
+            f.write('C to V :' + str(Sba_msg) + '\n\n')
     else:
         print('[C_C_Send] no match func for send ctl_msg.')
     Dst_socket.send(Sba_msg)  # 发送
@@ -347,31 +348,31 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
     if dst_flag == IND_ADM:
         Sba_msg = create_D_ADMLOG(usr, pwd, k_share)  # 生成管理员登录报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V LOGIN_ADMIN :' + str(Sba_msg) + '\n')
+            f.write('C to V LOGIN_ADMIN :' + str(Sba_msg) + '\n\n')
     elif dst_flag == IND_STU:
         Sba_msg = create_D_STULOG(usr, pwd, k_share)  # 生成学生登录报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V LOGIN_STU :' + str(Sba_msg) + '\n')
+            f.write('C to V LOGIN_STU :' + str(Sba_msg) + '\n\n')
     elif dst_flag == IND_QRY_STU:
         Sba_msg = create_D_STUQRY(sid, k_share)  # 生成学生查询报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V QUERY_STU :' + str(Sba_msg) + '\n')
+            f.write('C to V QUERY_STU :' + str(Sba_msg) + '\n\n')
     elif dst_flag == IND_QRY_ADM:
         Sba_msg = create_D_ADMQRY(qry, k_share)  # 生成管理员查询报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V QUERY_ADM :' + str(Sba_msg) + '\n')
+            f.write('C to V QUERY_ADM :' + str(Sba_msg) + '\n\n')
     elif dst_flag == IND_ADD:
         Sba_msg = create_D_ADMADD(stu_dict, k_share)  # 生成管理员添加学生信息报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V ADD_ADM :' + str(Sba_msg) + '\n')
+            f.write('C to V ADD_ADM :' + str(Sba_msg) + '\n\n')
     elif dst_flag == IND_DEL:
         Sba_msg = create_D_ADMDEL(sid, k_share)  # 生成管理员删除学生信息报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V DEL_ADM :' + str(Sba_msg) + '\n')
+            f.write('C to V DEL_ADM :' + str(Sba_msg) + '\n\n')
     elif dst_flag == IND_UPD:
         Sba_msg = create_D_ADMUPD(stu_dict, k_share)  # 生成管理员更新学生信息报文
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V UPDATE_ADM :' + str(Sba_msg) + '\n')
+            f.write('C to V UPDATE_ADM :' + str(Sba_msg) + '\n\n')
     else:
         print('[C_D_Send] no match func for send dat_msg.')
     Dst_socket.send(Sba_msg)  # 发送
@@ -450,10 +451,10 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         # else:
         #     pass
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V LOG_ADM :' + str(Sba_log) + '\n')
+            f.write('C to V LOG_ADM :' + str(Sba_log) + '\n\n')
         ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
         with open('./text1.txt', 'a', encoding='gbk') as f:
-            f.write('V to C LOG_ADM :' + str(ret) + '\n')
+            f.write('V to C LOG_ADM :' + str(ret) + '\n\n')
         if ret == LOG_ACC:  # 返回结果为登录ACC
             return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
         else:
@@ -473,10 +474,10 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         # else:
         #     pass
         with open('./text2.txt', 'a', encoding='gbk') as f:
-            f.write('C to V LOG_STU :' + str(Sba_log) + '\n')
+            f.write('C to V LOG_STU :' + str(Sba_log) + '\n\n')
         ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
         with open('./text1.txt', 'a', encoding='gbk') as f:
-            f.write('V to C LOG_STU :' + str(ret) + '\n')
+            f.write('V to C LOG_STU :' + str(ret) + '\n\n')
         if ret == LOG_ACC:  # 返回结果为登录ACC
             return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
         else:
@@ -488,41 +489,41 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
 def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
     Sba_qry = create_D_STUQRY(sid, k_cv)
     with open('./text2.txt', 'a', encoding='gbk') as f:
-        f.write('C to V QRY_STU :' + str(Sba_qry) + '\n')
+        f.write('C to V QRY_STU :' + str(Sba_qry) + '\n\n')
     ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
     with open('./text1.txt', 'a', encoding='gbk') as f:
-        f.write('V to C QRY_STU :' + str(ret) + '\n')
+        f.write('V to C QRY_STU :' + str(ret) + '\n\n')
     return ret
 
 
 def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成绩
     Sba_qry = create_D_ADMQRY(qry, k_cv)
     with open('./text2.txt', 'a', encoding='gbk') as f:
-        f.write('C to V QRY_ADM :' + str(Sba_qry) + '\n')
+        f.write('C to V QRY_ADM :' + str(Sba_qry) + '\n\n')
     ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
     with open('./text1.txt', 'a', encoding='gbk') as f:
-        f.write('V to C QRY_ADM :' + str(ret) + '\n')
+        f.write('V to C QRY_ADM :' + str(ret) + '\n\n')
     return ret
 
 
 def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生信息
     Sba_add = create_D_ADMADD(stu_dict, k_cv)
     with open('./text2.txt', 'a', encoding='gbk') as f:
-        f.write('C to V ADD_ADM :' + str(Sba_add) + '\n')
+        f.write('C to V ADD_ADM :' + str(Sba_add) + '\n\n')
     Dst_socket.sendall(Sba_add)
 
 
 def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信息
     Sba_del = create_D_ADMDEL(sid, k_cv)
     with open('./text2.txt', 'a', encoding='gbk') as f:
-        f.write('C to V DEL_ADM :' + str(Sba_del) + '\n')
+        f.write('C to V DEL_ADM :' + str(Sba_del) + '\n\n')
     Dst_socket.sendall(Sba_del)
 
 
 def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学生信息
     Sba_upd = create_D_ADMUPD(stu_dict, k_cv)
     with open('./text2.txt', 'a', encoding='gbk') as f:
-        f.write('C to V UPD_ADM :' + str(Sba_upd) + '\n')
+        f.write('C to V UPD_ADM :' + str(Sba_upd) + '\n\n')
     Dst_socket.sendall(Sba_upd)
 
 
