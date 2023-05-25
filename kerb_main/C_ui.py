@@ -600,7 +600,7 @@ class AdminManage:
                 while i<5:
                       self.update()
                       i+=1
-                      time.sleep(2000)
+                      time.sleep(2)
             else:
                 messagebox.showinfo('警告!', '请填写学生数据')
 
