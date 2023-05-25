@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 13:06:29
+LastEditTime: 2023-05-25 13:36:53
 Description:
 '''
 import socket as sk
@@ -22,7 +22,7 @@ K_C = None
 C_PKEY_V = None
 
 
-def Chandle_AS2C_CTF(mt):  # 处理AS2C认证报文
+def Chandle_AS2C_KC(mt):  # 处理AS2C认证报文
     Rdm_as2c = str2dict(mt)  # str->dict
     cpK_c = Rdm_as2c['K_C']  # 获取K_c(加密状态)
     tmpk_c = myRSA.RSA_decry(cpK_c, SKEY_C)
@@ -30,6 +30,16 @@ def Chandle_AS2C_CTF(mt):  # 处理AS2C认证报文
     if PRT_LOG:
         print('k_c', k_c)
     return k_c
+
+
+def Chandle_AS2C_CTF(mt_ms):  # 处理AS2C证书
+    Rsm_as2c_ctf, Rsc_as2c_ctf = mt_ms.split('+')  # 分割正文+证书
+    Rdm_as2c_ctf = str2dict(Rsm_as2c_ctf)  # 正文str->dict
+    pk_as = Rdm_as2c_ctf['PK_AS']
+    verFlag = myRSA.RSA_verf(Rsm_as2c_ctf, Rsc_as2c_ctf, pk_as)
+    if PRT_LOG:
+        print('AS CTF:', verFlag)
+    return verFlag
 
 
 def Chandle_AS2C(mt, k_c):  # 处理AS2C控制报文
@@ -114,8 +124,13 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
             if msg_intp == INC_AS2C_KC:
                 with open('kerb_main/text2.txt', 'w', encoding='gbk') as f:
                     f.write('AS to C :' + str(Rsa_msg) + '\n\n')
-                K_C = Chandle_AS2C_CTF(Rsm_msg)
-                retFlag = INC_AS2C_KC
+                K_C = Chandle_AS2C_KC(Rsm_msg)
+
+            elif msg_intp == INC_AS2C_CTF:
+                with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
+                    f.write('AS to C :' + str(Rsa_msg) + '\n\n')
+                AS_ctf = Chandle_AS2C_CTF(Rsm_msg)
+                retFlag = INC_AS2C_CTF
 
             elif msg_intp == INC_AS2C:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
@@ -174,6 +189,8 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         print('illegal package!')
 
     # *根据retFlag决定返回值
+    if retFlag == INC_AS2C_CTF:  # 返回AS证书合法性
+        return AS_ctf
     if retFlag == INC_AS2C:  # 返回step2的共享密钥/票据
         return TMP_KEY, TMP_TKT
     elif retFlag == INC_TGS2C:  # 返回step4的共享密钥/票据
@@ -187,7 +204,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     elif retFlag == IND_QRY_ADM:  # 返回学生信息字典列表
         return Rstu_all_dict
     else:
-        pass
+        print('no match ret for def.')
 
 # *------------生成控制报文------------
 
@@ -403,9 +420,14 @@ def C_Kerberos():
     ASsock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     ASsock.connect((AS_IP, AS_PORT))
 
-    # *获取K_C
+    # *获取K_C, 证书
     C_C_Send(ASsock, INC_C2AS_CTF, client_ip)
-    C_Recv(ASsock)
+    C_Recv(ASsock)  # 接收K_c
+    AS_ctf_ligal = C_Recv(ASsock)  # 接收证书
+    if AS_ctf_ligal:
+        print('[Kerberos] Legal CTF from AS.')
+    else:
+        print('[Kerberos] Illegal CTF from AS.')
 
     # *发送给AS
     C_C_Send(ASsock, INC_C2AS, client_ip)

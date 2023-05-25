@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 13:01:20
+LastEditTime: 2023-05-25 13:29:23
 Description: 
 '''
 import socket as sk
@@ -16,12 +16,12 @@ PRT_LOG = True  # 是否打印输出
 PKEY_AS, SKEY_AS = myRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成AS的公私钥
 
 
-def handle_C2AS_CTF(m_text, m_sig, cAddr):  # 处理C2AS_CTF报文
+def handle_C2AS_KC(m_text, m_sig):  # 处理C2AS_CTF报文
     # *获取认证报文并认证
     Rdm_c2as_ctf = str2dict(m_text)  # 正文str->dict
     pk_c = Rdm_c2as_ctf['PK_C']  # 获取PK_C
     verFlag = myRSA.RSA_verf(m_text, m_sig, pk_c)
-    print(verFlag)
+    print('check Client ID:', verFlag)
     # *生成认证回复报文(K_c)
     if verFlag:
         k_c = msg_rndKey(initType='i')  # 生成纯数字密钥
@@ -35,10 +35,19 @@ def handle_C2AS_CTF(m_text, m_sig, cAddr):  # 处理C2AS_CTF报文
             print('k_c', k_c)
             print('Ssa_as2c_ctf:\n', Ssa_as2c_ctf)
         return Ssa_as2c_ctf, k_c
-    # *生成认证回复报文(ctf)
-    # Sdm_as2c_ctf = initM_AS2C_CTF(DID_AS, PKEY_AS)
-    # Sdh_as2c_ctf = initHEAD(EX_CTL, INC_AS2C_CTF, len(Sdm_as2c_ctf))
-    # return pk_c
+
+
+def create_AS2C_CTF():  # 生成AS2C证书
+    Sdm_as2c_ctf = initM_AS2C_CTF(DID_AS, PKEY_AS)  # 生成正文
+    Sdh_as2c_ctf = initHEAD(EX_CTL, INC_AS2C_CTF, len(Sdm_as2c_ctf))
+    Ssm_as2c_ctf = dict2str(Sdm_as2c_ctf)  # 正文dict->str
+    Ssh_as2c_ctf = dict2str(Sdh_as2c_ctf)  # 首部dict->str
+    Ssc_as2c_ctf = myRSA.RSA_sign(Ssm_as2c_ctf, SKEY_AS)
+    Ssa_as2c_ctf = Ssh_as2c_ctf + '|' + Ssm_as2c_ctf + '+' + Ssc_as2c_ctf
+    if PRT_LOG:
+        print('Ssa_c2as_ctf:\n', Ssa_as2c_ctf)
+    Sba_as2c_ctf = Ssa_as2c_ctf.encode()  # str->bytes
+    return Sba_as2c_ctf
 
 
 def handle_C2AS(mt, k_c, caddr):  # 处理C2AS报文 mt:str
@@ -59,7 +68,7 @@ def handle_C2AS(mt, k_c, caddr):  # 处理C2AS报文 mt:str
 
 
 def AS_Recv(C_Socket: sk, cAddr):
-    K_C, AS_PKEY_C = None, None
+    K_C = None
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -89,9 +98,10 @@ def AS_Recv(C_Socket: sk, cAddr):
             # *控制报文
             elif msg_extp == EX_CTL:
                 if msg_intp == INC_C2AS_CTF:
-                    Ssa_msg, K_C = handle_C2AS_CTF(
-                        Rsm_msg, Rsc_msg, cAddr)  # *处理CTF报文
-                    C_Socket.send(Ssa_msg.encode())
+                    Ssa_msg, K_C = handle_C2AS_KC(
+                        Rsm_msg, Rsc_msg)  # *处理CTF报文
+                    C_Socket.send(Ssa_msg.encode())  # 发送k_c
+                    C_Socket.send(create_AS2C_CTF())  # 发送证书
                 elif msg_intp == INC_C2AS:
                     Ssa_msg = handle_C2AS(Rsm_msg, K_C, cAddr)  # 处理C2AS正文
                     C_Socket.send(Ssa_msg.encode())  # 编码发送
