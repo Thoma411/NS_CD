@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-24 20:38:12
+LastEditTime: 2023-05-25 13:03:40
 Description: 
 '''
 import socket as sk
@@ -12,7 +12,7 @@ TGS_PORT = 8020
 MAX_SIZE = 2048
 MAX_LISTEN = 16
 
-PRT_LOG = False  # 是否打印输出
+PRT_LOG = True  # 是否打印输出
 
 
 def handle_C2TGS(mt, caddr):  # 处理C2TGS报文 mt:str

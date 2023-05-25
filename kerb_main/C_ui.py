@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-04 21:04:42
-LastEditTime: 2023-05-24 23:11:10
+LastEditTime: 2023-05-25 10:20:01
 Description: 
 '''
 import tkinter as tk
@@ -663,12 +663,12 @@ class TextFileReader():
         text_widget.insert(tk.END, content)
 
     def open_file_1(self):
-        self.file_path_1 = './text1.txt'
+        self.file_path_1 = 'kerb_main/text1.txt'
         self.text_last_update_time_1 = time.time()
         self.load_text(self.file_path_1, self.text1)
 
     def open_file_2(self):
-        self.file_path_2 = './text2.txt'
+        self.file_path_2 = 'kerb_main/text2.txt'
         self.text_last_update_time_2 = time.time()
         self.load_text(self.file_path_2, self.text2)
 

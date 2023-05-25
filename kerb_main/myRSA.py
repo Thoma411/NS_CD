@@ -1,7 +1,7 @@
 '''
 Author: NS_CD
 Date: 2023-03-28 22:50:51
-LastEditTime: 2023-05-25 00:20:37
+LastEditTime: 2023-05-25 12:49:17
 Description: 
 '''
 import random as rd
@@ -129,6 +129,18 @@ def RSA_initKey(typeK: str = None, lenK: int = LEN_RKEY):  # 生成PK/SK
         return n, e, d
 
 
+def RSA_encry(msg, pkey):  # msg仅int类型
+    n, e = pkey
+    cpmsg = power(msg, e, n)
+    return cpmsg
+
+
+def RSA_decry(cpmsg, skey):  # cpmsg仅int类型
+    n, d = skey
+    dpmsg = power(cpmsg, d, n)
+    return dpmsg
+
+
 def RSA_sign(msg: str, skey, retType='s'):
     '''msg: input_text\nd&n: SK'''
     n, d = skey
@@ -168,16 +180,9 @@ if __name__ == '__main__':
     is_verified = RSA_verf(inputMsg, sig, pk)
     print("Verification result:", is_verified)
 
-    # Output
-    # print("Private Key: ")
     print('pk:', pk)
     print('sk:', sk)
     # *感觉PK/SK可以只显示e/d, n可以不显示
-    # print("N: ", n)
-    # print("d: ", d)
-    # print("Public Key: ")
-    # print("N: ", n)
-    # print("e: ", e)
     print("Signature: ")
     print("s: ", sig)
     print("Verify s of m: ")

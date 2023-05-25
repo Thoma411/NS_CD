@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-25 09:39:51
+LastEditTime: 2023-05-25 13:01:31
 Description: 
 '''
 import datetime as dt
@@ -16,7 +16,8 @@ EX_DAT = 20  # 数据报文
 
 # INC_:控制报文类型
 INC_C2AS_CTF = 95  # C->AS 申请证书报文
-INC_AS2C_CTF = 96  # AS->C 回复证书报文
+INC_AS2C_KC = 96  # AS->C K_c报文
+INC_AS2C_CTF = 97  # AS->C 回复证书报文
 INC_C2AS = 10
 INC_AS2C = 20
 INC_C2TGS = 30
@@ -37,6 +38,7 @@ IND_UPD = 16  # 管理员更新
 
 DEF_LT = 6000  # 默认有效期
 
+DID_AS = 10  # 默认AS的ID
 DID_TGS = 20  # 默认TGS的ID
 DID_V = 30  # 默认V的ID
 
@@ -45,7 +47,6 @@ DEF_LEN_RSA_K = 256
 # PKEY_AS = '00000000'  # AS的公钥
 # SKEY_AS = '00000000'  # AS的私钥
 
-DKEY_C = '00000000'  # 预置C密钥
 DKEY_TGS = '00000000'  # 预置TGS密钥
 DKEY_V = '00000000'  # 预置V密钥
 
@@ -97,18 +98,18 @@ SIG_SRC_CV = {
 # certification step1 C->AS
 M_C2AS_CTF = {
     'ID_C': int,
-    'PK_C': bytes,  # C的公钥
+    'PK_C': str,  # C的公钥
 }
 
 # certification step1.5 AS->C K
 M_AS2C_KC = {
-    'K_C': bytes  # 下一步会话的对称钥
+    'K_C': int  # 下一步会话的对称钥
 }
 
 # certification step2 AS->C MT
 M_AS2C_CTF = {
     'ID_AS': int,
-    'PK_AS': bytes,  # AS的公钥
+    'PK_AS': str,  # AS的公钥
 }
 
 # *-----------------kerberos-----------------
@@ -267,13 +268,14 @@ def msg_getTime(dgt: int = 4, retType: str = 's'):  # 获取当前时间,默认�
         return int(now_time)
 
 
-def msg_rndKey(dgt: int = 8, retType: str = 's'):  # 生成定长随机字符串,默认8位
+def msg_rndKey(dgt: int = 8, initType: str = 's'):  # 生成定长随机字符串,默认8位
     '''dgt: 生成字符串位数'''
-    rnd_str = ''.join(rd.sample(st.ascii_letters + st.digits, dgt))
-    if retType == 's':
+    if initType == 's':
+        rnd_str = ''.join(rd.sample(st.ascii_letters + st.digits, dgt))
         return rnd_str
-    else:
-        return rnd_str.encode()
+    elif initType == 'i':
+        rnd_int = str(rd.randint(0, 99999999)).zfill(dgt)
+        return rnd_int
 
 
 def PK2str(PK: tuple):  # 将PK由tuple转成拼接str
@@ -348,6 +350,12 @@ def initM_C2AS_CTF(id_c, pk_c):  # certification step1正文
     mmsg_eg = M_C2AS_CTF
     mmsg_eg['ID_C'] = id_c
     mmsg_eg['PK_C'] = pk_c
+    return mmsg_eg
+
+
+def initM_AS2C_KC(k_c):
+    mmsg_eg = M_AS2C_KC
+    mmsg_eg['K_C'] = k_c
     return mmsg_eg
 
 
@@ -470,9 +478,11 @@ if __name__ == '__main__':
     # print(ds_atc1)
     # s1 = initSIGN('fw7qw', SKEY_C)
     # print(s1)
-    pk1, sk1 = myRSA.RSA_initKey('a', 40)
-    spk1 = PK2str(pk1)
-    print(pk1, '\nspk1:', spk1, len(spk1))
-    print(findstrX(spk1, PK_SUFFIX))
-    dspk1 = str2PK(spk1)
-    print(dspk1)
+    # pk1, sk1 = myRSA.RSA_initKey('a', 40)
+    # spk1 = PK2str(pk1)
+    # print(pk1, '\nspk1:', spk1, len(spk1))
+    # print(findstrX(spk1, PK_SUFFIX))
+    # dspk1 = str2PK(spk1)
+    # print(dspk1)
+    ik = str(rd.randint(0, 99999999)).zfill(8)
+    print(ik)
