@@ -625,6 +625,9 @@ class AdminManage:
             print(self.id)
             self.tree.delete(self.tree.selection()[0])  # 删除所选行
             print(self.tree.get_children())
+            self.update()
+            time.sleep(1)
+            self.update()
 
     def updata_row(self):
         res = messagebox.askyesnocancel('警告!', '是否更新所填数据?')
@@ -660,6 +663,9 @@ class AdminManage:
                     float(self.var_e_grade.get()),
                     (float(self.var_c_grade.get()) + float(self.var_m_grade.get()) +
                      float(self.var_e_grade.get())) / 3))  # 修改对于行信息
+                self.update()
+                time.sleep(1)
+                self.update()
             else:
                 messagebox.showinfo('警告!', '不能修改学生学号!')
 
