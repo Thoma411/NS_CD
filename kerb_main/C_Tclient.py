@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 00:19:49
+LastEditTime: 2023-05-25 09:54:22
 Description:
 '''
 import socket as sk
@@ -181,11 +181,10 @@ def create_C2AS_CTF():  # 生成C2AS_CTF报文
     h/m/c/a - 首部/正文/签名/拼接整体
     '''
     Sdm_c2as_ctf = initM_C2AS_CTF(ID_C, PKEY_C)  # 生成正文
-    Sdc_c2as_ctf = initSIGN(ID_C, PKEY_C, SKEY_C)  # 生成签名
     Sdh_c2as_ctf = initHEAD(EX_CTL, INC_C2AS_CTF, len(Sdm_c2as_ctf))  # 生成首部
     Ssm_c2as_ctf = dict2str(Sdm_c2as_ctf)  # 正文dict->str
     Ssh_c2as_ctf = dict2str(Sdh_c2as_ctf)  # 首部dict->str
-    Ssc_c2as_ctf = dict2str(Sdc_c2as_ctf)  # 签名dict->str
+    Ssc_c2as_ctf = myRSA.RSA_sign(Ssm_c2as_ctf, SKEY_C)
     Ssa_c2as_ctf = Ssh_c2as_ctf + '|' + Ssm_c2as_ctf + '|' + Ssc_c2as_ctf  # 拼接
     Sba_c2as_ctf = Ssa_c2as_ctf.encode()  # str->bytes
     return Sba_c2as_ctf

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 00:18:03
+LastEditTime: 2023-05-25 09:51:30
 Description: 
 '''
 import socket as sk
@@ -17,12 +17,10 @@ PRT_LOG = False  # 是否打印输出
 
 def handle_C2AS_CTF(m_text, m_sig, cAddr):  # 处理C2AS_CTF报文
     Rdm_c2as_ctf = str2dict(m_text)  # 正文str->dict
-    Rdc_c2as_ctf = str2dict(m_sig)  # 签名str->dict
-    id_c, pk_c = Rdm_c2as_ctf['ID_C'], Rdm_c2as_ctf['PK_C']  # 获取正文内容
-    Rsc_c2as_ctf = Rdc_c2as_ctf['M_SIG_SRC']
-    # print(pk_c)
-    # print(Rsc_c2as_ctf, len(Rsc_c2as_ctf))
-    # verFlag = myRSA.RSA_verf()
+    pk_c = Rdm_c2as_ctf['PK_C']  # 获取PK_C
+    verFlag = myRSA.RSA_verf(m_text, m_sig, pk_c)
+    print(verFlag)
+    return pk_c
 
 
 def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
@@ -43,6 +41,7 @@ def handle_C2AS(mt, caddr):  # 处理C2AS报文 mt:str
 
 
 def AS_Recv(C_Socket: sk, cAddr):
+    AS_PKEY_C = None
     while True:
         Rba_msg = C_Socket.recv(MAX_SIZE)  # 收
 
@@ -72,8 +71,8 @@ def AS_Recv(C_Socket: sk, cAddr):
             # *控制报文
             elif msg_extp == EX_CTL:
                 if msg_intp == INC_C2AS_CTF:
-                    handle_C2AS_CTF(Rsm_msg, Rsc_msg, cAddr)  # *处理CTF报文
-                    pass
+                    AS_PKEY_C = handle_C2AS_CTF(
+                        Rsm_msg, Rsc_msg, cAddr)  # *处理CTF报文
                 elif msg_intp == INC_C2AS:
                     Ssa_msg = handle_C2AS(Rsm_msg, cAddr)  # 处理C2AS正文
                     C_Socket.send(Ssa_msg.encode())  # 编码发送

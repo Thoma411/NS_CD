@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-25 00:10:44
+LastEditTime: 2023-05-25 09:39:51
 Description: 
 '''
 import datetime as dt
@@ -82,7 +82,6 @@ ATC_C = {
 M_SIG_SRC_AC = {
     'ID_SRC': int,  # 发送方的ID
     'PK_SRC': str,  # 发送方的公钥
-    'TS_0': int
 }
 
 # Signature_C/AS
@@ -339,7 +338,6 @@ def initSIGN(id_c, pk_c, sk_src):  # 生成数字签名
     dmsg_eg = M_SIG_SRC_AC  # 借由签名正文字典完成对签名的转换
     dmsg_eg['ID_SRC'] = id_c
     dmsg_eg['PK_SRC'] = pk_c
-    dmsg_eg['TS_0'] = msg_getTime()
     smsg_sig = myRSA.RSA_sign(dict2str(dmsg_eg), sk_src)  # 返回值类型为str
     dsg_eg = SIG_SRC_AC
     dsg_eg['M_SIG_SRC'] = smsg_sig
