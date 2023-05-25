@@ -28,7 +28,9 @@ INC_C2V = 50
 INC_V2C = 60
 
 LOG_ACC = 1  # 允许登录
-
+ADD_ACC=2
+DEL_ACC=3
+UPD_ACC=4
 # IND_:数据报文类型
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生
