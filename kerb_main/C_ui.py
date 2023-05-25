@@ -481,6 +481,7 @@ class AdminManage:
         self.frame_bottom.tkraise()  # 开始显示主菜单
 
         self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
+        self.after(1000,self.update())
         self.window.mainloop()  # 进入消息循环
 
     def back(self):
@@ -505,7 +506,35 @@ class AdminManage:
 
         self.right_top_id_entry = Entry(self.frame_left_top, state='disabled', textvariable=self.var_id,
                                         font=('Verdana', 15))
-
+    
+    def update(self):
+        qry = 2
+        stu_all_dict = cc.query_admin_stuscore(Vsock, qry, K_CV)
+        print('stu_all_dict:', stu_all_dict)
+        for l in (self.id, self.name, self.gender, self.age, self.c_grade, self.m_grade, self.e_grade):
+            l.clear()
+        self.tree.delete(*self.tree.get_children())
+        for key in stu_all_dict.keys():
+            self.id.append(stu_all_dict[key]['id'])
+            self.name.append(stu_all_dict[key]['name'])
+            self.gender.append(stu_all_dict[key]['gender'])
+            self.age.append(stu_all_dict[key]['age'])
+            self.c_grade.append(stu_all_dict[key]['c_grade'])
+            self.m_grade.append(stu_all_dict[key]['m_grade'])
+            self.e_grade.append(stu_all_dict[key]['e_grade'])
+            total = stu_all_dict[key]['c_grade'] + \
+                stu_all_dict[key]['m_grade'] + stu_all_dict[key]['e_grade']
+            self.total.append(total)
+            ave = (total / 3)
+            self.ave.append(ave)
+        print("更新学生字典成功!")
+        for i in range(min(len(self.id), len(self.name), len(self.gender),
+                           len(self.age), len(self.c_grade), len(self.m_grade),
+                           len(self.e_grade), len(self.total), len(self.ave))):  # 写入数据
+            self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
+                                            self.c_grade[i], self.m_grade[i], self.e_grade[i],
+                                            self.total[i], self.ave[i]))
+        
     def tree_sort_column(self, tv, col, reverse):  # Treeview、列名、排列方式
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
         l.sort(reverse=reverse)  # 排序方式
