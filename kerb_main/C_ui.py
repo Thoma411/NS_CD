@@ -481,7 +481,7 @@ class AdminManage:
         self.frame_bottom.tkraise()  # 开始显示主菜单
 
         self.window.protocol("WM_DELETE_WINDOW", self.back)  # 捕捉右上角关闭点击
-        self.after(1000,self.update())
+        self.update()
         self.window.mainloop()  # 进入消息循环
 
     def back(self):
@@ -534,6 +534,7 @@ class AdminManage:
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
+        self.window.after(1000,self.update)
         
     def tree_sort_column(self, tv, col, reverse):  # Treeview、列名、排列方式
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
