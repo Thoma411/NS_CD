@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-04 21:04:42
-LastEditTime: 2023-05-25 10:20:01
+LastEditTime: 2023-05-25 16:40:13
 Description: 
 '''
 import tkinter as tk
@@ -506,12 +506,12 @@ class AdminManage:
 
         self.right_top_id_entry = Entry(self.frame_left_top, state='disabled', textvariable=self.var_id,
                                         font=('Verdana', 15))
-    
+
     def update(self):
         qry = 2
         stu_all_dict = cc.query_admin_stuscore(Vsock, qry, K_CV)
         print('stu_all_dict:', stu_all_dict)
-        for l in (self.id, self.name, self.gender, self.age, self.c_grade, self.m_grade, self.e_grade):
+        for l in (self.id, self.name, self.gender, self.age, self.c_grade, self.m_grade, self.e_grade, self.ave, self.total):
             l.clear()
         self.tree.delete(*self.tree.get_children())
         for key in stu_all_dict.keys():
@@ -534,8 +534,7 @@ class AdminManage:
             self.tree.insert('', i, values=(self.id[i], self.name[i], self.gender[i], self.age[i],
                                             self.c_grade[i], self.m_grade[i], self.e_grade[i],
                                             self.total[i], self.ave[i]))
-     
-        
+
     def tree_sort_column(self, tv, col, reverse):  # Treeview、列名、排列方式
         l = [(tv.set(k, col), k) for k in tv.get_children('')]
         l.sort(reverse=reverse)  # 排序方式
@@ -714,12 +713,14 @@ class TextFileReader():
     def poll_file_changes(self):
         if self.file_path_1:
             if os.path.getmtime(self.file_path_1) > self.text_last_update_time_1:
-                self.text_last_update_time_1 = os.path.getmtime(self.file_path_1)
+                self.text_last_update_time_1 = os.path.getmtime(
+                    self.file_path_1)
                 self.load_text(self.file_path_1, self.text1)
 
         if self.file_path_2:
             if os.path.getmtime(self.file_path_2) > self.text_last_update_time_2:
-                self.text_last_update_time_2 = os.path.getmtime(self.file_path_2)  # 更新时间戳
+                self.text_last_update_time_2 = os.path.getmtime(
+                    self.file_path_2)  # 更新时间戳
                 self.load_text(self.file_path_2, self.text2)
 
         self.window.after(1000, self.poll_file_changes)
