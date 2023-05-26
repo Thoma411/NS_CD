@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 14:45:19
+LastEditTime: 2023-05-26 15:01:10
 Description:
 '''
 import socket as sk
@@ -593,9 +593,9 @@ def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成
     Sba_qry = create_D_ADMQRY(qry, k_cv)
     ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
     with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
-         f.write('C to V QRY_ADM :' + str(Sba_qry) + '\n\n')
+        f.write('C to V QRY_ADM :' + str(Sba_qry) + '\n\n')
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-         f.write('V to C QRY_ADM :' + str(ret) + '\n\n')
+        f.write('V to C QRY_ADM :' + str(ret) + '\n\n')
     return ret
 
 
