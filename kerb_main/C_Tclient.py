@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-25 16:24:41
+LastEditTime: 2023-05-26 14:30:23
 Description:
 '''
 import socket as sk
@@ -81,6 +81,7 @@ def Dhandle_ACC(mt, k_cv):  # 处理允许登录报文
 def Dhandle_QRY(mt, k_cv):  # 处理请求报文
     Rsm_qry = myDES.DES_decry(mt, k_cv)
     Rdm_qry = str2dict(Rsm_qry)
+    print('Dhandle_QRY:', Rdm_qry)
     return Rdm_qry
 
 
@@ -179,18 +180,18 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
             elif msg_intp == IND_ADD:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_ADD :' + str(Rsa_msg) + '\n\n')
-                Racc_add = Dhandle_QRY(Rsm_msg, k_share)
+                Racc_add = Dhandle_ACC(Rsm_msg, k_share)
                 retFlag = IND_ADD
 
             elif msg_intp == IND_DEL:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_DEL :' + str(Rsa_msg) + '\n\n')
-                Racc_del = Dhandle_QRY(Rsm_msg, k_share)
+                Racc_del = Dhandle_ACC(Rsm_msg, k_share)
 
             elif msg_intp == IND_UPD:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_UPD :' + str(Rsa_msg) + '\n\n')
-                Racc_upd = Dhandle_QRY(Rsm_msg, k_share)
+                Racc_upd = Dhandle_ACC(Rsm_msg, k_share)
 
             else:
                 print('no match func for data msg.')
@@ -201,18 +202,34 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     # *根据retFlag决定返回值
     if retFlag == INC_AS2C_CTF:  # 返回AS证书合法性
         return AS_ctf
+
     if retFlag == INC_AS2C:  # 返回step2的共享密钥/票据
         return TMP_KEY, TMP_TKT
+
     elif retFlag == INC_TGS2C:  # 返回step4的共享密钥/票据
         return TMP_KEY, TMP_TKT
+
     elif retFlag == INC_V2C:  # 返回step6 V生成的时间戳和PK_V
         return TMP_TS, C_PKEY_V
+
     elif retFlag == LOG_ACC:  # 返回登录许可
         return log_acc
+
     elif retFlag == IND_QRY_STU:  # 返回单个学生信息字典
         return Rstu_dict
+
     elif retFlag == IND_QRY_ADM:  # 返回学生信息字典列表
         return Rstu_all_dict
+
+    elif retFlag == IND_ADD:  # 返回添加确认报文
+        return Racc_add
+
+    elif retFlag == IND_DEL:  # 返回删除确认报文
+        return Racc_del
+
+    elif retFlag == IND_UPD:  # 返回更新确认报文
+        return Racc_upd
+
     else:
         print('no match ret for def.')
 
@@ -581,7 +598,6 @@ def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生
     return ret
 
 
-
 def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信息
     Sba_del = create_D_ADMDEL(sid, k_cv)
     with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
@@ -600,6 +616,7 @@ def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
         f.write('V to C UPD_ADM :' + str(ret) + '\n\n')
     return ret
+
 
 if __name__ == '__main__':
     # print(C_Kerberos())
