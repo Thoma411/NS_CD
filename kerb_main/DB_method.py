@@ -20,7 +20,7 @@ def sql_login_adm(usrname):  # 管理员登录连接数据库
     db = pymysql.connect(host=DB_HOST, user="root",
                          passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
-    sql = "SELECT * FROM user_login_k WHERE username = '%s' and type = 0" % usrname  # SQL 查询语句
+    sql = "SELECT * FROM admin_login_k WHERE username = '%s' and type = 0" % usrname  # SQL 查询语句
     try:
         cursor.execute(sql)
         results = cursor.fetchall()  # 获取所有记录列表
