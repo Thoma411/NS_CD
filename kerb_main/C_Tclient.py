@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 14:38:13
+LastEditTime: 2023-05-26 14:45:19
 Description:
 '''
 import socket as sk
@@ -401,19 +401,22 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
     Sba_msg = None
     if dst_flag == INC_C2AS_CTF:
         Sba_msg = create_C2AS_CTF()  # *生成C2AS_CTF报文
-        pass
+
     elif dst_flag == INC_C2AS:
         Sba_msg = create_C_C2AS()  # 生成C2AS报文
         with open('kerb_main/text1.txt', 'w', encoding='gbk') as f:
             f.write('C to AS :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == INC_C2TGS:
         Sba_msg = create_C_C2TGS(caddr_ip, tkt, k_share)  # 生成C2TGS报文
         with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
             f.write('C to TGS :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == INC_C2V:
         Sba_msg = create_C_C2V(caddr_ip, tkt, k_share, ts_5)  # 生成C2V报文
         with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
             f.write('C to V :' + str(Sba_msg) + '\n\n')
+
     else:
         print('[C_C_Send] no match func for send ctl_msg.')
     Dst_socket.send(Sba_msg)  # 发送
@@ -426,30 +429,37 @@ def C_D_Send(Dst_socket: sk, dst_flag: int,
         Sba_msg = create_D_ADMLOG(usr, pwd, k_share)  # 生成管理员登录报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V LOGIN_ADMIN :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == IND_STU:
         Sba_msg = create_D_STULOG(usr, pwd, k_share)  # 生成学生登录报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V LOGIN_STU :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == IND_QRY_STU:
         Sba_msg = create_D_STUQRY(sid, k_share)  # 生成学生查询报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V QUERY_STU :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == IND_QRY_ADM:
         Sba_msg = create_D_ADMQRY(qry, k_share)  # 生成管理员查询报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V QUERY_ADM :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == IND_ADD:
         Sba_msg = create_D_ADMADD(stu_dict, k_share)  # 生成管理员添加学生信息报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V ADD_ADM :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == IND_DEL:
         Sba_msg = create_D_ADMDEL(sid, k_share)  # 生成管理员删除学生信息报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V DEL_ADM :' + str(Sba_msg) + '\n\n')
+
     elif dst_flag == IND_UPD:
         Sba_msg = create_D_ADMUPD(stu_dict, k_share)  # 生成管理员更新学生信息报文
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V UPDATE_ADM :' + str(Sba_msg) + '\n\n')
+
     else:
         print('[C_D_Send] no match func for send dat_msg.')
     Dst_socket.send(Sba_msg)  # 发送
