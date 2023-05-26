@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 14:30:23
+LastEditTime: 2023-05-26 14:38:13
 Description:
 '''
 import socket as sk
@@ -81,7 +81,6 @@ def Dhandle_ACC(mt, k_cv):  # 处理允许登录报文
 def Dhandle_QRY(mt, k_cv):  # 处理请求报文
     Rsm_qry = myDES.DES_decry(mt, k_cv)
     Rdm_qry = str2dict(Rsm_qry)
-    print('Dhandle_QRY:', Rdm_qry)
     return Rdm_qry
 
 
@@ -187,11 +186,13 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_DEL :' + str(Rsa_msg) + '\n\n')
                 Racc_del = Dhandle_ACC(Rsm_msg, k_share)
+                retFlag = IND_DEL
 
             elif msg_intp == IND_UPD:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C ADM_UPD :' + str(Rsa_msg) + '\n\n')
                 Racc_upd = Dhandle_ACC(Rsm_msg, k_share)
+                retFlag = IND_UPD
 
             else:
                 print('no match func for data msg.')
