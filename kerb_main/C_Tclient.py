@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 15:01:10
+LastEditTime: 2023-05-26 15:47:27
 Description:
 '''
 import socket as sk
@@ -111,7 +111,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
 
     # *匹配报文类型
     TMP_KEY, TMP_TKT, TMP_TS = None, None, None  # 临时变量, 将返回值传出if-else
-    retFlag: int = 0  # 根据该值决定返回值
+    retFlag: int = -1  # 根据该值决定返回值
 
     if Rdh_msg['LIGAL'] == H_LIGAL:  # *收包合法
         msg_extp = Rdh_msg['EXTYPE']
@@ -162,7 +162,10 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
                     f.write('V to C LOGIN :' + str(Rsa_msg) + '\n\n')
                 log_acc = Dhandle_ACC(Rsm_msg, k_share)
-                retFlag = LOG_ACC
+                if log_acc == 1:  # 允许登录
+                    retFlag = LOG_ACC
+                elif log_acc == 0:  # 拒绝登录
+                    retFlag = LOG_REJ
 
             elif msg_intp == IND_QRY_STU:
                 with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
@@ -548,12 +551,16 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
         ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
         with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
             f.write('V to C LOG_ADM :' + str(ret) + '\n\n')
+
         if ret == LOG_ACC:  # 返回结果为登录ACC
             return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
+        elif ret == LOG_REJ:
+            print('[admLogin] 用户名/密码错误')
+            return LOG_REJ, k_cv, C_PKEY_V, Vsock
         else:
             print('[admLogin] LOG_ACC匹配失败')
     else:
-        print('[admLogin] fatal.')
+        print('[admLogin] 未通过Kerberos认证.')
 
 
 def stu_on_login(usr, pwd):  # 学生登陆消息
@@ -571,12 +578,16 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
         ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
         with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
             f.write('V to C LOG_STU :' + str(ret) + '\n\n')
+
         if ret == LOG_ACC:  # 返回结果为登录ACC
             return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
+        elif ret == LOG_REJ:
+            print('[stuLogin] 用户名/密码错误')
+            return LOG_REJ, k_cv, C_PKEY_V, Vsock
         else:
             print('[stuLogin] LOG_ACC匹配失败')
     else:
-        print('[stuLogin] fatal.')
+        print('[stuLogin] 未通过Kerberos认证.')
 
 
 def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩

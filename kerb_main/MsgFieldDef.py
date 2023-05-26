@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-25 14:21:49
+LastEditTime: 2023-05-26 15:36:10
 Description: 
 '''
 import datetime as dt
@@ -28,9 +28,11 @@ INC_C2V = 50
 INC_V2C = 60
 
 LOG_ACC = 1  # 允许登录
-ADD_ACC=2
-DEL_ACC=3
-UPD_ACC=4
+LOG_REJ = 0  # 拒绝登录
+ADD_ACC = 2  # 添加请求
+DEL_ACC = 3  # 删除请求
+UPD_ACC = 4  # 更新请求
+
 # IND_:数据报文类型
 IND_ADM = 10  # 管理员
 IND_STU = 11  # 学生

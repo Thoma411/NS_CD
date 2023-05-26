@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-04 21:04:42
-LastEditTime: 2023-05-25 16:40:13
+LastEditTime: 2023-05-26 15:50:22
 Description: 
 '''
 import tkinter as tk
@@ -94,8 +94,10 @@ class AdminPage:  # 管理员登录界面
         if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入管理员操作界面
             InfoManage(self.window)
+        elif tag == cc.LOG_REJ:
+            messagebox.showinfo('警告!', '用户名/密码不正确!')
         else:
-            messagebox.showinfo('警告!', '用户名或密码不正确!')
+            messagebox.showinfo('警告!', 'unknown error')
 
     def back(self):
         StartPage(self.window)  # 显示主窗口 销毁本窗口
@@ -137,11 +139,14 @@ class StudentPage:  # 学生登录界面
         password = self.student_pass.get().strip()
         global K_CV, C_PKEY_V, Vsock  # *声明K_CV为共享密钥
         tag, K_CV, C_PKEY_V, Vsock = cc.stu_on_login(username, password)
+
         if tag == cc.LOG_ACC:
             # AdminManage(self.window)  # 进入学生操作界面
             StudentInfoManage(self.window, self.student_id.get())
+        elif tag == cc.LOG_REJ:
+            messagebox.showinfo('警告!', '用户名/密码不正确!')
         else:
-            messagebox.showinfo('警告!', '用户名或密码不正确!')
+            messagebox.showinfo('警告!', 'unknown error')
 
     def back(self):
         StartPage(self.window)  # 显示主窗口 销毁本窗口

@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 16:22:49
+LastEditTime: 2023-05-26 15:38:47
 Description:
 '''
 import socket as sk
@@ -112,8 +112,8 @@ def create_ADM_ACC(acc, LOG_TYPE, k_cv):  # 生成V确认报文
     return Sba_acc
 
 
-def create_D_ACC(LOG_TYPE, k_cv):  # 生成登录确认报文
-    Sdm_acc = initM_V2C_ACC(LOG_ACC)  # 生成登录确认正文
+def create_D_ACC(LOG_TYPE, stat, k_cv):  # 生成登录确认报文
+    Sdm_acc = initM_V2C_ACC(stat)  # 生成登录确认正文
     Sdh_acc = initHEAD(EX_DAT, LOG_TYPE, len(Sdm_acc))  # 生成首部
     Ssm_acc = dict2str(Sdm_acc)
     Ssh_acc = dict2str(Sdh_acc)
@@ -192,14 +192,18 @@ def V_Recv(C_Socket: sk):
                     user_adm, pswd_adm = Dhangle_ADM_LOG(Rsm_msg, k_cv)
                     check_adm_pwd = ss.sql_login_adm(user_adm)  # 管理员登录
                     if pswd_adm == check_adm_pwd:
-                        C_Socket.send(create_D_ACC(IND_ADM, k_cv))
+                        C_Socket.send(create_D_ACC(IND_ADM, LOG_ACC, k_cv))
+                    else:  # 用户名/密码错误拒绝登录
+                        C_Socket.send(create_D_ACC(IND_ADM, LOG_REJ, k_cv))
 
                 elif msg_intp == IND_STU:  # 学生登录
                     print('[ex_dat] K_cv:', k_cv)
                     user_stu, pswd_stu = Dhangle_STU_LOG(Rsm_msg, k_cv)
                     check_stu_pwd = ss.sql_login_stu(user_stu)  # 学生登录
                     if pswd_stu == check_stu_pwd:
-                        C_Socket.send(create_D_ACC(IND_STU, k_cv))
+                        C_Socket.send(create_D_ACC(IND_STU, LOG_ACC, k_cv))
+                    else:  # 用户名/密码错误拒绝登录
+                        C_Socket.send(create_D_ACC(IND_STU, LOG_REJ, k_cv))
 
                 elif msg_intp == IND_QRY_STU:  # 学生查询请求
                     sid = Dhangle_STU_QRY(Rsm_msg, k_cv)
