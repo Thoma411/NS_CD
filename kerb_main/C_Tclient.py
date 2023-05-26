@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 15:47:27
+LastEditTime: 2023-05-26 15:53:54
 Description:
 '''
 import socket as sk
@@ -216,7 +216,7 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
     elif retFlag == INC_V2C:  # 返回step6 V生成的时间戳和PK_V
         return TMP_TS, C_PKEY_V
 
-    elif retFlag == LOG_ACC:  # 返回登录许可
+    elif retFlag == LOG_ACC or retFlag == LOG_REJ:  # 返回登录许可
         return log_acc
 
     elif retFlag == IND_QRY_STU:  # 返回单个学生信息字典
