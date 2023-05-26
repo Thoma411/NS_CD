@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 15:53:54
+LastEditTime: 2023-05-26 16:14:26
 Description:
 '''
 import socket as sk
@@ -386,9 +386,9 @@ def create_D_ADMDEL(sid, k_cv):  # 生成管理员删除学生信息报文
 
 def create_D_ADMUPD(stu_dict, k_cv):  # 生成管理员更新学生信息报文
     Sdh_upd = initHEAD(EX_DAT, IND_UPD, len(stu_dict))
-    with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-        f.write('C to V ADM_UPD :' + str(Sdh_upd) + '\n\n')
     Ssm_upd = dict2str(stu_dict)
+    with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
+        f.write('C to V ADM_UPD :' + str(Ssm_upd) + '\n\n')
     Ssh_upd = dict2str(Sdh_upd)
     Sbm_upd = myDES.DES_encry(Ssm_upd, k_cv)
     Sbc_upd = myRSA.RSA_sign(Sbm_upd, SKEY_C)  # *加密正文生成数字签名
