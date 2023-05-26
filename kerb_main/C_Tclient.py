@@ -592,11 +592,10 @@ def query_student_score(Dst_socket: sk, sid, k_cv):  # 学生查询学生成绩
 def query_admin_stuscore(Dst_socket: sk, qry, k_cv):  # 管理员查询学生成绩
     Sba_qry = create_D_ADMQRY(qry, k_cv)
     ret = SndRcv_msg(Dst_socket, Sba_qry, k_cv)
-    if qry==1:
-        with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
-             f.write('C to V QRY_ADM :' + str(Sba_qry) + '\n\n')
-        with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
-             f.write('V to C QRY_ADM :' + str(ret) + '\n\n')
+    with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
+         f.write('C to V QRY_ADM :' + str(Sba_qry) + '\n\n')
+    with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
+         f.write('V to C QRY_ADM :' + str(ret) + '\n\n')
     return ret
 
 
