@@ -511,7 +511,7 @@ class AdminManage:
         qry = 2
         stu_all_dict = cc.query_admin_stuscore(Vsock, qry, K_CV)
         print('stu_all_dict:', stu_all_dict)
-        for l in (self.id, self.name, self.gender, self.age, self.c_grade, self.m_grade, self.e_grade):
+        for l in (self.id, self.name, self.gender, self.age, self.c_grade, self.m_grade, self.e_grade,self.ave,self.total):
             l.clear()
         self.tree.delete(*self.tree.get_children())
         for key in stu_all_dict.keys():
