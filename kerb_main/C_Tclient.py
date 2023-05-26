@@ -596,6 +596,7 @@ def add_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员添加学生
     ret = SndRcv_msg(Dst_socket, Sba_add, k_cv)
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
         f.write('V to C ADD_ADM :' + str(ret) + '\n\n')
+    return ret
 
 
 def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信息
@@ -605,6 +606,7 @@ def del_admin_stuscore(Dst_socket: sk, sid, k_cv):  # 管理员删除学生信�
     ret = SndRcv_msg(Dst_socket, Sba_del, k_cv)
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
         f.write('V to C DEL_ADM :' + str(ret) + '\n\n')
+    return ret
 
 
 def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学生信息
@@ -614,6 +616,7 @@ def update_admin_stuscore(Dst_socket: sk, stu_dict, k_cv):  # 管理员更新学
     ret = SndRcv_msg(Dst_socket, Sba_upd, k_cv)
     with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
         f.write('V to C UPD_ADM :' + str(ret) + '\n\n')
+    return ret
 
 
 if __name__ == '__main__':
