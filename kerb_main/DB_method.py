@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-10 20:22:14
-LastEditTime: 2023-05-22 20:33:53
+LastEditTime: 2023-05-26 18:46:21
 Description: 
 '''
 import socket as sk
@@ -132,11 +132,11 @@ def sql_del_stu(sid):  # 管理员修改学生信息
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     print('[DB] 打印学生id:', sid)
-    sql = "DELETE FROM student_k WHERE id = '%s'" % sid  # SQL 插入语句
-    sql1 ="DELETE FROM user_login_k WHERE username = '%s'" % sid
+    sql1 = "DELETE FROM student_k WHERE id = '%s'" % sid  # SQL 插入语句
+    sql2 = "DELETE FROM user_login_k WHERE username = '%s'" % sid
     try:
-        cursor.execute(sql)
         cursor.execute(sql1)
+        cursor.execute(sql2)
         db.commit()  # 提交到数据库执行
         # messagebox.showinfo('提示！', '删除成功！')
         return 1
@@ -158,20 +158,20 @@ def sql_add_stu(stu_dict):  # 管理员增加学生信息
         cursor = db.cursor()  # 使用cursor()方法获取操作游标
         total = float(stu_dict['MARK_C']) + \
             float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])
-        total=int(total)
+        total = int(total)
         ave = (float(stu_dict['MARK_C']) +
                float(stu_dict['MARK_M']) + float(stu_dict['MARK_E'])) / 3
-        ave=int(ave)
-        sql = "INSERT INTO student_k(id, name, gender, age ,c_grade, m_grade, e_grade, total ,ave ) \
+        ave = int(ave)
+        sql1 = "INSERT INTO student_k(id, name, gender, age, c_grade, m_grade, e_grade, total, ave) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
               (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
                stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'], total, ave)  # SQL 插入语句
-        sql1 = "INSERT INTO user_login_k(username,password,type) \
+        sql2 = "INSERT INTO user_login_k(username, password, type) \
         				       VALUES ('%s', '%s', '%s')" % \
-              (stu_dict['ID'], stu_dict['ID'], 1)  # SQL 插入语句
+            (stu_dict['ID'], stu_dict['ID'], 1)  # SQL 插入语句
         try:
-            cursor.execute(sql)  # 执行sql语句
-            cursor.execute(sql1)
+            cursor.execute(sql1)  # 执行sql语句
+            cursor.execute(sql2)
             db.commit()  # 提交到数据库执行
         except:
             db.rollback()  # 发生错误时回滚
@@ -186,7 +186,7 @@ def sql_update_stu(stu_dict):  # 管理员更新学生信息
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     print("[DB] 更新的学生的信息为:", stu_dict)
-    sql = "UPDATE student_k SET name = '%s', gender = '%s', age = '%s',c_grade = '%s', m_grade = '%s', e_grade = '%s' , total = '%s', ave = '%s'  \
+    sql = "UPDATE student_k SET name = '%s', gender = '%s', age = '%s', c_grade = '%s', m_grade = '%s', e_grade = '%s', total = '%s', ave = '%s'  \
 				 WHERE id = '%s'" % (
         stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
         stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'],
