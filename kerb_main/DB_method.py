@@ -56,7 +56,7 @@ def sql_login_stu(usrname):  # 学生登录连接数据库
         # messagebox.showinfo('警告！', '用户名或密码不正确！')
     db.close()
     print("[DB] 正在登录学生信息查看界面")
-
+    print("陈昊")
 
 def sql_search_stu(sid):  # 学生成绩查询连接数据库
     db = pymysql.connect(host=DB_HOST, user="root",
