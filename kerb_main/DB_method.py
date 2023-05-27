@@ -1,7 +1,7 @@
 '''
 Author: sccccc1 & Luckyhao266
 Date: 2023-05-10 20:22:14
-LastEditTime: 2023-05-26 18:46:21
+LastEditTime: 2023-05-27 11:41:19
 Description: 
 '''
 import socket as sk
@@ -12,7 +12,6 @@ from MsgFieldDef import *
 SERVER_HOST = '0.0.0.0'
 DB_HOST = '127.0.0.1'
 SERVER_PORT = 10001
-MAX_SIZE = 2048
 MAX_LISTEN = 16
 
 
@@ -32,7 +31,6 @@ def sql_login_adm(usrname):  # 管理员登录连接数据库
             return adm_pwd
     except:
         print("[DB] Error: unable to fetch data")
-        # messagebox.showinfo('警告！', '用户名或密码不正确！')
     db.close()
 
 
@@ -53,10 +51,9 @@ def sql_login_stu(usrname):  # 学生登录连接数据库
             return stu_pass
     except:
         print("[DB] Error: unable to fecth data")
-        # messagebox.showinfo('警告！', '用户名或密码不正确！')
     db.close()
     print("[DB] 正在登录学生信息查看界面")
-    print("陈昊")
+
 
 def sql_search_stu(sid):  # 学生成绩查询连接数据库
     db = pymysql.connect(host=DB_HOST, user="root",
@@ -67,9 +64,7 @@ def sql_search_stu(sid):  # 学生成绩查询连接数据库
         cursor.execute(sql)
         results = cursor.fetchall()  # 获取所有记录列表
         if len(results) > 0:
-            # 取第一个结果
-            result = results[0]
-            # 构建成绩字典
+            result = results[0]  # 取第一个结果
             scores_dict = {
                 'NAME': result[0],
                 'GEND': result[1],
@@ -77,14 +72,10 @@ def sql_search_stu(sid):  # 学生成绩查询连接数据库
                 'MARK_C': result[3],
                 'MARK_M': result[4],
                 'MARK_E': result[5]
-            }
-            # 发送成绩字典数据给客户端
-            # connection.sendall(dict2str(scores_dict).encode())
+            }  # 构建成绩字典
             return scores_dict
         else:
-            # 没有找到学生记录，发送空字典给客户端
-            # connection.sendall(dict2str({}).encode())
-            print("[DB] 没有找到学生记录")
+            print("[DB] 没有找到学生记录")  # 没有找到学生记录, 返回空字典
             return {}
     except Exception as e:
         print("[DB] 查询学生成绩时发生错误。错误消息：", e)
@@ -113,7 +104,6 @@ def sql_search_adm():  # 管理员查询连接数据库
                 "e_grade": row[6]
             }
             stu_list.append(stu_dict)  # 将学生信息的字典添加到列表中
-        # 将学生信息的字典添加到列表中
         stu_all_dict = {}  # 创建一个字典用于保存所有学生的信息， 其中键值是每个学生的id
         for stu in stu_list:
             id = stu['id']
@@ -138,18 +128,13 @@ def sql_del_stu(sid):  # 管理员修改学生信息
         cursor.execute(sql1)
         cursor.execute(sql2)
         db.commit()  # 提交到数据库执行
-        # messagebox.showinfo('提示！', '删除成功！')
         return 1
     except:
         db.rollback()  # 发生错误时回滚
-        # messagebox.showinfo('警告！', '删除失败，数据库连接失败！')
     db.close()
 
 
 def sql_add_stu(stu_dict):  # 管理员增加学生信息
-    # if str(self.var_id.get()) in self.id:
-    #     messagebox.showinfo('警告！', '该学生已存在！')
-    # else:
     print('[DB] 增加学生的字典', stu_dict)
     if stu_dict['ID'] != '' and stu_dict['NAME'] != '' and stu_dict['GEND'] != '' and stu_dict['AGE'] != '' \
             and stu_dict['MARK_C'] != '' and stu_dict['MARK_M'] != '' and stu_dict['MARK_E'] != '':
@@ -164,7 +149,7 @@ def sql_add_stu(stu_dict):  # 管理员增加学生信息
         ave = int(ave)
         sql1 = "INSERT INTO student_k(id, name, gender, age, c_grade, m_grade, e_grade, total, ave) \
 				       VALUES ('%s', '%s', '%s', '%s','%s','%s','%s','%s','%s')" % \
-              (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
+            (stu_dict['ID'], stu_dict['NAME'], stu_dict['GEND'], stu_dict['AGE'],
                stu_dict['MARK_C'], stu_dict['MARK_M'], stu_dict['MARK_E'], total, ave)  # SQL 插入语句
         sql2 = "INSERT INTO user_login_k(username, password, type) \
         				       VALUES ('%s', '%s', '%s')" % \
@@ -175,14 +160,10 @@ def sql_add_stu(stu_dict):  # 管理员增加学生信息
             db.commit()  # 提交到数据库执行
         except:
             db.rollback()  # 发生错误时回滚
-            # messagebox.showinfo('警告！', '数据库连接失败！')
         db.close()
 
 
 def sql_update_stu(stu_dict):  # 管理员更新学生信息
-    # res = messagebox.askyesnocancel('警告！', '是否更新所填数据？')
-    # if res == True:
-    #     if self.var_id.get() == self.row_info[0]:  # 如果所填学号 与 所选学号一致
     db = pymysql.connect(host=DB_HOST, user="root", passwd="", db="student")
     cursor = db.cursor()  # 使用cursor()方法获取操作游标
     print("[DB] 更新的学生的信息为:", stu_dict)
@@ -198,10 +179,8 @@ def sql_update_stu(stu_dict):  # 管理员更新学生信息
     try:
         cursor.execute(sql)  # 执行sql语句
         db.commit()  # 提交到数据库执行
-        # messagebox.showinfo('提示！', '更新成功！')
     except:
         db.rollback()  # 发生错误时回滚
-        # messagebox.showinfo('警告！', '更新失败，数据库连接失败！')
     db.close()
 
 
