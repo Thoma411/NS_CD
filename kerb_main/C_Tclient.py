@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-26 16:14:26
+LastEditTime: 2023-05-27 11:59:44
 Description:
 '''
 import socket as sk
@@ -14,7 +14,7 @@ TGS_IP, TGS_PORT = '192.168.43.64', 8020
 V_IP, V_PORT = '192.168.43.90', 8030
 
 PRT_LOG = True  # 是否打印输出
-PKEY_C, SKEY_C = myRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # *生成C的公私钥
+PKEY_C, SKEY_C = myRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # 生成C的公私钥
 
 K_C = None
 C_PKEY_V = None
@@ -33,8 +33,8 @@ def Chandle_AS2C_KC(mt):  # 处理AS2C认证报文
 def Chandle_AS2C_CTF(mt_ms):  # 处理AS2C证书
     Rsm_as2c_ctf, Rsc_as2c_ctf = mt_ms.split('+')  # 分割正文+证书
     Rdm_as2c_ctf = str2dict(Rsm_as2c_ctf)  # 正文str->dict
-    pk_as = Rdm_as2c_ctf['PK_AS']
-    verFlag = myRSA.RSA_verf(Rsm_as2c_ctf, Rsc_as2c_ctf, pk_as)
+    pk_as = Rdm_as2c_ctf['PK_AS']  # 获取AS公钥
+    verFlag = myRSA.RSA_verf(Rsm_as2c_ctf, Rsc_as2c_ctf, pk_as)  # 验证AS证书
     if PRT_LOG:
         print('AS CTF:', verFlag)
     return verFlag
@@ -98,12 +98,12 @@ def C_Recv(Dst_socket: sk, k_share=None):  # C的接收方法
         Rsh_msg, Rsm_msg = Rsa_msg.split('|')  # 分割为首部+正文
     elif Rsa_msg.count('|') == 2:
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+Rsc
-        if findstrX(Rsc_msg, PK_SUFFIX):
+        if findstrX(Rsc_msg, PK_SUFFIX):  # 匹配后缀(默认为'x')
             C_PKEY_V = str2PK(Rsc_msg)  # *得到PK_V
         else:
-            verFlag = myRSA.RSA_verf(Rsm_msg, Rsc_msg, C_PKEY_V)
+            verFlag = myRSA.RSA_verf(Rsm_msg, Rsc_msg, C_PKEY_V)  # 验证签名
             print('数字签名验证:', verFlag)
-            if verFlag:
+            if verFlag:  # 写入UI文本框用于查看
                 with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
                     f.write('successfully verified Digital signature.' + '\n\n')
 
@@ -508,12 +508,10 @@ def C_Kerberos():
 
     # *发送给V
     send_ts_5 = msg_getTime()
-    # print(send_ts_5, type(send_ts_5))
     C_C_Send(Vsock, INC_C2V, client_ip, tkt_v, k_cv, send_ts_5)
 
     # *接收mdTS_5和PK_V
     recv_ts_5, C_PKEY_V = C_Recv(Vsock, k_cv)
-    # print(recv_ts_5, type(recv_ts_5))
     if send_ts_5 == recv_ts_5:
         print('[Kerberos] Authentication success.')
         return True, k_cv, C_PKEY_V, Vsock  # *返回业务逻辑所需的对称钥和PK_V
@@ -527,9 +525,6 @@ def SndRcv_msg(Dst_socket: sk, bmsg, k_cv=None):  # 收发消息(含返回值)
     try:
         Dst_socket.sendall(bmsg)  # 发送
         print("Sent message:", bmsg)
-        # resp = Dst_socket.recv(MAX_SIZE)
-        # print("Received response:", resp)
-        # return resp.decode()
         ret = C_Recv(Dst_socket, k_cv)
         return ret
     except Exception as e:
@@ -540,12 +535,6 @@ def admin_on_login(usr, pwd):  # 管理员登录消息
     atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()  # *获取共享密钥和PK_V
     if atc_flag:  # 认证成功
         Sba_log = create_D_ADMLOG(usr, pwd, k_cv)
-        # Rsa_log = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
-        # print("[C] admin login response")
-        # if Rsa_log == "adm login":
-        #     return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
-        # else:
-        #     pass
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V LOG_ADM :' + str(Sba_log) + '\n\n')
         ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
@@ -567,12 +556,6 @@ def stu_on_login(usr, pwd):  # 学生登陆消息
     atc_flag, k_cv, C_PKEY_V, Vsock = C_Kerberos()
     if atc_flag:  # 认证成功
         Sba_log = create_D_STULOG(usr, pwd, k_cv)
-        # Rsa_log = SndRcv_msg(Vsock, Sba_log)  # 收发消息
-        # print("[C] stu login response")
-        # if Rsa_log == "stu login":
-        #     return LOG_ACC, k_cv, C_PKEY_V, Vsock  # *返回PK_V
-        # else:
-        #     pass
         with open('kerb_main/text2.txt', 'a', encoding='gbk') as f:
             f.write('C to V LOG_STU :' + str(Sba_log) + '\n\n')
         ret = SndRcv_msg(Vsock, Sba_log, k_cv)  # 收发消息
