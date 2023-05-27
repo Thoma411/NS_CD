@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-25 14:22:03
+LastEditTime: 2023-05-27 23:14:16
 Description: 
 '''
 import socket as sk
@@ -25,15 +25,15 @@ def handle_C2AS_KC(m_text, m_sig):  # 处理C2AS_CTF报文
     if verFlag:
         k_c = msg_rndKey(initType='i')  # 生成纯数字密钥
         cpK_c = myRSA.RSA_encry(int(k_c), pk_c)  # RSA加密K_c
-        Sdm_as2c_ctf = initM_AS2C_KC(cpK_c)  # 生成K_c报文
-        Sdh_as2c_ctf = initHEAD(EX_CTL, INC_AS2C_KC, len(Sdm_as2c_ctf))
-        Ssm_as2c_ctf = dict2str(Sdm_as2c_ctf)  # 正文dict->str
-        Ssh_as2c_ctf = dict2str(Sdh_as2c_ctf)  # 首部dict->str
-        Ssa_as2c_ctf = Ssh_as2c_ctf + '|' + Ssm_as2c_ctf
+        Sdm_as2c_kc = initM_AS2C_KC(cpK_c)  # 生成K_c报文
+        Sdh_as2c_kc = initHEAD(EX_CTL, INC_AS2C_KC, len(Sdm_as2c_kc))
+        Ssm_as2c_kc = dict2str(Sdm_as2c_kc)  # 正文dict->str
+        Ssh_as2c_kc = dict2str(Sdh_as2c_kc)  # 首部dict->str
+        Ssa_as2c_kc = Ssh_as2c_kc + '|' + Ssm_as2c_kc
         if PRT_LOG:
             print('k_c', k_c)
-            print('Ssa_as2c_ctf:\n', Ssa_as2c_ctf)
-        return Ssa_as2c_ctf, k_c
+            print('Ssa_as2c_ctf:\n', Ssa_as2c_kc)
+        return Ssa_as2c_kc, k_c
 
 
 def create_AS2C_CTF():  # 生成AS2C证书
