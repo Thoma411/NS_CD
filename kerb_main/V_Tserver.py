@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:22:53
-LastEditTime: 2023-05-26 15:38:47
+LastEditTime: 2023-05-27 11:55:29
 Description:
 '''
 import socket as sk
@@ -75,7 +75,7 @@ def Dhangle_STU_QRY(mt, k_cv):  # 处理学生请求报文
 def Dhangle_ADM_QRY(mt, k_cv):  # 处理管理员请求报文
     adm_str_qry = myDES.DES_decry(mt, k_cv)
     adm_dict_qry = str2dict(adm_str_qry)
-    qry = adm_dict_qry['QRY']  # 获取请求讯号
+    qry = adm_dict_qry['QRY']  # 获取请求标识
     return qry
 
 
@@ -103,9 +103,9 @@ def create_ADM_ACC(acc, LOG_TYPE, k_cv):  # 生成V确认报文
     Sdh_acc = initHEAD(EX_DAT, LOG_TYPE, len(Sdm_acc))  # 生成首部
     Ssm_acc = dict2str(Sdm_acc)
     Ssh_acc = dict2str(Sdh_acc)
-    Sbm_acc = myDES.DES_encry(Ssm_acc, k_cv)
-    Sbc_acc = myRSA.RSA_sign(Sbm_acc, SKEY_V)  # *加密正文生成数字签名
-    Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc
+    Sbm_acc = myDES.DES_encry(Ssm_acc, k_cv)  # 加密正文
+    Sbc_acc = myRSA.RSA_sign(Sbm_acc, SKEY_V)  # 用加密正文生成数字签名
+    Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc  # 拼接
     if PRT_LOG:
         print('[create_ADM_ACC]:', Ssa_acc)
     Sba_acc = Ssa_acc.encode()
@@ -115,11 +115,11 @@ def create_ADM_ACC(acc, LOG_TYPE, k_cv):  # 生成V确认报文
 def create_D_ACC(LOG_TYPE, stat, k_cv):  # 生成登录确认报文
     Sdm_acc = initM_V2C_ACC(stat)  # 生成登录确认正文
     Sdh_acc = initHEAD(EX_DAT, LOG_TYPE, len(Sdm_acc))  # 生成首部
-    Ssm_acc = dict2str(Sdm_acc)
-    Ssh_acc = dict2str(Sdh_acc)
-    Sbm_acc = myDES.DES_encry(Ssm_acc, k_cv)
-    Sbc_acc = myRSA.RSA_sign(Sbm_acc, SKEY_V)  # *加密正文生成数字签名
-    Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc
+    Ssm_acc = dict2str(Sdm_acc)  # 正文dict->str
+    Ssh_acc = dict2str(Sdh_acc)  # 首部dict->str
+    Sbm_acc = myDES.DES_encry(Ssm_acc, k_cv)  # 加密正文
+    Sbc_acc = myRSA.RSA_sign(Sbm_acc, SKEY_V)  # 用加密正文生成数字签名
+    Ssa_acc = Ssh_acc + '|' + Sbm_acc + '|' + Sbc_acc  # 拼接
     if PRT_LOG:
         print('[create_D_ACC]:', Ssa_acc)
     Sba_acc = Ssa_acc.encode()
@@ -127,12 +127,12 @@ def create_D_ACC(LOG_TYPE, stat, k_cv):  # 生成登录确认报文
 
 
 def create_D_STUQRY(stu_dict, k_cv):  # 生成学生查询报文
-    Sdh_qry = initHEAD(EX_DAT, IND_QRY_STU, len(stu_dict))
-    Ssm_qry = dict2str(stu_dict)
-    Ssh_qry = dict2str(Sdh_qry)
-    Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)
-    Sbc_qry = myRSA.RSA_sign(Sbm_qry, SKEY_V)
-    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_STU, len(stu_dict))  # 生成首部
+    Ssm_qry = dict2str(stu_dict)  # 正文dict->str
+    Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
+    Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)  # 加密正文
+    Sbc_qry = myRSA.RSA_sign(Sbm_qry, SKEY_V)  # 用加密正文生成数字签名
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # 拼接
     if PRT_LOG:
         print('[create_D_STUQRY]:', Ssa_qry)
     Sba_qry = Ssa_qry.encode()
@@ -140,12 +140,12 @@ def create_D_STUQRY(stu_dict, k_cv):  # 生成学生查询报文
 
 
 def create_D_ADMQRY(stu_all_dict, k_cv):  # 生成管理员查询报文
-    Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(stu_all_dict))
-    Ssm_qry = dict2str(stu_all_dict)
-    Ssh_qry = dict2str(Sdh_qry)
-    Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)
-    Sbc_qry = myRSA.RSA_sign(Sbm_qry, SKEY_V)
-    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry
+    Sdh_qry = initHEAD(EX_DAT, IND_QRY_ADM, len(stu_all_dict))  # 生成首部
+    Ssm_qry = dict2str(stu_all_dict)  # 正文dict->str
+    Ssh_qry = dict2str(Sdh_qry)  # 首部dict->str
+    Sbm_qry = myDES.DES_encry(Ssm_qry, k_cv)  # 加密正文
+    Sbc_qry = myRSA.RSA_sign(Sbm_qry, SKEY_V)  # 用加密正文生成数字签名
+    Ssa_qry = Ssh_qry + '|' + Sbm_qry + '|' + Sbc_qry  # 拼接
     if PRT_LOG:
         print('[create_D_ADMQRY]:', Ssa_qry)
     Sba_qry = Ssa_qry.encode()
@@ -159,15 +159,12 @@ def V_Recv(C_Socket: sk):
 
         # *初步分割
         if not Rba_msg:  # 判空
-            # print('msg is empty!')
             break
         Rsa_msg = Rba_msg.decode()  # bytes->str
         Rsh_msg, Rsm_msg, Rsc_msg = Rsa_msg.split('|')  # 分割为首部+正文+PK/Sign
         Rdh_msg = str2dict(Rsh_msg)  # 首部转字典(正文在函数中转字典)
         if PRT_LOG:
             print('C->V:\n', Rsa_msg)  # 输出收到的报文
-            # print('sign:', Rsc_msg)
-            # print('正文:', Rsm_msg)
         if findstrX(Rsc_msg, PK_SUFFIX):  # 匹配PK后缀
             V_PKEY_C = str2PK(Rsc_msg)  # *得到PK_C str->tuple
         else:
