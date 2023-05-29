@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-27 11:59:44
+LastEditTime: 2023-05-29 22:36:08
 Description:
 '''
 import socket as sk
@@ -9,9 +9,9 @@ from MsgFieldDef import *
 
 ID_C = 11  # 每个C的ID需不同
 C_IP = '192.168.137.1'  # !IP需提前声明
-AS_IP, AS_PORT = '192.168.43.70', 8010
-TGS_IP, TGS_PORT = '192.168.43.64', 8020
-V_IP, V_PORT = '192.168.43.90', 8030
+AS_IP, AS_PORT = '127.0.0.1', 8010
+TGS_IP, TGS_PORT = '127.0.0.1', 8020
+V_IP, V_PORT = '127.0.0.1', 8030
 
 PRT_LOG = True  # 是否打印输出
 PKEY_C, SKEY_C = myRSA.RSA_initKey('a', DEF_LEN_RSA_K)  # 生成C的公私钥
@@ -404,11 +404,13 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
     Sba_msg = None
     if dst_flag == INC_C2AS_CTF:
         Sba_msg = create_C2AS_CTF()  # *生成C2AS_CTF报文
+        with open('kerb_main/text1.txt', 'w', encoding='gbk') as f:
+            f.write('C to AS(CTF):' + str(Sba_msg) + '\n\n')
 
     elif dst_flag == INC_C2AS:
         Sba_msg = create_C_C2AS()  # 生成C2AS报文
         with open('kerb_main/text1.txt', 'w', encoding='gbk') as f:
-            f.write('C to AS :' + str(Sba_msg) + '\n\n')
+            f.write('C to AS(Kb):' + str(Sba_msg) + '\n\n')
 
     elif dst_flag == INC_C2TGS:
         Sba_msg = create_C_C2TGS(caddr_ip, tkt, k_share)  # 生成C2TGS报文
