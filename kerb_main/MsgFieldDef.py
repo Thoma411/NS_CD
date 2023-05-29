@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-26 15:36:10
+LastEditTime: 2023-05-29 19:39:57
 Description: 
 '''
 import datetime as dt
@@ -340,16 +340,6 @@ def initATC(id_c, ad_c, ts=None):  # 装载Authenticator_C
     else:
         amsg_eg['TS_A'] = msg_getTime()
     return amsg_eg
-
-
-def initSIGN(id_c, pk_c, sk_src):  # 生成数字签名
-    dmsg_eg = M_SIG_SRC_AC  # 借由签名正文字典完成对签名的转换
-    dmsg_eg['ID_SRC'] = id_c
-    dmsg_eg['PK_SRC'] = pk_c
-    smsg_sig = myRSA.RSA_sign(dict2str(dmsg_eg), sk_src)  # 返回值类型为str
-    dsg_eg = SIG_SRC_AC
-    dsg_eg['M_SIG_SRC'] = smsg_sig
-    return dsg_eg
 
 
 def initM_C2AS_CTF(id_c, pk_c):  # certification step1正文
