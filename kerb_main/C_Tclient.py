@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 20:18:23
-LastEditTime: 2023-05-29 22:36:08
+LastEditTime: 2023-05-29 22:43:15
 Description:
 '''
 import socket as sk
@@ -409,7 +409,7 @@ def C_C_Send(Dst_socket: sk, dst_flag: int,
 
     elif dst_flag == INC_C2AS:
         Sba_msg = create_C_C2AS()  # 生成C2AS报文
-        with open('kerb_main/text1.txt', 'w', encoding='gbk') as f:
+        with open('kerb_main/text1.txt', 'a', encoding='gbk') as f:
             f.write('C to AS(Kb):' + str(Sba_msg) + '\n\n')
 
     elif dst_flag == INC_C2TGS:
