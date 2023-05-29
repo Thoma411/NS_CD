@@ -1,7 +1,7 @@
 '''
 Author: Thoma411
 Date: 2023-05-13 18:59:23
-LastEditTime: 2023-05-29 19:39:57
+LastEditTime: 2023-05-29 20:22:08
 Description: 
 '''
 import datetime as dt
@@ -246,13 +246,6 @@ def dict2str(sdict: dict):  # 字典转字符串
 def str2dict(dstr: str):  # 字符串转字典
     dt = eval(dstr)
     return dt
-
-
-def rmLRctlstr(sstr: str) -> str:  # 清除首尾控制字符
-    sstr = sstr.lstrip('b').strip('"')
-    tmpLs = sstr.split('}')
-    sstr = tmpLs[0] + '}'
-    return sstr
 
 
 def IP2AD(IP: str):  # IP -> 6位AD字段
